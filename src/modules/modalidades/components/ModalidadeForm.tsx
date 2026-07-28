@@ -139,8 +139,8 @@ export default function ModalidadeForm({ onSubmit }: Props) {
                 setMostrarEmojis(false);
               }}
               searchPlaceholder="Buscar emoji..."
-              height={400}
-              width={320}
+              height={450}
+              width={420}
               lazyLoadEmojis
             />
           </div>
