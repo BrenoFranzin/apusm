@@ -5,6 +5,8 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import EmojiPicker from "emoji-picker-react";
+import { useState } from "react";
 
 import {
   modalidadeSchema,
@@ -12,7 +14,6 @@ import {
 } from "../schemas/modalidade.schema";
 
 const CORES = ["#7F77DD", "#1D9E75", "#D85A30", "#D4537E"];
-const ICONES = ["🧘", "🧘‍♀️", "🚴", "💃", "🏋️", "🥋", "🎵", "🤸"];
 const SALAS = ["Sala 1", "Sala 2", "Sala 3", "Sala 4", "Sala 5"];
 
 interface Props {
@@ -38,6 +39,7 @@ export default function ModalidadeForm({ onSubmit }: Props) {
 
   const corSelecionada = watch("cor");
   const iconeSelecionado = watch("icone");
+  const [mostrarEmojis, setMostrarEmojis] = useState(false);
 
   return (
     <form
@@ -94,26 +96,31 @@ export default function ModalidadeForm({ onSubmit }: Props) {
       </select>
 
       <label style={{ fontSize: 12, color: "var(--text-secondary)" }}>Ícone</label>
-      <div style={{ display: "flex", gap: 6, margin: "6px 0 12px", flexWrap: "wrap" }}>
-        {ICONES.map((icone) => (
-          <button
-            key={icone}
-            type="button"
-            onClick={() => setValue("icone", icone)}
-            style={{
-              fontSize: 18,
-              padding: 6,
-              borderRadius: 6,
-              border:
-                iconeSelecionado === icone
-                  ? "2px solid var(--color-primary)"
-                  : "1px solid var(--border-default)",
-              background: "var(--background-primary)",
-            }}
-          >
-            {icone}
-          </button>
-        ))}
+      <div style={{ margin: "6px 0 12px", position: "relative" }}>
+        <button
+          type="button"
+          onClick={() => setMostrarEmojis((v) => !v)}
+          style={{
+            fontSize: 24,
+            padding: 8,
+            borderRadius: 8,
+            border: "1px solid var(--border-default)",
+            background: "var(--background-primary)",
+          }}
+        >
+          {iconeSelecionado || "🧘"}
+        </button>
+
+        {mostrarEmojis && (
+          <div style={{ position: "absolute", zIndex: 50, marginTop: 4 }}>
+            <EmojiPicker
+              onEmojiClick={(emojiData) => {
+                setValue("icone", emojiData.emoji);
+                setMostrarEmojis(false);
+              }}
+            />
+          </div>
+        )}
       </div>
 
       <label style={{ fontSize: 12, color: "var(--text-secondary)" }}>Cor</label>
