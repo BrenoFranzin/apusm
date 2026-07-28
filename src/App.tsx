@@ -1,28 +1,12 @@
-import './App.css'
+import AppRoutes from "./routes";
 
-function App() {
-  return (
-    <main>
-      <h1>APUSM MODALIDADES</h1>
 
-      <p>
-        Sistema SaaS em desenvolvimento
-      </p>
+export default function App(){
 
-      <section>
-        <h2>Módulos preparados:</h2>
+return(
 
-        <ul>
-          <li>Instrutores</li>
-          <li>Alunos</li>
-          <li>Modalidades</li>
-          <li>Agenda</li>
-          <li>Financeiro</li>
-          <li>Relatórios</li>
-        </ul>
-      </section>
-    </main>
-  )
+<AppRoutes/>
+
+)
+
 }
-
-export default App

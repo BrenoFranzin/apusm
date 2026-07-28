@@ -1,0 +1,221 @@
+import { useMemo, useState } from "react";
+import type { CSSProperties } from "react";
+import { useTurmas } from "@/modules/turmas/hooks/useTurmas";
+import { useModalidades } from "@/modules/modalidades/hooks/useModalidades";
+import { useInstrutores } from "@/modules/instrutores/hooks/useInstrutores";
+import { DiaSemana } from "@/modules/turmas/types/turma.types";
+
+const NOME_DIA: Record<string, string> = {
+  seg: "Segunda",
+  ter: "Terça",
+  qua: "Quarta",
+  qui: "Quinta",
+  sex: "Sexta",
+  sab: "Sábado",
+};
+
+const ORDEM_DIAS: DiaSemana[] = [
+  DiaSemana.SEG,
+  DiaSemana.TER,
+  DiaSemana.QUA,
+  DiaSemana.QUI,
+  DiaSemana.SEX,
+  DiaSemana.SAB,
+];
+
+const inputStyle: CSSProperties = {
+  border: "1px solid var(--border-default)",
+  background: "var(--background-primary)",
+  color: "var(--text-primary)",
+  borderRadius: 6,
+  padding: 8,
+};
+
+export default function AgendaPage() {
+  const { turmas } = useTurmas();
+  const { modalidades } = useModalidades();
+  const { instrutores } = useInstrutores();
+
+  const [modalidadesSelecionadas, setModalidadesSelecionadas] = useState<Set<string> | null>(null);
+  const [salaFiltro, setSalaFiltro] = useState("TODAS");
+  const [instrutorFiltro, setInstrutorFiltro] = useState("TODOS");
+
+  const salas = useMemo(
+    () => Array.from(new Set(turmas.map((t) => t.sala))).sort(),
+    [turmas]
+  );
+
+  const horarios = useMemo(() => {
+    const set = new Set(turmas.map((t) => t.horario));
+    return Array.from(set).sort();
+  }, [turmas]);
+
+  function passaFiltroModalidade(modalidadeId: string) {
+    if (modalidadesSelecionadas === null) return true;
+    return modalidadesSelecionadas.has(modalidadeId);
+  }
+
+  const turmasFiltradas = useMemo(() => {
+    return turmas.filter((t) => {
+      const okModalidade = passaFiltroModalidade(t.modalidadeId);
+      const okSala = salaFiltro === "TODAS" || t.sala === salaFiltro;
+      const okInstrutor = instrutorFiltro === "TODOS" || t.instrutorId === instrutorFiltro;
+      return okModalidade && okSala && okInstrutor;
+    });
+  }, [turmas, modalidadesSelecionadas, salaFiltro, instrutorFiltro, passaFiltroModalidade]);
+
+  function toggleModalidade(id: string) {
+    setModalidadesSelecionadas((prev) => {
+      const todasIds = modalidades.map((m) => m.id);
+      const atual = prev === null ? new Set(todasIds) : new Set(prev);
+
+      if (atual.has(id)) {
+        atual.delete(id);
+      } else {
+        atual.add(id);
+      }
+
+      if (atual.size === todasIds.length) return null;
+      return atual;
+    });
+  }
+
+  function marcarTodas() {
+    setModalidadesSelecionadas(null);
+  }
+
+  function desmarcarTodas() {
+    setModalidadesSelecionadas(new Set());
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold" style={{ color: "var(--page-heading)" }}>Agenda</h1>
+        <p style={{ color: "var(--page-subheading)" }}>Grade semanal de turmas</p>
+      </div>
+
+      <div className="apusm-card space-y-3">
+        <div className="flex flex-wrap gap-3 items-center">
+          <div>
+            <label className="text-sm mr-2" style={{ color: "var(--text-secondary)" }}>Sala</label>
+            <select value={salaFiltro} onChange={(e) => setSalaFiltro(e.target.value)} style={inputStyle}>
+              <option value="TODAS">Todas</option>
+              {salas.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="text-sm mr-2" style={{ color: "var(--text-secondary)" }}>Instrutor</label>
+            <select value={instrutorFiltro} onChange={(e) => setInstrutorFiltro(e.target.value)} style={inputStyle}>
+              <option value="TODOS">Todos</option>
+              {instrutores.map((i) => (
+                <option key={i.id} value={i.id}>{i.nome}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>Filtrar modalidades</span>
+            <div className="flex gap-2">
+              <button onClick={marcarTodas} className="text-xs rounded px-2 py-1" style={inputStyle}>Marcar todas</button>
+              <button onClick={desmarcarTodas} className="text-xs rounded px-2 py-1" style={inputStyle}>Desmarcar todas</button>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {modalidades.map((m) => {
+              const marcada = passaFiltroModalidade(m.id);
+              return (
+                <label
+                  key={m.id}
+                  className="flex items-center gap-2 rounded-lg px-3 py-1.5 cursor-pointer"
+                  style={{
+                    border: "1px solid " + (marcada ? m.cor : "var(--border-default)"),
+                    background: "var(--background-primary)",
+                  }}
+                >
+                  <input type="checkbox" checked={marcada} onChange={() => toggleModalidade(m.id)} />
+                  <span className="w-3 h-3 rounded-full inline-block" style={{ backgroundColor: m.cor }} />
+                  <span className="text-sm" style={{ color: "var(--text-primary)" }}>{m.nome}</span>
+                </label>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      <div className="apusm-card overflow-x-auto">
+        <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed", minWidth: 840 }}>
+          <colgroup>
+            <col style={{ width: 90 }} />
+            {ORDEM_DIAS.map((dia) => (
+              <col key={dia} style={{ width: 125 }} />
+            ))}
+          </colgroup>
+          <thead>
+            <tr>
+              <th style={{ border: "1px solid var(--border-default)", padding: 8, background: "var(--background-tertiary)", fontSize: 11, textTransform: "uppercase", color: "var(--text-secondary)" }}>
+                Horário
+              </th>
+              {ORDEM_DIAS.map((dia) => (
+                <th key={dia} style={{ border: "1px solid var(--border-default)", padding: 8, background: "var(--background-tertiary)", fontSize: 11, textTransform: "uppercase", color: "var(--text-secondary)" }}>
+                  {NOME_DIA[dia]}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {horarios.map((horario) => (
+              <tr key={horario}>
+                <td style={{ border: "1px solid var(--border-default)", padding: 8, textAlign: "center", fontWeight: 700, background: "var(--color-primary)", color: "#fff" }}>
+                  {horario}
+                </td>
+                {ORDEM_DIAS.map((dia) => {
+                  const turmasDaCelula = turmasFiltradas.filter(
+                    (t) => t.dia === dia && t.horario === horario
+                  );
+
+                  return (
+                    <td key={dia} style={{ border: "1px solid var(--border-default)", padding: 4, verticalAlign: "top" }}>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 4, minHeight: 40 }}>
+                        {turmasDaCelula.map((t) => {
+                          const modalidade = modalidades.find((m) => m.id === t.modalidadeId);
+                          const instrutor = instrutores.find((i) => i.id === t.instrutorId);
+                          return (
+                            <div
+                              key={t.id}
+                              style={{
+                                borderRadius: 6,
+                                padding: "6px 8px",
+                                fontSize: 11,
+                                color: "#fff",
+                                textAlign: "center",
+                                backgroundColor: modalidade ? modalidade.cor : "#888",
+                                border: "1px solid rgba(255,255,255,0.35)",
+                                boxShadow: "0 0 0 1px rgba(0,0,0,0.25)",
+                              }}
+                              title={t.sala}
+                            >
+                              <div style={{ fontWeight: 700 }}>{modalidade ? modalidade.nome : "-"}</div>
+                              <div>{instrutor ? instrutor.nome : "-"}</div>
+                              <div style={{ opacity: 0.9 }}>{t.sala}</div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}

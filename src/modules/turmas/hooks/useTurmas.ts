@@ -1,0 +1,61 @@
+// ======================================================
+// APUSM SaaS — Módulo Turmas
+// Arquivo: useTurmas.ts
+// ======================================================
+
+import { useEffect, useState, useCallback } from "react";
+
+import { turmasService } from "../services/turmas.service";
+
+import type {
+  Turma,
+  CriarTurmaDTO,
+} from "../types/turma.types";
+
+export function useTurmas() {
+  const [turmas, setTurmas] = useState<Turma[]>([]);
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState<string | null>(null);
+
+  const carregar = useCallback(async () => {
+    setCarregando(true);
+    const lista = await turmasService.listar();
+    setTurmas(lista);
+    setCarregando(false);
+  }, []);
+
+  useEffect(() => {
+    carregar();
+  }, [carregar]);
+
+  const criar = useCallback(
+    async (dados: CriarTurmaDTO) => {
+      setErro(null);
+      try {
+        await turmasService.criar(dados);
+        await carregar();
+        return true;
+      } catch (e) {
+        setErro(e instanceof Error ? e.message : "Erro ao criar turma");
+        return false;
+      }
+    },
+    [carregar]
+  );
+
+  const excluir = useCallback(
+    async (id: string) => {
+      await turmasService.excluir(id);
+      await carregar();
+    },
+    [carregar]
+  );
+
+  return {
+    turmas,
+    carregando,
+    erro,
+    criar,
+    excluir,
+  };
+}

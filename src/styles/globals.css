@@ -1,0 +1,142 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+@import "tailwindcss";
+
+
+/*
+=====================================
+APUSM DESIGN SYSTEM
+IMPORTAÇÃO CENTRAL
+=====================================
+*/
+
+
+@import "./tokens/index.css";
+
+@import "./design-system/colors.css";
+
+@import "./design-system/typography.css";
+
+@import "./design-system/spacing.css";
+
+@import "./themes/apums-theme.css";
+
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+
+
+/*
+=====================================
+RESET GLOBAL
+=====================================
+*/
+
+
+* {
+
+box-sizing:border-box;
+
+}
+
+
+html {
+
+font-family:
+var(--font-family);
+
+-webkit-font-smoothing:
+antialiased;
+
+-moz-osx-font-smoothing:
+grayscale;
+
+}
+
+
+
+body {
+
+margin:0;
+
+min-height:100vh;
+
+background:
+var(--background-secondary);
+
+color:
+var(--text-primary);
+
+}
+
+
+
+/*
+=====================================
+ELEMENTOS PADRÃO
+=====================================
+*/
+
+
+button,
+input,
+textarea,
+select {
+
+font-family:
+inherit;
+
+}
+
+
+
+button {
+
+cursor:pointer;
+
+}
+
+
+
+a {
+
+color:
+inherit;
+
+text-decoration:none;
+
+}
+
+
+
+/*
+=====================================
+SCROLLBAR APUSM
+=====================================
+*/
+
+
+::-webkit-scrollbar {
+
+width:8px;
+
+}
+
+
+::-webkit-scrollbar-track {
+
+background:
+var(--background-tertiary);
+
+}
+
+
+::-webkit-scrollbar-thumb {
+
+background:
+var(--border-default);
+
+border-radius:
+var(--radius-md);
+
+}

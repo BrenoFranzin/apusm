@@ -1,0 +1,90 @@
+:root {
+
+
+--font-family:
+"Inter",
+"Segoe UI",
+Roboto,
+Arial,
+sans-serif;
+
+
+
+--font-size-xs: 12px;
+
+--font-size-sm: 14px;
+
+--font-size-md: 16px;
+
+--font-size-lg: 18px;
+
+--font-size-xl: 24px;
+
+--font-size-2xl: 32px;
+
+--font-size-3xl: 40px;
+
+
+
+--font-weight-normal: 400;
+
+--font-weight-medium: 500;
+
+--font-weight-semibold: 600;
+
+--font-weight-bold: 700;
+
+
+
+}
+
+
+
+body {
+
+font-family:
+var(--font-family);
+
+font-size:
+var(--font-size-md);
+
+line-height:
+1.5;
+
+}
+
+
+
+h1 {
+
+font-size:
+var(--font-size-3xl);
+
+font-weight:
+var(--font-weight-bold);
+
+}
+
+
+
+h2 {
+
+font-size:
+var(--font-size-2xl);
+
+font-weight:
+var(--font-weight-bold);
+
+}
+
+
+
+h3 {
+
+font-size:
+var(--font-size-xl);
+
+font-weight:
+var(--font-weight-semibold);
+
+}

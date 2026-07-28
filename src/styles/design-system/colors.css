@@ -1,0 +1,79 @@
+/*
+=====================================
+CLASSES DE CORES APUSM
+=====================================
+*/
+
+
+.bg-primary {
+    background-color: var(--color-primary);
+}
+
+
+.bg-secondary {
+    background-color: var(--color-secondary);
+}
+
+
+.bg-success {
+    background-color: var(--color-success);
+}
+
+
+.bg-warning {
+    background-color: var(--color-warning);
+}
+
+
+.bg-danger {
+    background-color: var(--color-danger);
+}
+
+
+.bg-info {
+    background-color: var(--color-info);
+}
+
+
+
+.text-primary {
+
+    color: var(--text-primary);
+
+}
+
+
+.text-secondary {
+
+    color: var(--text-secondary);
+
+}
+
+
+.text-muted {
+
+    color: var(--text-muted);
+
+}
+
+
+.text-success {
+
+    color: var(--color-success);
+
+}
+
+
+.text-danger {
+
+    color: var(--color-danger);
+
+}
+
+
+
+.border-default {
+
+    border-color: var(--border-default);
+
+}
