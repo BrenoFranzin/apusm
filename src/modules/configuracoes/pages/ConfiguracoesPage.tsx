@@ -194,9 +194,7 @@ export default function ConfiguracoesPage() {
       )}
 
       <Section title="Salas" desc="Gerenciar as salas usadas por Modalidades e Turmas">
-        <Btn disabled>+ Nova sala</Btn>
-        <Btn disabled>Editar salas</Btn>
-        <Btn disabled>Excluir sala</Btn>
+        <Btn onClick={() => setMostrarSalas(true)}>Gerenciar salas</Btn>
       </Section>
 
       <Section title="Exportações" desc="Gerar PDFs e consultar exportações anteriores">
