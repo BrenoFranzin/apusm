@@ -9,6 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { turmaSchema, type TurmaFormData } from "../schemas/turma.schema";
 import type { Modalidade } from "@/modules/modalidades/types/modalidade.types";
 import type { Instrutor } from "@/modules/instrutores/types/instrutor.types";
+import type { Sala } from "@/modules/salas/types/sala.types";
 
 const DIAS = [
   { valor: "seg", label: "Segunda" },
@@ -19,11 +20,10 @@ const DIAS = [
   { valor: "sab", label: "Sábado" },
 ];
 
-const SALAS = ["Sala 1", "Sala 2", "Sala 3", "Sala 4", "Sala 5"];
-
 interface Props {
   modalidades: Modalidade[];
   instrutores: Instrutor[];
+  salas: Sala[];
   onSubmit: (dados: TurmaFormData) => void;
 }
 
@@ -37,7 +37,7 @@ const selectStyle: React.CSSProperties = {
   borderRadius: 6,
 };
 
-export default function TurmaForm({ modalidades, instrutores, onSubmit }: Props) {
+export default function TurmaForm({ modalidades, instrutores, salas, onSubmit }: Props) {
   const {
     register,
     handleSubmit,
@@ -49,7 +49,7 @@ export default function TurmaForm({ modalidades, instrutores, onSubmit }: Props)
       instrutorId: instrutores[0]?.id ?? "",
       dia: "seg",
       horario: "08:00",
-      sala: SALAS[0],
+      sala: salas[0]?.nome ?? "",
     },
   });
 
@@ -95,8 +95,8 @@ export default function TurmaForm({ modalidades, instrutores, onSubmit }: Props)
 
       <label style={{ fontSize: 12, color: "var(--text-secondary)" }}>Sala</label>
       <select {...register("sala")} style={{ ...selectStyle, margin: "4px 0 14px" }}>
-        {SALAS.map((s) => (
-          <option key={s} value={s}>{s}</option>
+        {salas.map((s) => (
+          <option key={s.id} value={s.nome}>{s.nome}</option>
         ))}
       </select>
 
