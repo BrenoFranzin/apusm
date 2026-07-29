@@ -8,6 +8,9 @@ import { useEffect, useRef, useState } from "react";
 import { backupService } from "../services/backup.service";
 import { historicoService } from "../services/historico.service";
 import { pdfService, type RegistroExportacao } from "../services/pdf.service";
+import SalasModal from "../../salas/components/SalasModal";
+
+
 
 const LABEL_TIPO: Record<RegistroExportacao["tipo"], string> = {
   servico: "Escala de Serviço",
@@ -21,6 +24,10 @@ export default function ConfiguracoesPage() {
   const [mostrarHistorico, setMostrarHistorico] = useState(false);
   const [historico, setHistorico] = useState<RegistroExportacao[]>([]);
   const [, forcarAtualizacao] = useState(0);
+  const [mostrarSalas, setMostrarSalas] = useState(false);
+
+
+
 
   useEffect(() => {
     const atualizar = () => forcarAtualizacao((v) => v + 1);
