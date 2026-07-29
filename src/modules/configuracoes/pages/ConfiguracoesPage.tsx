@@ -241,6 +241,7 @@ export default function ConfiguracoesPage() {
 
       {mostrarHistorico && (
         <ModalHistorico
+        {mostrarSalas && <SalasModal onFechar={() => setMostrarSalas(false)} />}
           historico={historico}
           onFechar={() => setMostrarHistorico(false)}
           onVisualizar={handleVisualizar}
