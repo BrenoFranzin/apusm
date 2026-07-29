@@ -14,7 +14,7 @@ import ModalidadesPage from "@/modules/modalidades/pages/ModalidadesPage"
 import InstrutoresPage from "@/modules/instrutores/pages/InstrutoresPage"
 import TurmasPage from "@/modules/turmas/pages/TurmasPage"
 import AgendaPage from "@/modules/agenda/pages/AgendaPage"
-
+import PlantaoPage from "@/modules/plantao/pages/PlantaoPage"
 
 
 export default function AppRoutes(){
@@ -32,6 +32,10 @@ return (
 <Route path="/relatorios" element={<Navigate to="/relatorios/matriculas" replace />} />
 <Route path="/relatorios/matriculas" element={<RelatorioMatriculasPage/>} />
 <Route path="/relatorios/consulta" element={<ConsultaAssociadoPage/>} />
+<Route path="/plantao" element={<PlantaoPage/>} />
+
+
+
 
 <Route
 
