@@ -25,8 +25,12 @@ export function useTurmas() {
   }, []);
 
   useEffect(() => {
-    carregar();
-  }, [carregar]);
+  async function iniciar() {
+    await carregar();
+  }
+
+  iniciar();
+}, [carregar]);
 
   const criar = useCallback(
     async (dados: CriarTurmaDTO) => {
