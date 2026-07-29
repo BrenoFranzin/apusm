@@ -24,7 +24,7 @@ export function Header() {
             height: 36,
             borderRadius: "50%",
             border: "1px solid var(--border-default)",
-            background: "var(--background-secondary)",
+            // background: "var(--background-secondary)",
             fontSize: 16,
             display: "flex",
             alignItems: "center",
