@@ -106,20 +106,53 @@ export default function PlantaoPage() {
         </button>
       </div>
 
-      <div className="apusm-card" style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+      <div className="apusm-card" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         <div>
-          <label style={{ fontSize: 13, color: "var(--text-secondary)", marginRight: 8 }}>Filtrar por instrutor</label>
-          <select
-            value={instrutorFiltro}
-            onChange={(e) => setInstrutorFiltro(e.target.value)}
-            style={{ border: "1px solid var(--border-default)", background: "var(--background-primary)", color: "var(--text-primary)", borderRadius: 6, padding: 8 }}
-          >
-            <option value="TODOS">Todos</option>
-            {instrutores.map((i) => (
-              <option key={i.id} value={i.id}>{i.nome}</option>
-            ))}
-          </select>
+          <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-secondary)", marginBottom: 8 }}>
+            Filtrar por instrutor
+          </p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            <button
+              onClick={() => setInstrutorFiltro("TODOS")}
+              style={{
+                padding: "7px 14px",
+                borderRadius: 999,
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: "pointer",
+                border: instrutorFiltro === "TODOS" ? "2px solid var(--color-primary)" : "1px solid var(--border-default)",
+                background: instrutorFiltro === "TODOS" ? "var(--color-primary)" : "var(--background-primary)",
+                color: instrutorFiltro === "TODOS" ? "#fff" : "var(--text-primary)",
+                transition: "all 0.15s ease",
+              }}
+            >
+              Todos
+            </button>
+            {instrutores.map((i) => {
+              const ativo = instrutorFiltro === i.id;
+              return (
+                <button
+                  key={i.id}
+                  onClick={() => setInstrutorFiltro(i.id)}
+                  style={{
+                    padding: "7px 14px",
+                    borderRadius: 999,
+                    fontSize: 13,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    border: ativo ? `2px solid ${i.cor}` : "1px solid var(--border-default)",
+                    background: ativo ? i.cor : "var(--background-primary)",
+                    color: ativo ? "#fff" : "var(--text-primary)",
+                    transition: "all 0.15s ease",
+                  }}
+                >
+                  {i.nome}
+                </button>
+              );
+            })}
+          </div>
         </div>
+
         <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "var(--text-secondary)" }}>
           <span
             style={{
@@ -144,15 +177,15 @@ export default function PlantaoPage() {
         <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed", minWidth: 760 }}>
           <colgroup>
             <col style={{ width: 80 }} />
-            {ORDEM_DIAS.map((d) => <col key={d} style={{ width: 120 }} />)}
+            {ORDEM_DIAS.map((d) => <col key={d} style={{ width: 130 }} />)}
           </colgroup>
           <thead>
             <tr>
-              <th style={{ border: BORDA_GRADE, padding: 8, background: "var(--background-tertiary)", fontSize: 11, textTransform: "uppercase", color: "var(--text-secondary)" }}>
+              <th style={{ border: BORDA_GRADE, padding: 10, background: "var(--color-primary)", fontSize: 13, fontWeight: 700, textTransform: "uppercase", color: "#fff", letterSpacing: 0.5 }}>
                 Horário
               </th>
               {ORDEM_DIAS.map((dia) => (
-                <th key={dia} style={{ border: BORDA_GRADE, padding: 8, background: "var(--background-tertiary)", fontSize: 11, textTransform: "uppercase", color: "var(--text-secondary)" }}>
+                <th key={dia} style={{ border: BORDA_GRADE, padding: 10, background: "var(--color-primary)", fontSize: 13, fontWeight: 700, textTransform: "uppercase", color: "#fff", letterSpacing: 0.5 }}>
                   {NOME_DIA[dia]}
                 </th>
               ))}
@@ -161,14 +194,25 @@ export default function PlantaoPage() {
           <tbody>
             {HORARIOS.map((horario) => (
               <tr key={horario}>
-                <td style={{ border: BORDA_GRADE, padding: 8, textAlign: "center", fontWeight: 700, background: "var(--color-primary)", color: "#fff" }}>
+                <td style={{ border: BORDA_GRADE, padding: 8, textAlign: "center", fontWeight: 700, background: "var(--color-primary-hover)", color: "#fff" }}>
                   {horario}
                 </td>
                 {ORDEM_DIAS.map((dia) => {
                   const doDiaHora = entradasFiltradas.filter((e) => e.dia === dia && e.horario === horario);
+                  const duasColunas = doDiaHora.length > 4;
                   return (
-                    <td key={dia} style={{ border: BORDA_GRADE, padding: 4, verticalAlign: "top" }}>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 3, minHeight: 30, alignItems: "flex-start" }}>
+                    <td key={dia} style={{ border: BORDA_GRADE, padding: 4, verticalAlign: "middle" }}>
+                      <div
+                        style={{
+                          display: duasColunas ? "grid" : "flex",
+                          gridTemplateColumns: duasColunas ? "1fr 1fr" : undefined,
+                          flexDirection: duasColunas ? undefined : "column",
+                          gap: 3,
+                          minHeight: 30,
+                          justifyItems: "center",
+                          alignItems: "center",
+                        }}
+                      >
                         {doDiaHora.map((e) => {
                           const emAula = tambemDandoAula(e.instrutorId, e.dia, e.horario);
                           return (
