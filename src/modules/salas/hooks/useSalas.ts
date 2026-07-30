@@ -7,7 +7,7 @@
 import { useState, useEffect, useCallback } from "react";
 
 import { salasService } from "../services/salas.service";
-import type { Sala, CriarSalaDTO } from "../types/sala.types";
+import type { Sala, CriarSalaDTO, AtualizarSalaDTO } from "../types/sala.types";
 
 export function useSalas() {
   const [salas, setSalas] = useState<Sala[]>([]);
@@ -40,10 +40,22 @@ export function useSalas() {
     }
   }, [carregar]);
 
+  const editar = useCallback(async (id: string, dados: AtualizarSalaDTO) => {
+    setErro(null);
+    try {
+      await salasService.atualizar(id, dados);
+      await carregar();
+      return true;
+    } catch {
+      setErro("Não foi possível editar a sala.");
+      return false;
+    }
+  }, [carregar]);
+
   const excluir = useCallback(async (id: string) => {
     await salasService.excluir(id);
     await carregar();
   }, [carregar]);
 
-  return { salas, carregando, erro, criar, excluir };
+  return { salas, carregando, erro, criar, editar, excluir };
 }
