@@ -3,6 +3,7 @@
 // Arquivo: plantao.service.ts
 // ======================================================
 
+import { plantaoMock } from "../data/plantao.mock";
 import type { EntradaPlantao, DiaSemanaPlantao } from "../types/plantao.types";
 
 const STORAGE_KEY = "apusm:plantao";
@@ -11,8 +12,8 @@ class PlantaoService {
   private carregarStorage(): EntradaPlantao[] {
     const dados = localStorage.getItem(STORAGE_KEY);
     if (!dados) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
-      return [];
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(plantaoMock));
+      return plantaoMock;
     }
     return JSON.parse(dados);
   }
