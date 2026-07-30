@@ -13,4 +13,5 @@ export interface EntradaListaEspera {
   modalidadeNome: string;
   dataEntrada: string;
   posicao: number;
+  observacao?: string;
 }

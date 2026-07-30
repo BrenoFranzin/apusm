@@ -34,6 +34,7 @@ export interface MatriculaAssociado {
   turmaNome: string;
   dataMatricula: string;
   status: string;
+  observacao?: string;
 }
 
 export interface FrequenciaAssociado {
