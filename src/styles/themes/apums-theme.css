@@ -5,17 +5,11 @@ CONFIGURAÇÃO GLOBAL DO TEMA
 =====================================
 */
 
-
 body {
-
-background:
-var(--background-secondary);
-
-color:
-var(--text-primary);
-
+  background: var(--background-secondary);
+  color: var(--text-primary);
+  transition: background 0.2s ease, color 0.2s ease;
 }
-
 
 /*
 =====================================
@@ -23,18 +17,10 @@ SELEÇÃO DE TEXTO
 =====================================
 */
 
-
 ::selection {
-
-background:
-var(--color-primary);
-
-color:
-var(--text-white);
-
+  background: var(--color-primary);
+  color: var(--text-white);
 }
-
-
 
 /*
 =====================================
@@ -42,20 +28,10 @@ FOCUS PADRÃO
 =====================================
 */
 
-
 :focus-visible {
-
-outline:
-
-2px solid var(--color-primary);
-
-outline-offset:
-
-2px;
-
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
-
-
 
 /*
 =====================================
@@ -63,33 +39,39 @@ CARDS PADRÃO
 =====================================
 */
 
-
 .apusm-card {
-
-background:
-var(--background-primary);
-
-border:
-
-1px solid var(--border-default);
-
-border-radius:
-
-var(--radius-lg);
-
-box-shadow:
-
-var(--shadow-sm);
-
-padding:
-
-var(--space-6);
-
+  background: var(--background-primary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-6);
+  transition: box-shadow 0.2s ease, transform 0.15s ease;
 }
 
+.apusm-card:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+/*
+=====================================
+BOTÕES PADRÃO (aplicar via classe .apusm-btn quando quiser)
+=====================================
+*/
+
+.apusm-btn {
+  transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+}
+
+.apusm-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.apusm-btn:active {
+  transform: translateY(0);
+}
 
 :root {
-
   --font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 
   /*
@@ -101,11 +83,10 @@ var(--space-6);
   --color-primary: #0F766E;
   --color-primary-hover: #115E59;
   --color-primary-light: #CCFBF1;
-
+  --color-primary-dark: #0B4F49;
 
   --color-secondary: #1E40AF;
   --color-secondary-light: #DBEAFE;
-
 
   /*
   =====================================
@@ -116,19 +97,14 @@ var(--space-6);
   --color-success: #16A34A;
   --color-success-light: #DCFCE7;
 
-
   --color-warning: #F59E0B;
   --color-warning-light: #FEF3C7;
-
 
   --color-danger: #DC2626;
   --color-danger-light: #FEE2E2;
 
-
   --color-info: #2563EB;
   --color-info-light: #DBEAFE;
-
-
 
   /*
   =====================================
@@ -137,14 +113,9 @@ var(--space-6);
   */
 
   --background-primary: #FFFFFF;
-
-  --background-secondary: #F8FAFC;
-
-  --background-tertiary: #F1F5F9;
-
+  --background-secondary: #F1F5F9;
+  --background-tertiary: #E2E8F0;
   --background-dark: #0F172A;
-
-
 
   /*
   =====================================
@@ -153,20 +124,12 @@ var(--space-6);
   */
 
   --text-primary: #0F172A;
-
   --text-secondary: #475569;
-
   --page-heading: #0F172A;
-
-  --page-subheading: #475569;
-
+  --page-subheading: #64748B;
   --text-muted: #64748B;
-
   --text-disabled: #94A3B8;
-
   --text-white: #FFFFFF;
-
-
 
   /*
   =====================================
@@ -175,12 +138,8 @@ var(--space-6);
   */
 
   --border-default: #E2E8F0;
-
   --border-light: #F1F5F9;
-
   --border-focus: var(--color-primary);
-
-
 
   /*
   =====================================
@@ -188,18 +147,9 @@ var(--space-6);
   =====================================
   */
 
-  --shadow-sm:
-  0 1px 2px rgba(15,23,42,0.05);
-
-
-  --shadow-md:
-  0 4px 6px rgba(15,23,42,0.08);
-
-
-  --shadow-lg:
-  0 10px 25px rgba(15,23,42,0.12);
-
-
+  --shadow-sm: 0 1px 3px rgba(15,23,42,0.08);
+  --shadow-md: 0 4px 12px rgba(15,23,42,0.10);
+  --shadow-lg: 0 12px 32px rgba(15,23,42,0.16);
 
   /*
   =====================================
@@ -207,15 +157,10 @@ var(--space-6);
   =====================================
   */
 
-  --radius-sm: 6px;
-
-  --radius-md: 10px;
-
+  --radius-sm: 8px;
+  --radius-md: 12px;
   --radius-lg: 16px;
-
   --radius-xl: 24px;
-
-
 
   /*
   =====================================
@@ -224,26 +169,15 @@ var(--space-6);
   */
 
   --space-1: 4px;
-
   --space-2: 8px;
-
   --space-3: 12px;
-
   --space-4: 16px;
-
   --space-5: 20px;
-
   --space-6: 24px;
-
   --space-7: 32px;
-
   --space-8: 40px;
-
   --space-9: 48px;
-
   --space-10: 64px;
-
-
 
   /*
   =====================================
@@ -252,18 +186,11 @@ var(--space-6);
   */
 
   --z-header: 100;
-
   --z-sidebar: 200;
-
   --z-dropdown: 300;
-
   --z-modal: 400;
-
   --z-tooltip: 500;
-
-
 }
-
 
 /*
 =====================================
@@ -274,25 +201,14 @@ Ativado quando <html> tem a classe "dark"
 */
 
 html.dark {
-
   --background-primary: #1E293B;
-
   --background-secondary: #0F172A;
-
   --background-tertiary: #334155;
-
   --border-default: #334155;
-
   --border-light: #475569;
-
   --page-heading: #F1F5F9;
-
   --page-subheading: #CBD5E1;
-
   --text-primary: #F1F5F9;
-
   --text-secondary: #CBD5E1;
-
   --text-muted: #94A3B8;
-
 }
