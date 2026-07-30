@@ -165,7 +165,7 @@ export default function PlantaoPage() {
                   const doDiaHora = entradasFiltradas.filter((e) => e.dia === dia && e.horario === horario);
                   return (
                     <td key={dia} style={{ border: "1px solid var(--border-default)", padding: 4, verticalAlign: "top" }}>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 3, minHeight: 30 }}>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 3, minHeight: 30, alignItems: "flex-start" }}>
                         {doDiaHora.map((e) => {
                           const emAula = tambemDandoAula(e.instrutorId, e.dia, e.horario);
                           return (
@@ -175,11 +175,14 @@ export default function PlantaoPage() {
                               title={emAula ? "Também está dando aula neste horário. Clique para remover do plantão." : "Clique para remover"}
                               style={{
                                 position: "relative",
+                                display: "inline-block",
+                                width: "fit-content",
                                 background: corInstrutor(e.instrutorId),
                                 color: "#fff",
                                 borderRadius: 999,
                                 padding: emAula ? "2px 16px 2px 8px" : "2px 8px",
                                 fontSize: 11,
+                                whiteSpace: "nowrap",
                                 textAlign: "center",
                                 cursor: "pointer",
                                 border: "1px solid rgba(255,255,255,0.35)",
