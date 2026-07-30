@@ -13,7 +13,6 @@ import {
   type ModalidadeFormData,
 } from "../schemas/modalidade.schema";
 
-// Paleta ampla de cores (estilo WhatsApp/Notion)
 const CORES_PALETA = [
   "#F44336","#E91E63","#9C27B0","#673AB7","#3F51B5","#2196F3","#03A9F4","#00BCD4",
   "#009688","#4CAF50","#8BC34A","#CDDC39","#FFEB3B","#FFC107","#FF9800","#FF5722",
@@ -24,10 +23,11 @@ const CORES_PALETA = [
 const SALAS = ["Sala 1", "Sala 2", "Sala 3", "Sala 4", "Sala 5"];
 
 interface Props {
+  valoresIniciais?: Partial<ModalidadeFormData>;
   onSubmit: (dados: ModalidadeFormData) => void;
 }
 
-export default function ModalidadeForm({ onSubmit }: Props) {
+export default function ModalidadeForm({ valoresIniciais, onSubmit }: Props) {
   const {
     register,
     handleSubmit,
@@ -41,6 +41,7 @@ export default function ModalidadeForm({ onSubmit }: Props) {
       icone: "🧘",
       cor: CORES_PALETA[0],
       sala: SALAS[0],
+      ...valoresIniciais,
     },
   });
 
@@ -48,7 +49,7 @@ export default function ModalidadeForm({ onSubmit }: Props) {
   const iconeSelecionado = watch("icone");
   const [mostrarEmojis, setMostrarEmojis] = useState(false);
   const [mostrarCores, setMostrarCores] = useState(false);
-  const [hexInput, setHexInput] = useState(CORES_PALETA[0]);
+  const [hexInput, setHexInput] = useState(valoresIniciais?.cor ?? CORES_PALETA[0]);
 
   function aplicarHex(valor: string) {
     const hex = valor.startsWith("#") ? valor : `#${valor}`;
@@ -71,10 +72,9 @@ export default function ModalidadeForm({ onSubmit }: Props) {
       }}
     >
       <p style={{ fontWeight: 500, fontSize: 14, margin: "0 0 12px", color: "var(--text-primary)" }}>
-        Nova modalidade
+        {valoresIniciais ? "Editar modalidade" : "Nova modalidade"}
       </p>
 
-      {/* Nome */}
       <label style={{ fontSize: 12, color: "var(--text-secondary)" }}>Nome</label>
       <input
         placeholder="Ex.: Jiu-jitsu"
@@ -94,7 +94,6 @@ export default function ModalidadeForm({ onSubmit }: Props) {
         {errors.nome?.message}
       </p>
 
-      {/* Sala */}
       <label style={{ fontSize: 12, color: "var(--text-secondary)" }}>Sala (obrigatório)</label>
       <select
         {...register("sala")}
@@ -113,7 +112,6 @@ export default function ModalidadeForm({ onSubmit }: Props) {
         ))}
       </select>
 
-      {/* Ícone — Emoji Picker estilo WhatsApp */}
       <label style={{ fontSize: 12, color: "var(--text-secondary)" }}>Ícone</label>
       <div style={{ margin: "6px 0 12px", position: "relative" }}>
         <button
@@ -147,10 +145,8 @@ export default function ModalidadeForm({ onSubmit }: Props) {
         )}
       </div>
 
-      {/* Cor — Paleta + Hex */}
       <label style={{ fontSize: 12, color: "var(--text-secondary)" }}>Cor</label>
 
-      {/* Botão que abre o seletor */}
       <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "6px 0 6px" }}>
         <button
           type="button"
@@ -169,7 +165,6 @@ export default function ModalidadeForm({ onSubmit }: Props) {
         </span>
       </div>
 
-      {/* Painel de cores */}
       {mostrarCores && (
         <div
           style={{
@@ -180,7 +175,6 @@ export default function ModalidadeForm({ onSubmit }: Props) {
             marginBottom: 10,
           }}
         >
-          {/* Paleta */}
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
             {CORES_PALETA.map((cor) => (
               <button
@@ -206,7 +200,6 @@ export default function ModalidadeForm({ onSubmit }: Props) {
             ))}
           </div>
 
-          {/* Input Hex */}
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <input
               type="color"
@@ -254,7 +247,6 @@ export default function ModalidadeForm({ onSubmit }: Props) {
         </div>
       )}
 
-      {/* Salvar */}
       <button
         type="submit"
         style={{
@@ -268,7 +260,7 @@ export default function ModalidadeForm({ onSubmit }: Props) {
           cursor: "pointer",
         }}
       >
-        Salvar modalidade
+        {valoresIniciais ? "Salvar edição" : "Salvar modalidade"}
       </button>
     </form>
   );
