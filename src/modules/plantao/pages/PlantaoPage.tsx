@@ -24,9 +24,10 @@ function gerarHorarios(): string[] {
 }
 
 const HORARIOS = gerarHorarios();
+const BORDA_GRADE = "2px solid #94a3b8";
 
 export default function PlantaoPage() {
-  const { entradas, adicionar, remover, definirEmMassa } = usePlantao();
+  const { entradas, remover, definirEmMassa } = usePlantao();
   const { instrutores } = useInstrutores();
   const { turmas } = useTurmas();
   const [instrutorFiltro, setInstrutorFiltro] = useState("TODOS");
@@ -147,13 +148,11 @@ export default function PlantaoPage() {
           </colgroup>
           <thead>
             <tr>
-              <th style={{ border: "2px solid #94a3b8", padding: 8, background: "var(--background-tertiary)", fontSize: 11, textTransform: "uppercase", color: "var(--text-secondary)" }}>
-                  {NOME_DIA[dia]}
-                </th>
-                  {NOME_DIA[dia]}
-                </th>
+              <th style={{ border: BORDA_GRADE, padding: 8, background: "var(--background-tertiary)", fontSize: 11, textTransform: "uppercase", color: "var(--text-secondary)" }}>
+                Horário
+              </th>
               {ORDEM_DIAS.map((dia) => (
-                <th key={dia} style={{ border: "1px solid var(--border-default)", padding: 8, background: "var(--background-tertiary)", fontSize: 11, textTransform: "uppercase", color: "var(--text-secondary)" }}>
+                <th key={dia} style={{ border: BORDA_GRADE, padding: 8, background: "var(--background-tertiary)", fontSize: 11, textTransform: "uppercase", color: "var(--text-secondary)" }}>
                   {NOME_DIA[dia]}
                 </th>
               ))}
@@ -162,13 +161,13 @@ export default function PlantaoPage() {
           <tbody>
             {HORARIOS.map((horario) => (
               <tr key={horario}>
-                <td style={{ border: "2px solid #94a3b8", padding: 8, textAlign: "center", fontWeight: 700, background: "var(--color-primary)", color: "#fff" }}>
+                <td style={{ border: BORDA_GRADE, padding: 8, textAlign: "center", fontWeight: 700, background: "var(--color-primary)", color: "#fff" }}>
                   {horario}
                 </td>
                 {ORDEM_DIAS.map((dia) => {
                   const doDiaHora = entradasFiltradas.filter((e) => e.dia === dia && e.horario === horario);
                   return (
-                    <td key={dia} style={{ border: "2px solid #94a3b8", padding: 4, verticalAlign: "top" }}>
+                    <td key={dia} style={{ border: BORDA_GRADE, padding: 4, verticalAlign: "top" }}>
                       <div style={{ display: "flex", flexDirection: "column", gap: 3, minHeight: 30, alignItems: "flex-start" }}>
                         {doDiaHora.map((e) => {
                           const emAula = tambemDandoAula(e.instrutorId, e.dia, e.horario);
