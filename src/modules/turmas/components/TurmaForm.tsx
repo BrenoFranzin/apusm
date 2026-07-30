@@ -38,11 +38,14 @@ const selectStyle: React.CSSProperties = {
   borderRadius: 6,
 };
 
+const { salas } = useSalas();
+
 export default function TurmaForm({ modalidades, instrutores, onSubmit }: Props) {
   const {
     register,
     handleSubmit,
     formState: { errors },
+  
   } = useForm<TurmaFormData>({
     resolver: zodResolver(turmaSchema) as any,
     defaultValues: {
@@ -50,7 +53,7 @@ export default function TurmaForm({ modalidades, instrutores, onSubmit }: Props)
       instrutorId: instrutores[0]?.id ?? "",
       dia: "seg",
       horario: "08:00",
-      sala: SALAS[0],
+      sala: "",
     },
   });
 
