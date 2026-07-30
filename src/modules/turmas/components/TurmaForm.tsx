@@ -9,7 +9,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { turmaSchema, type TurmaFormData } from "../schemas/turma.schema";
 import type { Modalidade } from "@/modules/modalidades/types/modalidade.types";
 import type { Instrutor } from "@/modules/instrutores/types/instrutor.types";
-import { useSalas } from "@/modules/salas/hooks/useSalas";
 
 
 const DIAS = [
@@ -38,10 +37,9 @@ const selectStyle: React.CSSProperties = {
   borderRadius: 6,
 };
 
-const { salas } = useSalas();
+
 
 export default function TurmaForm({ modalidades, instrutores, onSubmit }: Props) {
-  const { salas } = useSalas();
 
   const {
     register,
@@ -101,8 +99,9 @@ export default function TurmaForm({ modalidades, instrutores, onSubmit }: Props)
 
       <label style={{ fontSize: 12, color: "var(--text-secondary)" }}>Sala</label>
       <select {...register("sala")} style={{ ...selectStyle, margin: "4px 0 14px" }}>
-        {SALAS.map((s) => (
-          <option key={s} value={s}>{s}</option>
+        <option value="" disabled>Selecione a sala</option>
+        {salas.map((s) => (
+          <option key={s.id} value={s.nome}>{s.nome}</option>
         ))}
       </select>
 
