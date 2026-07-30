@@ -71,6 +71,7 @@ export function InstrutorCard({ instrutor, onEditar, onExcluir }: Props) {
             padding: "5px 10px",
             background: "var(--background-primary)",
             marginLeft: 8,
+             whiteSpace: "nowrap",
           }}
         >
           ✎ Editar
@@ -93,6 +94,7 @@ export function InstrutorCard({ instrutor, onEditar, onExcluir }: Props) {
             padding: "5px 10px",
             background: "var(--background-primary)",
             marginLeft: 8,
+            whiteSpace: "nowrap",
           }}
         >
           🗑️ Excluir
