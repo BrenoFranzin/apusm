@@ -9,6 +9,7 @@ const menu = [
   { label: "Agenda", path: "/agenda" },
   { label: "Relatórios", path: "/relatorios" },
   { label: "Configurações", path: "/configuracoes" },
+  { label: "Plantão de Serviço", path: "/plantao" },
 ];
 
 export function Sidebar() {

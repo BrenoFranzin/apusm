@@ -21,10 +21,11 @@ const CORES_PALETA = [
 ];
 
 interface Props {
+  valoresIniciais?: Partial<InstrutorFormData>;
   onSubmit: (dados: InstrutorFormData) => void;
 }
 
-export default function InstrutorForm({ onSubmit }: Props) {
+export default function InstrutorForm({ valoresIniciais, onSubmit }: Props) {
   const {
     register,
     handleSubmit,
@@ -39,6 +40,7 @@ export default function InstrutorForm({ onSubmit }: Props) {
       cor: CORES_PALETA[0],
       especialidade: "",
       terceirizado: false,
+      ...valoresIniciais,
     },
   });
 
@@ -46,7 +48,7 @@ export default function InstrutorForm({ onSubmit }: Props) {
   const iconeSelecionado = watch("icone");
   const [mostrarEmojis, setMostrarEmojis] = useState(false);
   const [mostrarCores, setMostrarCores] = useState(false);
-  const [hexInput, setHexInput] = useState(CORES_PALETA[0]);
+  const [hexInput, setHexInput] = useState(valoresIniciais?.cor ?? CORES_PALETA[0]);
 
   function aplicarHex(valor: string) {
     const hex = valor.startsWith("#") ? valor : `#${valor}`;
@@ -69,7 +71,7 @@ export default function InstrutorForm({ onSubmit }: Props) {
       }}
     >
       <p style={{ fontWeight: 500, fontSize: 14, margin: "0 0 12px", color: "var(--text-primary)" }}>
-        Novo instrutor
+        {valoresIniciais ? "Editar instrutor" : "Novo instrutor"}
       </p>
 
       {/* Nome */}
@@ -254,7 +256,7 @@ export default function InstrutorForm({ onSubmit }: Props) {
           cursor: "pointer",
         }}
       >
-        Salvar instrutor
+        {valoresIniciais ? "Salvar edição" : "Salvar instrutor"}
       </button>
     </form>
   );

@@ -8,10 +8,22 @@ import { useState } from "react";
 import { useInstrutores } from "../hooks/useInstrutores";
 import { InstrutorCard } from "../components/InstrutorCard";
 import InstrutorForm from "../components/InstrutorForm";
+import type { Instrutor } from "../types/instrutor.types";
 
 export default function InstrutoresPage() {
-  const { instrutores, criar, excluir } = useInstrutores();
+  const { instrutores, criar, editar, excluir } = useInstrutores();
   const [mostrarForm, setMostrarForm] = useState(false);
+  const [instrutorEditando, setInstrutorEditando] = useState<Instrutor | null>(null);
+
+  function iniciarNovo() {
+    setInstrutorEditando(null);
+    setMostrarForm((v) => !v);
+  }
+
+  function iniciarEdicao(instrutor: Instrutor) {
+    setInstrutorEditando(instrutor);
+    setMostrarForm(true);
+  }
 
   return (
     <div className="space-y-6">
@@ -24,7 +36,7 @@ export default function InstrutoresPage() {
         </div>
 
         <button
-          onClick={() => setMostrarForm((v) => !v)}
+          onClick={iniciarNovo}
           className="bg-green-900 text-white px-5 py-3 rounded-lg"
         >
           {mostrarForm ? "Fechar" : "+ Novo instrutor"}
@@ -33,9 +45,15 @@ export default function InstrutoresPage() {
 
       {mostrarForm && (
         <InstrutorForm
+          valoresIniciais={instrutorEditando ?? undefined}
           onSubmit={async (dados) => {
-            await criar(dados);
+            if (instrutorEditando) {
+              await editar(instrutorEditando.id, dados);
+            } else {
+              await criar(dados);
+            }
             setMostrarForm(false);
+            setInstrutorEditando(null);
           }}
         />
       )}
@@ -51,6 +69,7 @@ export default function InstrutoresPage() {
           <InstrutorCard
             key={instrutor.id}
             instrutor={instrutor}
+            onEditar={iniciarEdicao}
             onExcluir={excluir}
           />
         ))}

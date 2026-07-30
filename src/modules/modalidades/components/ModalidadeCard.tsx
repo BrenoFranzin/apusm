@@ -7,10 +7,11 @@ import type { Modalidade } from "../types/modalidade.types";
 
 interface Props {
   modalidade: Modalidade;
+  onEditar?: (modalidade: Modalidade) => void;
   onExcluir?: (id: string) => void;
 }
 
-export function ModalidadeCard({ modalidade, onExcluir }: Props) {
+export function ModalidadeCard({ modalidade, onEditar, onExcluir }: Props) {
   return (
     <div
       style={{
@@ -57,7 +58,7 @@ export function ModalidadeCard({ modalidade, onExcluir }: Props) {
         {modalidade.instrutoresIds.length} instrutor(es)
       </span>
 
-      {onExcluir && (
+      {(onEditar || onExcluir) && (
         <div
           style={{
             marginTop: 14,
@@ -65,26 +66,45 @@ export function ModalidadeCard({ modalidade, onExcluir }: Props) {
             borderTop: "1px solid var(--border-default)",
             display: "flex",
             justifyContent: "flex-end",
+            gap: 8,
           }}
         >
-          <button
-            onClick={() => {
-              const confirmar = window.confirm(
-                `Excluir a modalidade "${modalidade.nome}"? Essa ação não pode ser desfeita.`
-              );
-              if (confirmar) onExcluir(modalidade.id);
-            }}
-            style={{
-              fontSize: 12,
-              color: "var(--color-danger)",
-              border: "1px solid var(--color-danger)",
-              borderRadius: 6,
-              padding: "5px 10px",
-              background: "var(--background-primary)",
-            }}
-          >
-            🗑️ Excluir
-          </button>
+          {onEditar && (
+            <button
+              onClick={() => onEditar(modalidade)}
+              style={{
+                fontSize: 12,
+                color: "#2563eb",
+                border: "1px solid #93c5fd",
+                borderRadius: 6,
+                padding: "5px 10px",
+                background: "var(--background-primary)",
+              }}
+            >
+              ✎ Editar
+            </button>
+          )}
+
+          {onExcluir && (
+            <button
+              onClick={() => {
+                const confirmar = window.confirm(
+                  `Excluir a modalidade "${modalidade.nome}"? Essa ação não pode ser desfeita.`
+                );
+                if (confirmar) onExcluir(modalidade.id);
+              }}
+              style={{
+                fontSize: 12,
+                color: "var(--color-danger)",
+                border: "1px solid var(--color-danger)",
+                borderRadius: 6,
+                padding: "5px 10px",
+                background: "var(--background-primary)",
+              }}
+            >
+              🗑️ Excluir
+            </button>
+          )}
         </div>
       )}
     </div>

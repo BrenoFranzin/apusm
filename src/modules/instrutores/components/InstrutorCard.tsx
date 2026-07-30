@@ -7,10 +7,11 @@ import type { Instrutor } from "../types/instrutor.types";
 
 interface Props {
   instrutor: Instrutor;
+  onEditar?: (instrutor: Instrutor) => void;
   onExcluir?: (id: string) => void;
 }
 
-export function InstrutorCard({ instrutor, onExcluir }: Props) {
+export function InstrutorCard({ instrutor, onEditar, onExcluir }: Props) {
   return (
     <div
       style={{
@@ -51,6 +52,23 @@ export function InstrutorCard({ instrutor, onExcluir }: Props) {
         </p>
       </div>
 
+      {onEditar && (
+        <button
+          onClick={() => onEditar(instrutor)}
+          style={{
+            fontSize: 12,
+            color: "#2563eb",
+            border: "1px solid #93c5fd",
+            borderRadius: 6,
+            padding: "5px 10px",
+            background: "var(--background-primary)",
+            marginLeft: 8,
+          }}
+        >
+          ✎ Editar
+        </button>
+      )}
+
       {onExcluir && (
         <button
           onClick={() => {
@@ -66,7 +84,7 @@ export function InstrutorCard({ instrutor, onExcluir }: Props) {
             borderRadius: 6,
             padding: "5px 10px",
             background: "var(--background-primary)",
-            marginLeft: 12,
+            marginLeft: 8,
           }}
         >
           🗑️ Excluir

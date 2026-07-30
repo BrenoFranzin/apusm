@@ -10,6 +10,7 @@ import { modalidadesService } from "../services/modalidades.service";
 import type {
   Modalidade,
   CriarModalidadeDTO,
+  AtualizarModalidadeDTO,
 } from "../types/modalidade.types";
 
 export function useModalidades() {
@@ -35,6 +36,14 @@ export function useModalidades() {
     [carregar]
   );
 
+  const editar = useCallback(
+    async (id: string, dados: AtualizarModalidadeDTO) => {
+      await modalidadesService.atualizar(id, dados);
+      await carregar();
+    },
+    [carregar]
+  );
+
   const excluir = useCallback(
     async (id: string) => {
       await modalidadesService.excluir(id);
@@ -47,6 +56,7 @@ export function useModalidades() {
     modalidades,
     carregando,
     criar,
+    editar,
     excluir,
   };
 }

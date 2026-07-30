@@ -8,6 +8,9 @@ import { useEffect, useRef, useState } from "react";
 import { backupService } from "../services/backup.service";
 import { historicoService } from "../services/historico.service";
 import { pdfService, type RegistroExportacao } from "../services/pdf.service";
+import SalasModal from "../../salas/components/SalasModal";
+
+
 
 const LABEL_TIPO: Record<RegistroExportacao["tipo"], string> = {
   servico: "Escala de Serviço",
@@ -21,6 +24,10 @@ export default function ConfiguracoesPage() {
   const [mostrarHistorico, setMostrarHistorico] = useState(false);
   const [historico, setHistorico] = useState<RegistroExportacao[]>([]);
   const [, forcarAtualizacao] = useState(0);
+  const [mostrarSalas, setMostrarSalas] = useState(false);
+
+
+
 
   useEffect(() => {
     const atualizar = () => forcarAtualizacao((v) => v + 1);
@@ -187,9 +194,7 @@ export default function ConfiguracoesPage() {
       )}
 
       <Section title="Salas" desc="Gerenciar as salas usadas por Modalidades e Turmas">
-        <Btn disabled>+ Nova sala</Btn>
-        <Btn disabled>Editar salas</Btn>
-        <Btn disabled>Excluir sala</Btn>
+        <Btn onClick={() => setMostrarSalas(true)}>Gerenciar salas</Btn>
       </Section>
 
       <Section title="Exportações" desc="Gerar PDFs e consultar exportações anteriores">
@@ -243,6 +248,8 @@ export default function ConfiguracoesPage() {
           onApagar={handleApagarDoHistorico}
         />
       )}
+
+      {mostrarSalas && <SalasModal onFechar={() => setMostrarSalas(false)} />}
     </div>
   );
 }

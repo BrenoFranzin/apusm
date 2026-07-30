@@ -41,12 +41,20 @@ class TurmasService {
   async criar(dados: CriarTurmaDTO): Promise<Turma> {
     const lista = this.carregarStorage();
 
-    const conflito = lista.some(
+    const conflitoInstrutor = lista.some(
       (t) => t.dia === dados.dia && t.horario === dados.horario && t.instrutorId === dados.instrutorId
     );
 
-    if (conflito) {
-      throw new Error("Este instrutor já tem uma turma nesse dia e horário");
+    if (conflitoInstrutor) {
+      throw new Error("Este instrutor já tem uma turma nesse dia e horário.");
+    }
+
+    const conflitoSala = lista.some(
+      (t) => t.dia === dados.dia && t.horario === dados.horario && t.sala === dados.sala
+    );
+
+    if (conflitoSala) {
+      throw new Error(`A ${dados.sala} já está ocupada nesse dia e horário.`);
     }
 
     const nova: Turma = {
@@ -69,7 +77,33 @@ class TurmasService {
 
     if (index < 0) return undefined;
 
-    lista[index] = { ...lista[index], ...dados };
+    const atualizada = { ...lista[index], ...dados };
+
+    const conflitoInstrutor = lista.some(
+      (t) =>
+        t.id !== id &&
+        t.dia === atualizada.dia &&
+        t.horario === atualizada.horario &&
+        t.instrutorId === atualizada.instrutorId
+    );
+
+    if (conflitoInstrutor) {
+      throw new Error("Este instrutor já tem uma turma nesse dia e horário.");
+    }
+
+    const conflitoSala = lista.some(
+      (t) =>
+        t.id !== id &&
+        t.dia === atualizada.dia &&
+        t.horario === atualizada.horario &&
+        t.sala === atualizada.sala
+    );
+
+    if (conflitoSala) {
+      throw new Error(`A ${atualizada.sala} já está ocupada nesse dia e horário.`);
+    }
+
+    lista[index] = atualizada;
     this.salvarStorage(lista);
 
     return lista[index];
