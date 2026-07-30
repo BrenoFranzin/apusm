@@ -42,8 +42,16 @@ export function InstrutorCard({ instrutor, onEditar, onExcluir }: Props) {
         {instrutor.nome.slice(0, 2).toUpperCase()}
       </div>
 
-      <div style={{ flex: 1 }}>
-        <p style={{ fontWeight: 500, fontSize: 14, margin: 0, color: "var(--text-primary)" }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{
+          fontWeight: 500,
+          fontSize: 14,
+          margin: 0,
+          color: "var(--text-primary)",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+        }}>
           {instrutor.nome}
         </p>
         <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: "2px 0 0" }}>
