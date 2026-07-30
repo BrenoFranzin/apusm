@@ -41,6 +41,8 @@ const selectStyle: React.CSSProperties = {
 const { salas } = useSalas();
 
 export default function TurmaForm({ modalidades, instrutores, onSubmit }: Props) {
+  const { salas } = useSalas();
+
   const {
     register,
     handleSubmit,
