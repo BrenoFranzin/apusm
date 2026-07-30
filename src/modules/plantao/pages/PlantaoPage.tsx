@@ -147,7 +147,11 @@ export default function PlantaoPage() {
           </colgroup>
           <thead>
             <tr>
-              <th style={{ border: "1px solid var(--border-default)", padding: 8, background: "var(--background-tertiary)", fontSize: 11, textTransform: "uppercase", color: "var(--text-secondary)" }}>Horário</th>
+              <th style={{ border: "2px solid #94a3b8", padding: 8, background: "var(--background-tertiary)", fontSize: 11, textTransform: "uppercase", color: "var(--text-secondary)" }}>
+                  {NOME_DIA[dia]}
+                </th>
+                  {NOME_DIA[dia]}
+                </th>
               {ORDEM_DIAS.map((dia) => (
                 <th key={dia} style={{ border: "1px solid var(--border-default)", padding: 8, background: "var(--background-tertiary)", fontSize: 11, textTransform: "uppercase", color: "var(--text-secondary)" }}>
                   {NOME_DIA[dia]}
