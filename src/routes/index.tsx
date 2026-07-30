@@ -14,7 +14,6 @@ import ModalidadesPage from "@/modules/modalidades/pages/ModalidadesPage"
 import InstrutoresPage from "@/modules/instrutores/pages/InstrutoresPage"
 import TurmasPage from "@/modules/turmas/pages/TurmasPage"
 import AgendaPage from "@/modules/agenda/pages/AgendaPage"
-import SalasPage from "@/modules/salas/pages/SalasPage"
 import PlantaoPage from "@/modules/plantao/pages/PlantaoPage"
 
 
@@ -34,7 +33,6 @@ return (
 <Route path="/relatorios/matriculas" element={<RelatorioMatriculasPage/>} />
 <Route path="/relatorios/consulta" element={<ConsultaAssociadoPage/>} />
 <Route path="/plantao" element={<PlantaoPage/>} />
-<Route path="/salas" element={<SalasPage/>} />
 
 
 
