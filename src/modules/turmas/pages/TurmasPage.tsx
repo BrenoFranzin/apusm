@@ -1,8 +1,7 @@
 // ======================================================
 // APUSM SaaS — Módulo Turmas
 // Arquivo: TurmasPage.tsx
-// Layout reorganizado: agrupado por dia da semana
-// + Gerenciamento de Salas unificado
+// + Gerenciamento de Salas unificado com edição
 // ======================================================
 
 import { useState } from "react";
@@ -30,11 +29,12 @@ export default function TurmasPage() {
   const { turmas, criar, excluir, erro } = useTurmas();
   const { modalidades } = useModalidades();
   const { instrutores } = useInstrutores();
-  const { salas, criar: criarSala, excluir: excluirSala, erro: erroSala } = useSalas();
+  const { salas, criar: criarSala, editar: editarSala, excluir: excluirSala, erro: erroSala } = useSalas();
 
   const [mostrarForm, setMostrarForm] = useState(false);
   const [mostrarFormSala, setMostrarFormSala] = useState(false);
   const [nomeSala, setNomeSala] = useState("");
+  const [salaEditandoId, setSalaEditandoId] = useState<string | null>(null);
 
   const turmasPorDia = DIAS_ORDEM.map((dia) => ({
     dia,
@@ -44,11 +44,28 @@ export default function TurmasPage() {
       .sort((a, b) => a.horario.localeCompare(b.horario)),
   })).filter((grupo) => grupo.turmas.length > 0);
 
-  async function handleCriarSala() {
+  function iniciarNovaSala() {
+    setSalaEditandoId(null);
+    setNomeSala("");
+    setMostrarFormSala((v) => !v);
+  }
+
+  function iniciarEdicaoSala(id: string, nomeAtual: string) {
+    setSalaEditandoId(id);
+    setNomeSala(nomeAtual);
+    setMostrarFormSala(true);
+  }
+
+  async function handleSalvarSala() {
     if (!nomeSala.trim()) return;
-    const ok = await criarSala({ nome: nomeSala.trim() });
+
+    const ok = salaEditandoId
+      ? await editarSala(salaEditandoId, { nome: nomeSala.trim() })
+      : await criarSala({ nome: nomeSala.trim() });
+
     if (ok) {
       setNomeSala("");
+      setSalaEditandoId(null);
       setMostrarFormSala(false);
     }
   }
@@ -72,7 +89,7 @@ export default function TurmasPage() {
           </button>
 
           <button
-            onClick={() => setMostrarFormSala((v) => !v)}
+            onClick={iniciarNovaSala}
             className="bg-green-900 text-white px-5 py-3 rounded-lg"
           >
             {mostrarFormSala ? "Fechar" : "+ Nova sala"}
@@ -110,10 +127,10 @@ export default function TurmasPage() {
               }}
             />
             <button
-              onClick={handleCriarSala}
+              onClick={handleSalvarSala}
               className="bg-green-900 text-white px-4 py-2 rounded-lg"
             >
-              Salvar
+              {salaEditandoId ? "Salvar edição" : "Salvar"}
             </button>
           </div>
         )}
@@ -137,6 +154,19 @@ export default function TurmasPage() {
                 }}
               >
                 🚪 {sala.nome}
+                <button
+                  onClick={() => iniciarEdicaoSala(sala.id, sala.nome)}
+                  style={{
+                    border: "1px solid #93c5fd",
+                    color: "#2563eb",
+                    background: "transparent",
+                    borderRadius: 6,
+                    padding: "0 6px",
+                    cursor: "pointer",
+                  }}
+                >
+                  ✎
+                </button>
                 <button
                   onClick={() => {
                     if (window.confirm(`Excluir a sala "${sala.nome}"?`)) {
