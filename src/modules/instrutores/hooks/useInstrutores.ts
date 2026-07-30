@@ -10,6 +10,7 @@ import { instrutoresService } from "../services/instrutores.service";
 import type {
   Instrutor,
   CriarInstrutorDTO,
+  AtualizarInstrutorDTO,
 } from "../types/instrutor.types";
 
 export function useInstrutores() {
@@ -35,6 +36,14 @@ export function useInstrutores() {
     [carregar]
   );
 
+  const editar = useCallback(
+    async (id: string, dados: AtualizarInstrutorDTO) => {
+      await instrutoresService.atualizar(id, dados);
+      await carregar();
+    },
+    [carregar]
+  );
+
   const excluir = useCallback(
     async (id: string) => {
       await instrutoresService.excluir(id);
@@ -47,6 +56,7 @@ export function useInstrutores() {
     instrutores,
     carregando,
     criar,
+    editar,
     excluir,
   };
 }
