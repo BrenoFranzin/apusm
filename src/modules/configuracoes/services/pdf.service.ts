@@ -4,6 +4,7 @@ import autoTable from "jspdf-autotable";
 import { turmasService } from "@/modules/turmas/services/turmas.service";
 import { instrutoresService } from "@/modules/instrutores/services/instrutores.service";
 import { modalidadesService } from "@/modules/modalidades/services/modalidades.service";
+import { plantaoService } from "@/modules/plantao/services/plantao.service";
 
 const NOME_DIA: Record<string, string> = {
   seg: "Segunda",
@@ -15,6 +16,7 @@ const NOME_DIA: Record<string, string> = {
 };
 
 const ORDEM_DIAS = ["seg", "ter", "qua", "qui", "sex", "sab"];
+const ORDEM_DIAS_PLANTAO = ["seg", "ter", "qua", "qui", "sex"];
 
 const HISTORICO_KEY = "apusm:pdf:historico";
 const HISTORICO_LIMITE = 10;
@@ -64,56 +66,217 @@ function baixarEregistrar(doc: jsPDF, nomeArquivo: string, tipo: RegistroExporta
   }
 }
 
+// ==========================
+// Helpers de desenho da grade de serviço (fiéis ao sistema antigo)
+// ==========================
+
+function hexToRgb(hex: string): [number, number, number] {
+  const n = parseInt(hex.replace("#", ""), 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+
+function fitFontSize(doc: jsPDF, text: string, maxWidth: number, startSize: number, minSize: number): number {
+  let size = startSize;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(size);
+  while (size > minSize && doc.getTextWidth(text) > maxWidth) {
+    size -= 0.5;
+    doc.setFontSize(size);
+  }
+  return size;
+}
+
+function fitServico(count: number, scale = 1) {
+  let base;
+  if (count <= 3) base = { tagHeight: 5, gap: 2, fontSize: 8 };
+  else if (count <= 4) base = { tagHeight: 5.5, gap: 2, fontSize: 7.5 };
+  else if (count <= 8) base = { tagHeight: 4.6, gap: 1.5, fontSize: 6.5 };
+  else base = { tagHeight: 4, gap: 1.2, fontSize: 5.5 };
+  return {
+    tagHeight: base.tagHeight * scale,
+    gap: base.gap * scale,
+    fontSize: base.fontSize,
+  };
+}
+
+function gerarHorariosServico(): string[] {
+  const lista: string[] = [];
+  for (let h = 6; h <= 21; h++) lista.push(String(h).padStart(2, "0") + ":00");
+  return lista;
+}
+
+interface CelulaServico {
+  nome: string;
+  cor: string;
+  emAula: boolean;
+}
+
 class PdfService {
   // ==========================
-  // ESCALA DE SERVIÇO (por instrutor)
+  // ESCALA DE SERVIÇO (grade visual por instrutor, fiel ao sistema antigo)
   // ==========================
 
   async exportarEscalaServico(): Promise<void> {
-    const [turmas, instrutores, modalidades] = await Promise.all([
+    const [turmas, instrutores, entradasPlantao] = await Promise.all([
       turmasService.listar(),
       instrutoresService.listar(),
-      modalidadesService.listar(),
+      plantaoService.listar(),
     ]);
 
-    const doc = new jsPDF();
-    cabecalho(doc, "Escala de Serviço - Instrutores");
+    const doc = new jsPDF("portrait");
+    const allSlots = gerarHorariosServico();
+    const manhaSlots = allSlots.filter((s) => parseInt(s) <= 13);
+    const tardeSlots = allSlots.filter((s) => parseInt(s) >= 14);
 
-    const linhas = instrutores
-      .slice()
-      .sort((a, b) => a.nome.localeCompare(b.nome))
-      .flatMap((instrutor) => {
-        const turmasDoInstrutor = turmas
-          .filter((t) => t.instrutorId === instrutor.id)
-          .sort(
-            (a, b) =>
-              ORDEM_DIAS.indexOf(a.dia) - ORDEM_DIAS.indexOf(b.dia) ||
-              a.horario.localeCompare(b.horario)
+    const columnStyles = {
+      0: { cellWidth: 24 },
+      1: { cellWidth: 33 },
+      2: { cellWidth: 33 },
+      3: { cellWidth: 33 },
+      4: { cellWidth: 33 },
+      5: { cellWidth: 33 },
+    };
+    const marginLeft = (210 - (24 + 33 * 5)) / 2;
+
+    function montarCelula(dia: string, horario: string): CelulaServico[] {
+      return entradasPlantao
+        .filter((e) => e.dia === dia && e.horario === horario)
+        .map((e) => {
+          const instrutor = instrutores.find((i) => i.id === e.instrutorId);
+          const emAula = turmas.some(
+            (t) => t.instrutorId === e.instrutorId && t.dia === dia && t.horario === horario
           );
-
-        if (turmasDoInstrutor.length === 0) {
-          return [[instrutor.nome, "-", "-", "-", "-"]];
-        }
-
-        return turmasDoInstrutor.map((turma) => {
-          const modalidade = modalidades.find((m) => m.id === turma.modalidadeId);
-          return [
-            instrutor.nome,
-            NOME_DIA[turma.dia] ?? turma.dia,
-            turma.horario,
-            modalidade?.nome ?? "-",
-            turma.sala,
-          ];
+          return {
+            nome: instrutor?.nome ?? "-",
+            cor: instrutor?.cor ?? "#888",
+            emAula,
+          };
         });
+    }
+
+    const gerarTabelaServico = (slotsFiltrados: string[], startY: number) => {
+      const header = ["Horário", ...ORDEM_DIAS_PLANTAO.map((d) => NOME_DIA[d])];
+
+      const body = slotsFiltrados.map((s) => {
+        const row: (string | CelulaServico[])[] = [s];
+        ORDEM_DIAS_PLANTAO.forEach((d) => {
+          row.push(montarCelula(d, s));
+        });
+        return row;
       });
 
-    autoTable(doc, {
-      startY: 27,
-      head: [["Instrutor", "Dia", "Horário", "Modalidade", "Sala"]],
-      body: linhas,
-      styles: { fontSize: 9 },
-      headStyles: { fillColor: [20, 83, 45] },
-    });
+      const PAGE_H_SERV = 297;
+      const BOTTOM_MARGIN_SERV = 12;
+      const HEADER_H_SERV = 12;
+
+      const estimarAlturaLinhaServico = (row: (string | CelulaServico[])[]) => {
+        let maxH = 18;
+        row.slice(1).forEach((cell) => {
+          if (Array.isArray(cell) && cell.length) {
+            const fit = fitServico(cell.length, 1);
+            const h = Math.max(cell.length * (fit.tagHeight + fit.gap) - fit.gap + 4, 18);
+            if (h > maxH) maxH = h;
+          }
+        });
+        return maxH;
+      };
+
+      const availableServ = PAGE_H_SERV - startY - BOTTOM_MARGIN_SERV;
+      const rawTotalServ = HEADER_H_SERV + body.reduce((acc, row) => acc + estimarAlturaLinhaServico(row), 0);
+      let scaleServ = rawTotalServ > 0 ? availableServ / (rawTotalServ * 1.15) : 1;
+      scaleServ = Math.max(0.3, Math.min(scaleServ, 1.9));
+      const headerScaleServ = Math.min(scaleServ, 1.4);
+
+      autoTable(doc, {
+        head: [header],
+        body: body as any,
+        startY,
+        margin: { left: marginLeft, right: marginLeft },
+        rowPageBreak: "avoid",
+        theme: "grid",
+        columnStyles,
+        styles: { cellPadding: 2, fontSize: 8, halign: "center", valign: "middle", lineWidth: 0.3, lineColor: [0, 0, 0] },
+        alternateRowStyles: { fillColor: [222, 225, 230] },
+        headStyles: {
+          fontSize: 10 * headerScaleServ,
+          fontStyle: "bold",
+          fillColor: [0, 0, 0],
+          textColor: [255, 255, 255],
+          minCellHeight: 12 * headerScaleServ,
+          lineWidth: 0.3,
+          lineColor: [0, 0, 0],
+        },
+        didParseCell: (data) => {
+          if (data.section === "head" && data.column.index === 0) {
+            data.cell.styles.fontSize = 11 * headerScaleServ;
+          } else if (data.column.index === 0) {
+            data.cell.styles.fontSize = 14 * headerScaleServ;
+            data.cell.styles.fontStyle = "bold";
+          } else if (Array.isArray(data.cell.raw)) {
+            data.cell.text = [""];
+            const fit = fitServico(data.cell.raw.length, scaleServ);
+            const h = Math.max(
+              data.cell.raw.length * (fit.tagHeight + fit.gap) - fit.gap + 4 * scaleServ,
+              18 * Math.min(scaleServ, 1)
+            );
+            data.cell.styles.minCellHeight = h;
+          }
+        },
+        didDrawCell: (data) => {
+          if (data.section === "body" && data.column.index > 0 && Array.isArray(data.cell.raw)) {
+            const items = data.cell.raw as unknown as CelulaServico[];
+            const x = data.cell.x;
+            const y = data.cell.y;
+            const w = data.cell.width;
+            const h = data.cell.height;
+            const fit = fitServico(items.length, scaleServ);
+            const tagHeight = fit.tagHeight;
+            const gap = fit.gap;
+            const totalHeight = items.length * tagHeight + (items.length - 1) * gap;
+            const startYCell = y + (h - totalHeight) / 2;
+            const colW = w - 4;
+
+            items.forEach((item, idx) => {
+              const tagY = startYCell + idx * (tagHeight + gap);
+              const extraBolinha = item.emAula ? 3.5 : 0;
+              const fontSize = fitFontSize(doc, item.nome, colW - 2 - extraBolinha, fit.fontSize, 4);
+              const textW = doc.getTextWidth(item.nome);
+              let tagW = Math.min(textW + 3 + extraBolinha, colW);
+              tagW = Math.max(tagW, 10);
+              const tagX = x + 2 + (colW - tagW) / 2;
+
+              doc.setFillColor(...hexToRgb(item.cor));
+              if (doc.roundedRect) {
+                doc.roundedRect(tagX, tagY, tagW, tagHeight, 2, 2, "F");
+              } else {
+                doc.rect(tagX, tagY, tagW, tagHeight, "F");
+              }
+              doc.setTextColor(255, 255, 255);
+              doc.setFontSize(fontSize);
+              const textCenterX = tagX + (tagW - extraBolinha) / 2;
+              doc.text(item.nome, textCenterX, tagY + tagHeight / 2, { align: "center", baseline: "middle" });
+
+              if (item.emAula) {
+                const raio = 1.1;
+                const cx = tagX + tagW - raio - 1;
+                const cy = tagY + raio + 1;
+                doc.setDrawColor(0);
+                doc.setFillColor(255, 255, 255);
+                doc.setLineWidth(0.4);
+                doc.circle(cx, cy, raio, "FD");
+              }
+            });
+          }
+        },
+      });
+    };
+
+    doc.text("Academia APUSM - Escala de Serviço (Manhã)", 105, 14, { align: "center" });
+    gerarTabelaServico(manhaSlots, 20);
+
+    doc.addPage();
+    doc.text("Academia APUSM - Escala de Serviço (Tarde)", 105, 14, { align: "center" });
+    gerarTabelaServico(tardeSlots, 20);
 
     const nomeArquivo = `escala-servico-${new Date().toISOString().substring(0, 10)}.pdf`;
     baixarEregistrar(doc, nomeArquivo, "servico");
@@ -231,4 +394,3 @@ class PdfService {
 
 export const pdfService = new PdfService();
 export default pdfService;
-

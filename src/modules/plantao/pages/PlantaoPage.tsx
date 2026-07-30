@@ -6,6 +6,7 @@
 import { useMemo, useState } from "react";
 import { usePlantao } from "../hooks/usePlantao";
 import { useInstrutores } from "@/modules/instrutores/hooks/useInstrutores";
+import { useTurmas } from "@/modules/turmas/hooks/useTurmas";
 import { DiaSemanaPlantao } from "../types/plantao.types";
 
 const NOME_DIA: Record<string, string> = {
@@ -27,6 +28,7 @@ const HORARIOS = gerarHorarios();
 export default function PlantaoPage() {
   const { entradas, adicionar, remover, definirEmMassa } = usePlantao();
   const { instrutores } = useInstrutores();
+  const { turmas } = useTurmas();
   const [instrutorFiltro, setInstrutorFiltro] = useState("TODOS");
   const [modalAberto, setModalAberto] = useState(false);
   const [instrutorMassa, setInstrutorMassa] = useState("");
@@ -43,6 +45,12 @@ export default function PlantaoPage() {
 
   function corInstrutor(id: string) {
     return instrutores.find((i) => i.id === id)?.cor ?? "#888";
+  }
+
+  function tambemDandoAula(instrutorId: string, dia: string, horario: string) {
+    return turmas.some(
+      (t) => t.instrutorId === instrutorId && t.dia === dia && t.horario === horario
+    );
   }
 
   function abrirMassa() {
@@ -97,18 +105,38 @@ export default function PlantaoPage() {
         </button>
       </div>
 
-      <div className="apusm-card">
-        <label style={{ fontSize: 13, color: "var(--text-secondary)", marginRight: 8 }}>Filtrar por instrutor</label>
-        <select
-          value={instrutorFiltro}
-          onChange={(e) => setInstrutorFiltro(e.target.value)}
-          style={{ border: "1px solid var(--border-default)", background: "var(--background-primary)", color: "var(--text-primary)", borderRadius: 6, padding: 8 }}
-        >
-          <option value="TODOS">Todos</option>
-          {instrutores.map((i) => (
-            <option key={i.id} value={i.id}>{i.nome}</option>
-          ))}
-        </select>
+      <div className="apusm-card" style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+        <div>
+          <label style={{ fontSize: 13, color: "var(--text-secondary)", marginRight: 8 }}>Filtrar por instrutor</label>
+          <select
+            value={instrutorFiltro}
+            onChange={(e) => setInstrutorFiltro(e.target.value)}
+            style={{ border: "1px solid var(--border-default)", background: "var(--background-primary)", color: "var(--text-primary)", borderRadius: 6, padding: 8 }}
+          >
+            <option value="TODOS">Todos</option>
+            {instrutores.map((i) => (
+              <option key={i.id} value={i.id}>{i.nome}</option>
+            ))}
+          </select>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "var(--text-secondary)" }}>
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 16,
+              height: 16,
+              borderRadius: "50%",
+              border: "1.5px solid var(--text-secondary)",
+              background: "#fff",
+              fontSize: 9,
+            }}
+          >
+            •
+          </span>
+          Também está dando aula neste horário
+        </div>
       </div>
 
       <div className="apusm-card overflow-x-auto">
@@ -138,26 +166,46 @@ export default function PlantaoPage() {
                   return (
                     <td key={dia} style={{ border: "1px solid var(--border-default)", padding: 4, verticalAlign: "top" }}>
                       <div style={{ display: "flex", flexDirection: "column", gap: 3, minHeight: 30 }}>
-                        {doDiaHora.map((e) => (
-                          <span
-                            key={e.id}
-                            onClick={() => remover(e.instrutorId, e.dia, e.horario)}
-                            title="Clique para remover"
-                            style={{
-                              background: corInstrutor(e.instrutorId),
-                              color: "#fff",
-                              borderRadius: 999,
-                              padding: "2px 8px",
-                              fontSize: 11,
-                              textAlign: "center",
-                              cursor: "pointer",
-                              border: "1px solid rgba(255,255,255,0.35)",
-                              boxShadow: "0 0 0 1px rgba(0,0,0,0.2)",
-                            }}
-                          >
-                            {nomeInstrutor(e.instrutorId)}
-                          </span>
-                        ))}
+                        {doDiaHora.map((e) => {
+                          const emAula = tambemDandoAula(e.instrutorId, e.dia, e.horario);
+                          return (
+                            <span
+                              key={e.id}
+                              onClick={() => remover(e.instrutorId, e.dia, e.horario)}
+                              title={emAula ? "Também está dando aula neste horário. Clique para remover do plantão." : "Clique para remover"}
+                              style={{
+                                position: "relative",
+                                background: corInstrutor(e.instrutorId),
+                                color: "#fff",
+                                borderRadius: 999,
+                                padding: emAula ? "2px 16px 2px 8px" : "2px 8px",
+                                fontSize: 11,
+                                textAlign: "center",
+                                cursor: "pointer",
+                                border: "1px solid rgba(255,255,255,0.35)",
+                                boxShadow: emAula
+                                  ? "0 0 0 2px #fff, 0 0 0 3.5px " + corInstrutor(e.instrutorId)
+                                  : "0 0 0 1px rgba(0,0,0,0.2)",
+                              }}
+                            >
+                              {nomeInstrutor(e.instrutorId)}
+                              {emAula && (
+                                <span
+                                  style={{
+                                    position: "absolute",
+                                    top: 2,
+                                    right: 3,
+                                    width: 7,
+                                    height: 7,
+                                    borderRadius: "50%",
+                                    background: "#fff",
+                                    border: "1px solid #000",
+                                  }}
+                                />
+                              )}
+                            </span>
+                          );
+                        })}
                       </div>
                     </td>
                   );
