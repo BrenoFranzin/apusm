@@ -232,6 +232,26 @@ class AssociadosService {
   }
 
   
+
+  async atualizarObservacaoMatricula(
+    associadoId: string,
+    matriculaId: string,
+    observacao: string
+  ): Promise<Associado | undefined> {
+    const lista = this.carregarStorage();
+    const index = lista.findIndex((a) => a.id === associadoId);
+
+    if (index < 0) return undefined;
+
+    lista[index].matriculas = lista[index].matriculas.map((m) =>
+      m.id === matriculaId ? { ...m, observacao } : m
+    );
+
+    this.salvarStorage(lista);
+
+    return lista[index];
+  }
+
   // ==========================
   // PESQUISAR
   // ==========================

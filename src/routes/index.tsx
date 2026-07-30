@@ -4,6 +4,7 @@ import {
   Route,
   Navigate
 } from "react-router-dom"
+
 import RelatorioMatriculasPage from "@/modules/relatorios/pages/RelatorioMatriculasPage"
 import ConfiguracoesPage from "@/modules/configuracoes/pages/ConfiguracoesPage"
 import MainLayout from "@/components/layout/MainLayout"
@@ -15,6 +16,9 @@ import InstrutoresPage from "@/modules/instrutores/pages/InstrutoresPage"
 import TurmasPage from "@/modules/turmas/pages/TurmasPage"
 import AgendaPage from "@/modules/agenda/pages/AgendaPage"
 import PlantaoPage from "@/modules/plantao/pages/PlantaoPage"
+import ListasEsperaPage from "@/modules/lista-espera/pages/ListasEsperaPage"
+
+
 
 
 export default function AppRoutes(){
@@ -33,7 +37,7 @@ return (
 <Route path="/relatorios/matriculas" element={<RelatorioMatriculasPage/>} />
 <Route path="/relatorios/consulta" element={<ConsultaAssociadoPage/>} />
 <Route path="/plantao" element={<PlantaoPage/>} />
-
+<Route path="/lista-espera" element={<ListasEsperaPage/>} />
 
 
 

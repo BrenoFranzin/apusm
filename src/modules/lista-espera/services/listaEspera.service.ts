@@ -79,6 +79,17 @@ class ListaEsperaService {
     this.salvarStorage(restante);
   }
 
+async atualizarObservacao(entradaId: string, observacao: string): Promise<void> {
+    const lista = this.carregarStorage();
+    const index = lista.findIndex((e) => e.id === entradaId);
+
+    if (index < 0) return;
+
+    lista[index] = { ...lista[index], observacao };
+    this.salvarStorage(lista);
+  }
+
+
   async chamarProximo(turmaId: string): Promise<EntradaListaEspera | undefined> {
     const fila = await this.listarPorTurma(turmaId);
     return fila[0];

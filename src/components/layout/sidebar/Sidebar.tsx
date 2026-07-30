@@ -5,6 +5,7 @@ const menu = [
   { label: "Associados", path: "/associados" },
   { label: "Modalidades", path: "/modalidades" },
   { label: "Turmas", path: "/turmas" },
+  { label: "Listas/Espera", path: "/lista-espera" },
   { label: "Instrutores", path: "/instrutores" },
   { label: "Agenda", path: "/agenda" },
   { label: "Relatórios", path: "/relatorios" },
