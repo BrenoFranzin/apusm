@@ -24,6 +24,7 @@ const DIAS = [
 interface Props {
   modalidades: Modalidade[];
   instrutores: Instrutor[];
+  salas: { id: string; nome: string }[];
   onSubmit: (dados: TurmaFormData) => void;
 }
 
@@ -39,7 +40,7 @@ const selectStyle: React.CSSProperties = {
 
 
 
-export default function TurmaForm({ modalidades, instrutores, onSubmit }: Props) {
+export default function TurmaForm({ modalidades, instrutores, salas, onSubmit }: Props) {
 
   const {
     register,
