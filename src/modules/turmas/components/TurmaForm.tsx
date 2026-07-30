@@ -9,6 +9,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { turmaSchema, type TurmaFormData } from "../schemas/turma.schema";
 import type { Modalidade } from "@/modules/modalidades/types/modalidade.types";
 import type { Instrutor } from "@/modules/instrutores/types/instrutor.types";
+import { useSalas } from "@/modules/salas/hooks/useSalas";
+
 
 const DIAS = [
   { valor: "seg", label: "Segunda" },
@@ -19,7 +21,6 @@ const DIAS = [
   { valor: "sab", label: "Sábado" },
 ];
 
-const SALAS = ["Sala 1", "Sala 2", "Sala 3", "Sala 4", "Sala 5"];
 
 interface Props {
   modalidades: Modalidade[];
