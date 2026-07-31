@@ -158,11 +158,7 @@ export default function ListasEsperaPage() {
             );
           })}
       </div>
-            {mod.icone} {mod.nome}
-          </button>
-        ))}
-      </div>
-
+          
       {modalidadeAberta &&
         (() => {
           const mod = modalidades.find((m) => m.id === modalidadeAberta);
