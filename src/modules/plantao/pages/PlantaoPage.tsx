@@ -27,7 +27,7 @@ const HORARIOS = gerarHorarios();
 const BORDA_GRADE = "2px solid #94a3b8";
 
 export default function PlantaoPage() {
-  const { entradas, remover, definirEmMassa } = usePlantao();
+  const { entradas, adicionar, remover, definirEmMassa } = usePlantao();
   const { instrutores } = useInstrutores();
   const { turmas } = useTurmas();
   const [instrutorFiltro, setInstrutorFiltro] = useState("TODOS");
@@ -403,7 +403,7 @@ export default function PlantaoPage() {
           </div>
         </div>
       )}
-      
+
     </div>
   );
 }
