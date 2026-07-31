@@ -34,6 +34,8 @@ export default function PlantaoPage() {
   const [modalAberto, setModalAberto] = useState(false);
   const [instrutorMassa, setInstrutorMassa] = useState("");
   const [marcados, setMarcados] = useState<Set<string>>(new Set());
+  const [celulaRapida, setCelulaRapida] = useState<{ dia: string; horario: string } | null>(null);
+  const [instrutorRapido, setInstrutorRapido] = useState("");
 
   const entradasFiltradas = useMemo(() => {
     if (instrutorFiltro === "TODOS") return entradas;
@@ -80,6 +82,17 @@ export default function PlantaoPage() {
       else novo.add(chave);
       return novo;
     });
+  }
+
+  function abrirAdicaoRapida(dia: string, horario: string) {
+    setCelulaRapida({ dia, horario });
+    setInstrutorRapido(instrutores[0]?.id ?? "");
+  }
+
+  async function confirmarAdicaoRapida() {
+    if (!celulaRapida || !instrutorRapido) return;
+    await adicionar(instrutorRapido, celulaRapida.dia as DiaSemanaPlantao, celulaRapida.horario);
+    setCelulaRapida(null);
   }
 
   async function salvarMassa() {
@@ -218,7 +231,11 @@ export default function PlantaoPage() {
                           return (
                             <span
                               key={e.id}
-                              onClick={() => remover(e.instrutorId, e.dia, e.horario)}
+                              onClick={() => {
+                                if (window.confirm(`Remover ${nomeInstrutor(e.instrutorId)} do plantão de ${NOME_DIA[e.dia]} às ${e.horario}?`)) {
+                                  remover(e.instrutorId, e.dia, e.horario);
+                                }
+                              }}
                               title={emAula ? "Também está dando aula neste horário. Clique para remover do plantão." : "Clique para remover"}
                               style={{
                                 position: "relative",
@@ -257,6 +274,23 @@ export default function PlantaoPage() {
                           );
                         })}
                       </div>
+                      <button
+                        onClick={() => abrirAdicaoRapida(dia, horario)}
+                        title="Adicionar instrutor"
+                        style={{
+                          width: "100%",
+                          marginTop: 4,
+                          border: "1px dashed var(--border-default)",
+                          borderRadius: 6,
+                          background: "none",
+                          color: "var(--text-secondary)",
+                          cursor: "pointer",
+                          fontSize: 13,
+                          padding: "2px 0",
+                        }}
+                      >
+                        +
+                      </button>
                     </td>
                   );
                 })}
@@ -336,6 +370,40 @@ export default function PlantaoPage() {
           </div>
         </div>
       )}
+
+      {celulaRapida && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 999, padding: 16 }}>
+          <div className="apusm-card" style={{ maxWidth: 360, width: "100%" }}>
+            <h2 style={{ fontWeight: 600, fontSize: 16, marginBottom: 4, color: "var(--text-primary)" }}>
+              Adicionar ao plantão
+            </h2>
+            <p style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 14 }}>
+              {NOME_DIA[celulaRapida.dia]} às {celulaRapida.horario}
+            </p>
+
+            <label style={{ fontSize: 13, color: "var(--text-secondary)" }}>Instrutor</label>
+            <select
+              value={instrutorRapido}
+              onChange={(e) => setInstrutorRapido(e.target.value)}
+              style={{ width: "100%", border: "1px solid var(--border-default)", background: "var(--background-primary)", color: "var(--text-primary)", borderRadius: 6, padding: 8, margin: "4px 0 16px" }}
+            >
+              {instrutores.map((i) => (
+                <option key={i.id} value={i.id}>{i.nome}</option>
+              ))}
+            </select>
+
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+              <button onClick={() => setCelulaRapida(null)} style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid var(--border-default)", background: "var(--background-primary)", color: "var(--text-primary)" }}>
+                Cancelar
+              </button>
+              <button onClick={confirmarAdicaoRapida} style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: "var(--color-primary)", color: "#fff", fontWeight: 600 }}>
+                Adicionar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
     </div>
   );
 }
