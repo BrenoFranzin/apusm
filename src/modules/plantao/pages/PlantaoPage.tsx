@@ -26,6 +26,23 @@ function gerarHorarios(): string[] {
 const HORARIOS = gerarHorarios();
 const BORDA_GRADE = "2px solid #94a3b8";
 
+function ehModoEscuro() {
+  return document.documentElement.classList.contains("dark");
+}
+
+function ajustarCorParaTema(cor: string, escuro: boolean) {
+  if (!escuro) return cor;
+  const r = parseInt(cor.slice(1, 3), 16);
+  const g = parseInt(cor.slice(3, 5), 16);
+  const b = parseInt(cor.slice(5, 7), 16);
+  const luminancia = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  if (luminancia >= 0.35) return cor;
+  const clarear = (v: number) => Math.min(255, Math.round(v + (255 - v) * 0.6));
+  const hex = (v: number) => clarear(v).toString(16).padStart(2, "0");
+  return `#${hex(r)}${hex(g)}${hex(b)}`;
+}
+
+
 export default function PlantaoPage() {
   const { entradas, adicionar, remover, definirEmMassa } = usePlantao();
   const { instrutores } = useInstrutores();
@@ -36,6 +53,14 @@ export default function PlantaoPage() {
   const [marcados, setMarcados] = useState<Set<string>>(new Set());
   const [celulaRapida, setCelulaRapida] = useState<{ dia: string; horario: string } | null>(null);
   const [instrutorRapido, setInstrutorRapido] = useState("");
+
+  const [escuro, setEscuro] = useState(ehModoEscuro());
+
+useEffect(() => {
+  const obs = new MutationObserver(() => setEscuro(ehModoEscuro()));
+  obs.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+  return () => obs.disconnect();
+}, []);
 
   const entradasFiltradas = useMemo(() => {
     if (instrutoresFiltro.size === 0) return entradas;
