@@ -14,7 +14,7 @@ export interface Instrutor {
 export interface CriarInstrutorDTO {
   nome: string;
   cor: string;
-  especialidade: string;
+  especialidades: string[];
   terceirizado: boolean;
 }
 

@@ -6,8 +6,8 @@
 import type { Instrutor } from "../types/instrutor.types";
 
 export const instrutoresMock: Instrutor[] = [
-  { id: "1",  nome: "Rochester", cor: "#444441", especialidade: "Coordenador",         terceirizado: false },
-  { id: "2",  nome: "Rafaela",   cor: "#185fa5", especialidade: "Pilates",             terceirizado: false },
+  { id: "1",  nome: "Rochester", cor: "#444441", especialidades: ["Coordenador"],         terceirizado: false },
+  { id: "2",  nome: "Rafaela",   cor: "#185fa5", especialidades: ["Pilates"],             terceirizado: false },
   { id: "3",  nome: "Eduardo",   cor: "#BA7517", especialidade: "Coordenador Adjunto", terceirizado: false },
   { id: "4",  nome: "Bia",       cor: "#993556", especialidade: "Alongamento",         terceirizado: false },
   { id: "5",  nome: "Carol",     cor: "#D4537E", especialidade: "Dança Ritmos",        terceirizado: false },

@@ -3,7 +3,7 @@
 // Arquivo: PlantaoPage.tsx
 // ======================================================
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { usePlantao } from "../hooks/usePlantao";
 import { useInstrutores } from "@/modules/instrutores/hooks/useInstrutores";
 import { useTurmas } from "@/modules/turmas/hooks/useTurmas";

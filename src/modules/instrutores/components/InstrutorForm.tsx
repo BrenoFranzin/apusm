@@ -96,8 +96,6 @@ export default function InstrutorForm({ valoresIniciais, onSubmit }: Props) {
         {errors.nome?.message}
       </p>
 
-      {/* Especialidade */}
-      <label style={{ fontSize: 12, color: "var(--text-secondary)" }}>Especialidade</label>
       {/* Especialidades */}
       <label style={{ fontSize: 12, color: "var(--text-secondary)" }}>Especialidades</label>
       <div
@@ -145,11 +143,6 @@ export default function InstrutorForm({ valoresIniciais, onSubmit }: Props) {
           );
         })}
       </div>
-        <option value="">Selecione uma modalidade</option>
-        {modalidades.map((m) => (
-          <option key={m.id} value={m.nome}>{m.nome}</option>
-        ))}
-      </select>
 
       {/* Ícone */}
       <label style={{ fontSize: 12, color: "var(--text-secondary)" }}>Ícone</label>
