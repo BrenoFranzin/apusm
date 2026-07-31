@@ -30,7 +30,7 @@ export default function PlantaoPage() {
   const { entradas, adicionar, remover, definirEmMassa } = usePlantao();
   const { instrutores } = useInstrutores();
   const { turmas } = useTurmas();
-  const [instrutorFiltro, setInstrutorFiltro] = useState("TODOS");
+  const [instrutoresFiltro, setInstrutoresFiltro] = useState<Set<string>>(new Set());
   const [modalAberto, setModalAberto] = useState(false);
   const [instrutorMassa, setInstrutorMassa] = useState("");
   const [marcados, setMarcados] = useState<Set<string>>(new Set());
@@ -38,9 +38,18 @@ export default function PlantaoPage() {
   const [instrutorRapido, setInstrutorRapido] = useState("");
 
   const entradasFiltradas = useMemo(() => {
-    if (instrutorFiltro === "TODOS") return entradas;
-    return entradas.filter((e) => e.instrutorId === instrutorFiltro);
-  }, [entradas, instrutorFiltro]);
+    if (instrutoresFiltro.size === 0) return entradas;
+    return entradas.filter((e) => instrutoresFiltro.has(e.instrutorId));
+  }, [entradas, instrutoresFiltro]);
+
+  function toggleInstrutorFiltro(id: string) {
+    setInstrutoresFiltro((prev) => {
+      const novo = new Set(prev);
+      if (novo.has(id)) novo.delete(id);
+      else novo.add(id);
+      return novo;
+    });
+  }
 
   function nomeInstrutor(id: string) {
     return instrutores.find((i) => i.id === id)?.nome ?? "-";
@@ -126,27 +135,27 @@ export default function PlantaoPage() {
           </p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             <button
-              onClick={() => setInstrutorFiltro("TODOS")}
+              onClick={() => setInstrutoresFiltro(new Set())}
               style={{
                 padding: "7px 14px",
                 borderRadius: 999,
                 fontSize: 13,
                 fontWeight: 600,
                 cursor: "pointer",
-                border: instrutorFiltro === "TODOS" ? "2px solid var(--color-primary)" : "1px solid var(--border-default)",
-                background: instrutorFiltro === "TODOS" ? "var(--color-primary)" : "var(--background-primary)",
-                color: instrutorFiltro === "TODOS" ? "#fff" : "var(--text-primary)",
+                border: instrutoresFiltro.size === 0 ? "2px solid var(--color-primary)" : "1px solid var(--border-default)",
+                background: instrutoresFiltro.size === 0 ? "var(--color-primary)" : "var(--background-primary)",
+                color: instrutoresFiltro.size === 0 ? "#fff" : "var(--text-primary)",
                 transition: "all 0.15s ease",
               }}
             >
               Todos
             </button>
             {instrutores.map((i) => {
-              const ativo = instrutorFiltro === i.id;
+              const ativo = instrutoresFiltro.has(i.id);
               return (
                 <button
                   key={i.id}
-                  onClick={() => setInstrutorFiltro(i.id)}
+                  onClick={() => toggleInstrutorFiltro(i.id)}
                   style={{
                     padding: "7px 14px",
                     borderRadius: 999,

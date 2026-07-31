@@ -12,6 +12,7 @@ import {
   instrutorSchema,
   type InstrutorFormData,
 } from "../schemas/instrutor.schema";
+import { useModalidades } from "@/modules/modalidades/hooks/useModalidades";
 
 const CORES_PALETA = [
   "#F44336","#E91E63","#9C27B0","#673AB7","#3F51B5","#2196F3","#03A9F4","#00BCD4",
@@ -46,6 +47,7 @@ export default function InstrutorForm({ valoresIniciais, onSubmit }: Props) {
 
   const corSelecionada = watch("cor");
   const iconeSelecionado = watch("icone");
+  const { modalidades } = useModalidades();
   const [mostrarEmojis, setMostrarEmojis] = useState(false);
   const [mostrarCores, setMostrarCores] = useState(false);
   const [hexInput, setHexInput] = useState(valoresIniciais?.cor ?? CORES_PALETA[0]);
@@ -96,8 +98,7 @@ export default function InstrutorForm({ valoresIniciais, onSubmit }: Props) {
 
       {/* Especialidade */}
       <label style={{ fontSize: 12, color: "var(--text-secondary)" }}>Especialidade</label>
-      <input
-        placeholder="Ex.: Pilates"
+      <select
         {...register("especialidade")}
         style={{
           width: "100%",
@@ -109,7 +110,12 @@ export default function InstrutorForm({ valoresIniciais, onSubmit }: Props) {
           borderRadius: 6,
           boxSizing: "border-box",
         }}
-      />
+      >
+        <option value="">Selecione uma modalidade</option>
+        {modalidades.map((m) => (
+          <option key={m.id} value={m.nome}>{m.nome}</option>
+        ))}
+      </select>
 
       {/* Ícone */}
       <label style={{ fontSize: 12, color: "var(--text-secondary)" }}>Ícone</label>
