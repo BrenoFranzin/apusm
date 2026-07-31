@@ -34,6 +34,8 @@ export default function TurmasPage() {
   const { instrutores } = useInstrutores();
   const { salas, criar: criarSala, editar: editarSala, excluir: excluirSala, erro: erroSala } = useSalas();
 
+  useNotificacaoAulas(turmas, modalidades);
+
   const [mostrarForm, setMostrarForm] = useState(false);
   const [mostrarFormSala, setMostrarFormSala] = useState(false);
   const [nomeSala, setNomeSala] = useState("");
@@ -244,9 +246,8 @@ export default function TurmasPage() {
               <span
                 style={{
                   fontSize: 12,
-                  color: "#6b7280",
-                  background: "var(--background-tertiary)",
                   color: "var(--text-secondary)",
+                  background: "var(--background-tertiary)",
                   padding: "2px 8px",
                   borderRadius: 999,
                 }}
