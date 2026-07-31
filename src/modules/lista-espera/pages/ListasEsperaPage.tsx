@@ -9,12 +9,35 @@ import { useNavigate } from "react-router-dom";
 import { modalidadesService } from "@/modules/modalidades/services/modalidades.service";
 import type { Modalidade } from "@/modules/modalidades/types/modalidade.types";
 
+function ehModoEscuro() {
+  return document.documentElement.classList.contains("dark");
+}
+
+function ajustarCorParaTema(cor: string, escuro: boolean) {
+  if (!escuro) return cor;
+  const r = parseInt(cor.slice(1, 3), 16);
+  const g = parseInt(cor.slice(3, 5), 16);
+  const b = parseInt(cor.slice(5, 7), 16);
+  const luminancia = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  if (luminancia >= 0.35) return cor;
+  const clarear = (v: number) => Math.min(255, Math.round(v + (255 - v) * 0.6));
+  const hex = (v: number) => clarear(v).toString(16).padStart(2, "0");
+  return `#${hex(r)}${hex(g)}${hex(b)}`;
+}
+
 export default function ListasEsperaPage() {
   const navigate = useNavigate();
   const [modalidades, setModalidades] = useState<Modalidade[]>([]);
+  const [escuro, setEscuro] = useState(ehModoEscuro());
 
   useEffect(() => {
     modalidadesService.listar().then(setModalidades);
+  }, []);
+
+  useEffect(() => {
+    const obs = new MutationObserver(() => setEscuro(ehModoEscuro()));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    return () => obs.disconnect();
   }, []);
 
   return (
@@ -38,7 +61,7 @@ export default function ListasEsperaPage() {
         {[...modalidades]
           .sort((a, b) => a.nome.localeCompare(b.nome))
           .map((mod) => {
-            const cor = mod.cor || "#374151";
+            const cor = ajustarCorParaTema(mod.cor || "#374151", escuro);
 
             return (
               <button

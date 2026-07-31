@@ -13,6 +13,9 @@ import { useModalidades } from "@/modules/modalidades/hooks/useModalidades";
 import { useInstrutores } from "@/modules/instrutores/hooks/useInstrutores";
 import { useSalas } from "@/modules/salas/hooks/useSalas";
 import type { Turma } from "../types/turma.types";
+import { useNotificacaoAulas } from "@/hooks/useNotificacaoAulas";
+
+useNotificacaoAulas(turmas, modalidades);
 
 const DIAS_ORDEM: Turma["dia"][] = ["seg", "ter", "qua", "qui", "sex", "sab"];
 
@@ -149,7 +152,8 @@ export default function TurmasPage() {
                   gap: 8,
                   padding: "6px 10px",
                   borderRadius: 999,
-                  background: "#f3f4f6",
+                  background: "var(--background-tertiary)",
+                  color: "var(--text-primary)",
                   fontSize: 13,
                 }}
               >
@@ -225,7 +229,7 @@ export default function TurmasPage() {
         )}
 
         {turmasPorDia.map(({ dia, turmas: turmasDoDia }) => (
-          <div key={dia} style={{ marginBottom: 8 }}>
+          <div key={dia} style={{ marginBottom: 32, paddingBottom: 24, borderBottom: "1px solid var(--border-default)" }}>
             <div
               style={{
                 display: "flex",
@@ -241,7 +245,8 @@ export default function TurmasPage() {
                 style={{
                   fontSize: 12,
                   color: "#6b7280",
-                  background: "#f3f4f6",
+                  background: "var(--background-tertiary)",
+                  color: "var(--text-secondary)",
                   padding: "2px 8px",
                   borderRadius: 999,
                 }}

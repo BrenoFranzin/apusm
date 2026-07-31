@@ -83,16 +83,22 @@ export default function ConfiguracoesPage() {
   }
 
   function handleApagarTudo() {
-    const confirmar = window.confirm(
-      "Isso vai apagar TODOS os associados, turmas, modalidades e instrutores. Essa ação não pode ser desfeita. Deseja continuar?"
-    );
+  const FRASE = "APUSM ACADEMIA MODALIDADES";
 
-    if (confirmar) {
-      backupService.apagarTudo();
-      avisar("Todos os dados foram apagados. Recarregando...");
-      setTimeout(() => window.location.reload(), 1500);
-    }
+  if (!window.confirm("ATENÇÃO 1/3: isso vai apagar TODOS os associados, turmas, modalidades e instrutores. Deseja continuar?")) return;
+  if (!window.confirm("ATENÇÃO 2/3: essa ação NÃO PODE ser desfeita. Tem certeza absoluta?")) return;
+  if (!window.confirm("ATENÇÃO 3/3: última chance. Confirmar a exclusão definitiva de todos os dados?")) return;
+
+  const digitado = window.prompt(`Para confirmar, digite exatamente: ${FRASE}`);
+  if (digitado?.trim() !== FRASE) {
+    avisar("Confirmação incorreta. Nenhum dado foi apagado.");
+    return;
   }
+
+  backupService.apagarTudo();
+  avisar("Todos os dados foram apagados. Recarregando...");
+  setTimeout(() => window.location.reload(), 1500);
+}
 
   function handleDesfazer() {
     const ok = historicoService.desfazer();

@@ -10,7 +10,7 @@ export const modalidadesMock: Modalidade[] = [
   { id: "2",  nome: "Yoga",             icone: "🧘‍♀️", cor: "#1D9E75", sala: "Sala 1", instrutoresIds: [] },
   { id: "3",  nome: "Alongamento",      icone: "🤸",  cor: "#378ADD", sala: "Sala 1", instrutoresIds: [] },
   { id: "4",  nome: "Bike",             icone: "🚴",  cor: "#D85A30", sala: "Sala 5", instrutoresIds: [] },
-  { id: "5",  nome: "Hiit Dance",       icone: "💃",  cor: "#D4537E", sala: "Sala 3", instrutoresIds: [] },
+  { id: "5",  nome: "Hit Dance",       icone: "💃",  cor: "#D4537E", sala: "Sala 3", instrutoresIds: [] },
   { id: "6",  nome: "Musicalização",    icone: "🎵",  cor: "#639922", sala: "Sala 2", instrutoresIds: [] },
   { id: "7",  nome: "Dança Ritmos",     icone: "🕺",  cor: "#D4537E", sala: "Sala 3", instrutoresIds: [] },
   { id: "8",  nome: "Jump",             icone: "🏃",  cor: "#534AB7", sala: "Sala 2", instrutoresIds: [] },

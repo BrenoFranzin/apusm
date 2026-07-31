@@ -24,7 +24,7 @@ function gerarHorarios(): string[] {
 }
 
 const HORARIOS = gerarHorarios();
-const BORDA_GRADE = "2px solid #94a3b8";
+const BORDA_GRADE = "2px solid #1e293b";
 
 function ehModoEscuro() {
   return document.documentElement.classList.contains("dark");
@@ -275,7 +275,7 @@ useEffect(() => {
                                 position: "relative",
                                 display: "inline-block",
                                 width: "fit-content",
-                                background: corInstrutor(e.instrutorId),
+                                background: emAula ? "#F97316" : corInstrutor(e.instrutorId),
                                 color: "#fff",
                                 borderRadius: 999,
                                 padding: emAula ? "2px 16px 2px 8px" : "2px 8px",
@@ -285,25 +285,11 @@ useEffect(() => {
                                 cursor: "pointer",
                                 border: "1px solid rgba(255,255,255,0.35)",
                                 boxShadow: emAula
-                                  ? "0 0 0 2px #fff, 0 0 0 3.5px " + corInstrutor(e.instrutorId)
-                                  : "0 0 0 1px rgba(0,0,0,0.2)",
+                                ? "0 0 0 2px #fff, 0 0 0 3.5px " + corInstrutor(e.instrutorId)
+                                : "0 0 0 1px rgba(0,0,0,0.2)",
                               }}
                             >
-                              {nomeInstrutor(e.instrutorId)}
-                              {emAula && (
-                                <span
-                                  style={{
-                                    position: "absolute",
-                                    top: 2,
-                                    right: 3,
-                                    width: 7,
-                                    height: 7,
-                                    borderRadius: "50%",
-                                    background: "#fff",
-                                    border: "1px solid #000",
-                                  }}
-                                />
-                              )}
+                              {nomeInstrutor(e.instrutorId)}                        
                             </span>
                           );
                         })}
@@ -336,7 +322,7 @@ useEffect(() => {
 
       {modalAberto && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 999, padding: 16 }}>
-          <div className="apusm-card" style={{ maxWidth: 640, width: "100%", maxHeight: "85vh", overflowY: "auto" }}>
+          <div className="apusm-card" style={{ maxWidth: 640, width: "100%", background: "var(--background-tertiary)", maxHeight: "85vh", overflowY: "auto" }}>
             <h2 style={{ fontWeight: 600, fontSize: 17, marginBottom: 12, color: "var(--text-primary)" }}>Inserir plantão em massa</h2>
 
             <label style={{ fontSize: 13, color: "var(--text-secondary)" }}>Instrutor</label>
@@ -358,7 +344,7 @@ useEffect(() => {
               <table style={{ borderCollapse: "collapse", minWidth: 520 }}>
                 <thead>
                   <tr>
-                    <th style={{ border: "1px solid var(--border-default)", padding: 6, fontSize: 11, color: "var(--text-secondary)" }}>Horário</th>
+                    <th style={{ border: "1px solid #1e293b", padding: 6, fontSize: 11, color: "var(--text-secondary)" }}>Horário</th>
                     {ORDEM_DIAS.map((d) => (
                       <th key={d} style={{ border: "1px solid var(--border-default)", padding: 6, fontSize: 11, color: "var(--text-secondary)" }}>{NOME_DIA[d]}</th>
                     ))}
