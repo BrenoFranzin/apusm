@@ -120,8 +120,18 @@ export default function ModalidadeTurmasPage() {
         </button>
         <h1
           className="text-2xl font-bold"
-          style={{ color: cor, display: "flex", alignItems: "center", gap: 8 }}
+          style={{ color: "var(--page-heading)", display: "flex", alignItems: "center", gap: 10 }}
         >
+          <span
+            style={{
+              width: 14,
+              height: 14,
+              borderRadius: "50%",
+              backgroundColor: cor,
+              border: "1px solid var(--border-default)",
+              display: "inline-block",
+            }}
+          />
           <span>{modalidade.icone}</span>
           {modalidade.nome}
         </h1>
