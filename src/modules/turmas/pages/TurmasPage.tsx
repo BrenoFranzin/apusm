@@ -4,7 +4,7 @@
 // + Gerenciamento de Salas unificado com edição
 // ======================================================
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useTurmas } from "../hooks/useTurmas";
 import TurmaForm from "../components/TurmaForm";

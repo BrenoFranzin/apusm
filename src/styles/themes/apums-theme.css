@@ -279,7 +279,8 @@ AGENDA - GRADE SEMANAL
   border-radius: var(--radius-sm);
   padding: var(--space-2) var(--space-3);
   color: var(--text-white);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
+  border: 2px solid rgba(255, 255, 255, 0.4);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
   cursor: default;
 }

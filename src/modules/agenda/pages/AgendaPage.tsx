@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import type { CSSProperties } from "react";
 import { useTurmas } from "@/modules/turmas/hooks/useTurmas";
 import { useModalidades } from "@/modules/modalidades/hooks/useModalidades";
@@ -32,6 +33,7 @@ const inputStyle: CSSProperties = {
 };
 
 export default function AgendaPage() {
+  const navigate = useNavigate();
   const { turmas } = useTurmas();
   const { modalidades } = useModalidades();
   const { instrutores } = useInstrutores();
@@ -90,9 +92,17 @@ export default function AgendaPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold" style={{ color: "var(--page-heading)" }}>Agenda</h1>
-        <p style={{ color: "var(--page-subheading)" }}>Grade semanal de turmas</p>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div>
+          <h1 className="text-2xl font-bold" style={{ color: "var(--page-heading)" }}>Agenda</h1>
+          <p style={{ color: "var(--page-subheading)" }}>Grade semanal de turmas</p>
+        </div>
+        <button
+          onClick={() => navigate("/modalidades")}
+          style={{ background: "var(--color-primary)", color: "#fff", padding: "10px 18px", borderRadius: 8, border: "none", fontWeight: 600, cursor: "pointer" }}
+        >
+          + Nova modalidade
+        </button>
       </div>
 
       <div className="apusm-card space-y-3">
