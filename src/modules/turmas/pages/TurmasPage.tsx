@@ -15,7 +15,6 @@ import { useSalas } from "@/modules/salas/hooks/useSalas";
 import type { Turma } from "../types/turma.types";
 import { useNotificacaoAulas } from "@/hooks/useNotificacaoAulas";
 
-useNotificacaoAulas(turmas, modalidades);
 
 const DIAS_ORDEM: Turma["dia"][] = ["seg", "ter", "qua", "qui", "sex", "sab"];
 
@@ -34,7 +33,6 @@ export default function TurmasPage() {
   const { instrutores } = useInstrutores();
   const { salas, criar: criarSala, editar: editarSala, excluir: excluirSala, erro: erroSala } = useSalas();
 
-  useNotificacaoAulas(turmas, modalidades);
 
   const [mostrarForm, setMostrarForm] = useState(false);
   const [mostrarFormSala, setMostrarFormSala] = useState(false);
