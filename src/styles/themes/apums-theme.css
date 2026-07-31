@@ -112,7 +112,7 @@ BOTÕES PADRÃO (aplicar via classe .apusm-btn quando quiser)
   =====================================
   */
 
-  --background-primary: #FFFFFF;
+  --background-primary: #F8FAFC;
   --background-secondary: #F1F5F9;
   --background-tertiary: #E2E8F0;
   --background-dark: #0F172A;
@@ -201,8 +201,8 @@ Ativado quando <html> tem a classe "dark"
 */
 
 html.dark {
-  --background-primary: #1E293B;
-  --background-secondary: #0F172A;
+  --background-primary: #2A3A52;
+  --background-secondary: #16213A;
   --background-tertiary: #334155;
   --border-default: #334155;
   --border-light: #475569;
