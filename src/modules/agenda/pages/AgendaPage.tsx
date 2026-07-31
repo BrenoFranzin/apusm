@@ -149,72 +149,48 @@ export default function AgendaPage() {
         </div>
       </div>
 
-      <div className="apusm-card overflow-x-auto">
-        <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed", minWidth: 840 }}>
-          <colgroup>
-            <col style={{ width: 90 }} />
-            {ORDEM_DIAS.map((dia) => (
-              <col key={dia} style={{ width: 125 }} />
-            ))}
-          </colgroup>
-          <thead>
-            <tr>
-              <th style={{ border: "1px solid var(--border-default)", padding: 8, background: "var(--background-tertiary)", fontSize: 11, textTransform: "uppercase", color: "var(--text-secondary)" }}>
-                Horário
-              </th>
-              {ORDEM_DIAS.map((dia) => (
-                <th key={dia} style={{ border: "1px solid var(--border-default)", padding: 8, background: "var(--background-tertiary)", fontSize: 11, textTransform: "uppercase", color: "var(--text-secondary)" }}>
-                  {NOME_DIA[dia]}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {horarios.map((horario) => (
-              <tr key={horario}>
-                <td style={{ border: "1px solid var(--border-default)", padding: 8, textAlign: "center", fontWeight: 700, background: "var(--color-primary)", color: "#fff" }}>
-                  {horario}
-                </td>
-                {ORDEM_DIAS.map((dia) => {
-                  const turmasDaCelula = turmasFiltradas.filter(
-                    (t) => t.dia === dia && t.horario === horario
-                  );
+      <div className="apusm-card agenda-grid-wrapper">
+        <div className="agenda-grid">
+          <div className="agenda-head-cell">Horário</div>
+          {ORDEM_DIAS.map((dia) => (
+            <div key={dia} className="agenda-head-cell">
+              {NOME_DIA[dia]}
+            </div>
+          ))}
 
-                  return (
-                    <td key={dia} style={{ border: "1px solid var(--border-default)", padding: 4, verticalAlign: "top" }}>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 4, minHeight: 40 }}>
-                        {turmasDaCelula.map((t) => {
-                          const modalidade = modalidades.find((m) => m.id === t.modalidadeId);
-                          const instrutor = instrutores.find((i) => i.id === t.instrutorId);
-                          return (
-                            <div
-                              key={t.id}
-                              style={{
-                                borderRadius: 6,
-                                padding: "6px 8px",
-                                fontSize: 11,
-                                color: "#fff",
-                                textAlign: "center",
-                                backgroundColor: modalidade ? modalidade.cor : "#888",
-                                border: "1px solid rgba(255,255,255,0.35)",
-                                boxShadow: "0 0 0 1px rgba(0,0,0,0.25)",
-                              }}
-                              title={t.sala}
-                            >
-                              <div style={{ fontWeight: 700 }}>{modalidade ? modalidade.nome : "-"}</div>
-                              <div>{instrutor ? instrutor.nome : "-"}</div>
-                              <div style={{ opacity: 0.9 }}>{t.sala}</div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </td>
-                  );
-                })}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+          {horarios.map((horario) => (
+            <div key={horario} style={{ display: "contents" }}>
+              <div className="agenda-time-cell">{horario}</div>
+
+              {ORDEM_DIAS.map((dia) => {
+                const turmasDaCelula = turmasFiltradas.filter(
+                  (t) => t.dia === dia && t.horario === horario
+                );
+
+                return (
+                  <div key={dia} className="agenda-day-cell">
+                    {turmasDaCelula.map((t) => {
+                      const modalidade = modalidades.find((m) => m.id === t.modalidadeId);
+                      const instrutor = instrutores.find((i) => i.id === t.instrutorId);
+                      return (
+                        <div
+                          key={t.id}
+                          className="agenda-turma-card"
+                          style={{ backgroundColor: modalidade ? modalidade.cor : "var(--text-disabled)" }}
+                          title={t.sala}
+                        >
+                          <div className="agenda-turma-nome">{modalidade ? modalidade.nome : "-"}</div>
+                          <div className="agenda-turma-info">{instrutor ? instrutor.nome : "-"}</div>
+                          <div className="agenda-turma-info">{t.sala}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
