@@ -17,6 +17,8 @@ import TurmasPage from "@/modules/turmas/pages/TurmasPage"
 import AgendaPage from "@/modules/agenda/pages/AgendaPage"
 import PlantaoPage from "@/modules/plantao/pages/PlantaoPage"
 import ListasEsperaPage from "@/modules/lista-espera/pages/ListasEsperaPage"
+import ModalidadeTurmasPage from "@/modules/lista-espera/pages/ModalidadeTurmasPage"
+import AssociadoSituacaoPage from "@/modules/associados/pages/AssociadoSituacaoPage"
 
 
 
@@ -38,6 +40,9 @@ return (
 <Route path="/relatorios/consulta" element={<ConsultaAssociadoPage/>} />
 <Route path="/plantao" element={<PlantaoPage/>} />
 <Route path="/lista-espera" element={<ListasEsperaPage/>} />
+<Route path="/lista-espera/:modalidadeId" element={<ModalidadeTurmasPage/>} />
+<Route path="/associados/situacao" element={<AssociadoSituacaoPage/>} />
+
 
 
 
