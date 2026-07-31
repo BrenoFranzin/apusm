@@ -11,7 +11,7 @@ export function Header() {
         alignItems: "center",
         justifyContent: "space-between",
         padding: "0 28px",
-        background: "var(--background-primary)",
+        background: "var(--background-secondary)",
         borderBottom: "1px solid var(--border-default)",
         boxShadow: "0 1px 6px rgba(15,23,42,0.05)",
         position: "sticky",

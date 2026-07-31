@@ -7,7 +7,6 @@
 import { useState } from "react";
 
 import { useTurmas } from "../hooks/useTurmas";
-import { TurmaCard } from "../components/TurmaCard";
 import TurmaForm from "../components/TurmaForm";
 import { useModalidades } from "@/modules/modalidades/hooks/useModalidades";
 import { useInstrutores } from "@/modules/instrutores/hooks/useInstrutores";
@@ -254,24 +253,63 @@ export default function TurmasPage() {
               </span>
             </div>
 
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-                gap: 12,
-                marginBottom: 8,
-              }}
-            >
-              {turmasDoDia.map((turma) => (
-                <TurmaCard
-                  key={turma.id}
-                  turma={turma}
-                  modalidade={modalidades.find((m) => m.id === turma.modalidadeId)}
-                  instrutor={instrutores.find((i) => i.id === turma.instrutorId)}
-                  onExcluir={excluir}
-                />
-              ))}
-            </div>
+            <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 8 }}>
+              <thead>
+                <tr style={{ borderBottom: "2px solid var(--border-default)" }}>
+                  <th style={{ textAlign: "left", padding: "10px 8px", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--text-secondary)" }}>Horário</th>
+                  <th style={{ textAlign: "left", padding: "10px 8px", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--text-secondary)" }}>Modalidade</th>
+                  <th style={{ textAlign: "left", padding: "10px 8px", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--text-secondary)" }}>Instrutor</th>
+                  <th style={{ textAlign: "left", padding: "10px 8px", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--text-secondary)" }}>Sala</th>
+                  <th style={{ padding: "10px 8px", width: 60 }}></th>
+                </tr>
+              </thead>
+              <tbody>
+                {turmasDoDia.map((turma) => {
+                  const modalidade = modalidades.find((m) => m.id === turma.modalidadeId);
+                  const instrutor = instrutores.find((i) => i.id === turma.instrutorId);
+                  const cor = modalidade?.cor ?? "#6b7280";
+                  return (
+                    <tr key={turma.id} style={{ borderBottom: "1px solid var(--border-default)" }}>
+                      <td style={{ padding: "12px 8px" }}>
+                        <span style={{ fontWeight: 700, color: "var(--text-primary)" }}>{turma.horario}</span>
+                      </td>
+                      <td style={{ padding: "12px 8px" }}>
+                        <span style={{ display: "flex", alignItems: "center", gap: 8, color: "var(--text-primary)" }}>
+                          <span style={{ width: 10, height: 10, borderRadius: "50%", backgroundColor: cor, display: "inline-block", flexShrink: 0 }} />
+                          {modalidade ? `${modalidade.icone} ${modalidade.nome}` : "Modalidade removida"}
+                        </span>
+                      </td>
+                      <td style={{ padding: "12px 8px", color: "var(--text-secondary)" }}>
+                        {instrutor?.nome ?? "Sem instrutor"}
+                      </td>
+                      <td style={{ padding: "12px 8px", color: "var(--text-secondary)" }}>
+                        {turma.sala}
+                      </td>
+                      <td style={{ padding: "12px 8px", textAlign: "right" }}>
+                        <button
+                          onClick={() => {
+                            const confirmar = window.confirm(
+                              `Excluir esta turma (${DIA_LABEL[turma.dia]} ${turma.horario})? Essa ação não pode ser desfeita.`
+                            );
+                            if (confirmar) excluir(turma.id);
+                          }}
+                          style={{
+                            fontSize: 12,
+                            color: "var(--color-danger)",
+                            border: "1px solid var(--color-danger)",
+                            borderRadius: 6,
+                            padding: "5px 10px",
+                            background: "var(--background-primary)",
+                          }}
+                        >
+                          🗑️
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         ))}
       </div>
