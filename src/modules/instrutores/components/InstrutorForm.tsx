@@ -39,7 +39,7 @@ export default function InstrutorForm({ valoresIniciais, onSubmit }: Props) {
       nome: "",
       icone: "🧑‍🏫",
       cor: CORES_PALETA[0],
-      especialidade: "",
+      especialidades: [],
       terceirizado: false,
       ...valoresIniciais,
     },
@@ -98,19 +98,53 @@ export default function InstrutorForm({ valoresIniciais, onSubmit }: Props) {
 
       {/* Especialidade */}
       <label style={{ fontSize: 12, color: "var(--text-secondary)" }}>Especialidade</label>
-      <select
-        {...register("especialidade")}
+      {/* Especialidades */}
+      <label style={{ fontSize: 12, color: "var(--text-secondary)" }}>Especialidades</label>
+      <div
         style={{
-          width: "100%",
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 6,
           margin: "4px 0 12px",
           padding: 8,
-          background: "var(--background-primary)",
-          color: "var(--text-primary)",
           border: "1px solid var(--border-default)",
           borderRadius: 6,
-          boxSizing: "border-box",
         }}
       >
+        {modalidades.map((m) => {
+          const selecionadas = watch("especialidades") ?? [];
+          const marcada = selecionadas.includes(m.nome);
+          return (
+            <label
+              key={m.id}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+                fontSize: 12,
+                padding: "4px 8px",
+                borderRadius: 6,
+                border: `1px solid ${marcada ? "var(--color-primary)" : "var(--border-default)"}`,
+                background: marcada ? "var(--color-primary-light)" : "transparent",
+                cursor: "pointer",
+                color: "var(--text-primary)",
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={marcada}
+                onChange={() => {
+                  const novo = marcada
+                    ? selecionadas.filter((n) => n !== m.nome)
+                    : [...selecionadas, m.nome];
+                  setValue("especialidades", novo);
+                }}
+              />
+              {m.nome}
+            </label>
+          );
+        })}
+      </div>
         <option value="">Selecione uma modalidade</option>
         {modalidades.map((m) => (
           <option key={m.id} value={m.nome}>{m.nome}</option>

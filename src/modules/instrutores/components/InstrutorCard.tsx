@@ -55,7 +55,7 @@ export function InstrutorCard({ instrutor, onEditar, onExcluir }: Props) {
           {instrutor.nome}
         </p>
         <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: "2px 0 0" }}>
-          {instrutor.especialidade || "—"}
+          {instrutor.especialidades?.length ? instrutor.especialidades.join(", ") : "—"}
           {instrutor.terceirizado ? " · Terceirizado" : ""}
         </p>
       </div>

@@ -7,7 +7,7 @@ export interface Instrutor {
   id: string;
   nome: string;
   cor: string;
-  especialidade: string;
+  especialidades: string[];
   terceirizado: boolean;
 }
 
