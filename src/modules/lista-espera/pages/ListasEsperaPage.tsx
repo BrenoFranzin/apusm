@@ -117,22 +117,47 @@ export default function ListasEsperaPage() {
         </p>
       </div>
 
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-        {modalidades.map((mod) => (
-          <button
-            key={mod.id}
-            onClick={() => setModalidadeAberta(modalidadeAberta === mod.id ? null : mod.id)}
-            style={{
-              background: mod.cor || "#374151",
-              color: "#fff",
-              border: "none",
-              borderRadius: 10,
-              padding: "12px 18px",
-              fontWeight: 600,
-              cursor: "pointer",
-              opacity: modalidadeAberta && modalidadeAberta !== mod.id ? 0.55 : 1,
-            }}
-          >
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(2, 1fr)",
+          gap: 12,
+        }}
+      >
+        {[...modalidades]
+          .sort((a, b) => a.nome.localeCompare(b.nome))
+          .map((mod) => {
+            const cor = mod.cor || "#374151";
+            const ativa = modalidadeAberta === mod.id;
+
+            return (
+              <button
+                key={mod.id}
+                onClick={() => setModalidadeAberta(ativa ? null : mod.id)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "flex-start",
+                  gap: 10,
+                  background: cor + "1a",
+                  color: cor,
+                  border: `2px solid ${cor}`,
+                  borderRadius: 10,
+                  padding: "16px 20px",
+                  minHeight: 60,
+                  fontWeight: 700,
+                  fontSize: 15,
+                  cursor: "pointer",
+                  opacity: modalidadeAberta && !ativa ? 0.55 : 1,
+                  boxShadow: ativa ? `0 0 0 2px ${cor}` : "none",
+                }}
+              >
+                <span style={{ fontSize: 20 }}>{mod.icone}</span>
+                {mod.nome}
+              </button>
+            );
+          })}
+      </div>
             {mod.icone} {mod.nome}
           </button>
         ))}
