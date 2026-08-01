@@ -5,6 +5,13 @@ import { useTurmas } from "@/modules/turmas/hooks/useTurmas";
 import { useModalidades } from "@/modules/modalidades/hooks/useModalidades";
 import { useInstrutores } from "@/modules/instrutores/hooks/useInstrutores";
 import { DiaSemana } from "@/modules/turmas/types/turma.types";
+import { useState } from "react"; // já existe, só garantir
+import TurmaForm from "@/modules/turmas/components/TurmaForm";
+import { useSalas } from "@/modules/salas/hooks/useSalas";
+
+
+
+
 
 const NOME_DIA: Record<string, string> = {
   seg: "Segunda",
