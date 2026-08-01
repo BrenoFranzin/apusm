@@ -30,7 +30,7 @@ export default function TurmasPage() {
   const { turmas, criar, excluir, erro } = useTurmas();
   const { modalidades } = useModalidades();
   const { instrutores } = useInstrutores();
-  const { salas, criar: criarSala, editar: editarSala, excluir: excluirSala, erro: erroSala } = useSalas();
+  const { salas } = useSalas();
 
 const [agora, setAgora] = useState<{ dia: string; hhmm: string } | null>(null);
 
@@ -319,10 +319,10 @@ const [agora, setAgora] = useState<{ dia: string; hhmm: string } | null>(null);
                           {modalidade ? `${modalidade.icone} ${modalidade.nome}` : "Modalidade removida"}
                         </span>
                       </td>
-                      <td style={{ padding: "12px 8px", color: "var(--text-secondary)" }}>
+                      <td style={{ padding: "12px 8px", color: "var(--text-primary)" }}>
                         {instrutor?.nome ?? "Sem instrutor"}
                       </td>
-                      <td style={{ padding: "12px 8px", color: "var(--text-secondary)" }}>
+                      <td style={{ padding: "12px 8px", color: "var(--text-primary)" }}>
                         {turma.sala}
                       </td>
                       <td style={{ padding: "12px 8px", textAlign: "right" }}>
