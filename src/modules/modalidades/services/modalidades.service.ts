@@ -15,6 +15,17 @@ const STORAGE_KEY = "apusm:modalidades";
 
 class ModalidadesService {
 
+  private normalizar(m: any): Modalidade {
+    return {
+      id: m?.id ?? crypto.randomUUID(),
+      nome: m?.nome ?? "Sem nome",
+      icone: m?.icone ?? "🏷️",
+      cor: m?.cor ?? "#6b7280",
+      salas: Array.isArray(m?.salas) ? m.salas : (m?.sala ? [m.sala] : []),
+      instrutoresIds: Array.isArray(m?.instrutoresIds) ? m.instrutoresIds : [],
+    };
+  }
+
   private carregarStorage(): Modalidade[] {
     const dados = localStorage.getItem(STORAGE_KEY);
 
@@ -23,7 +34,8 @@ class ModalidadesService {
       return modalidadesMock;
     }
 
-    return JSON.parse(dados);
+    const bruto = JSON.parse(dados);
+    return (Array.isArray(bruto) ? bruto : []).map((m) => this.normalizar(m));
   }
 
   private salvarStorage(lista: Modalidade[]) {

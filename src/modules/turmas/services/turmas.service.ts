@@ -15,6 +15,17 @@ const STORAGE_KEY = "apusm:turmas";
 
 class TurmasService {
 
+  private normalizar(t: any): Turma {
+    return {
+      id: t?.id ?? crypto.randomUUID(),
+      modalidadeId: t?.modalidadeId ?? "",
+      instrutorId: t?.instrutorId ?? "",
+      dia: t?.dia ?? "seg",
+      horario: t?.horario ?? "08:00",
+      sala: t?.sala ?? "-",
+    };
+  }
+
   private carregarStorage(): Turma[] {
     const dados = localStorage.getItem(STORAGE_KEY);
 
@@ -23,7 +34,8 @@ class TurmasService {
       return turmasMock;
     }
 
-    return JSON.parse(dados);
+    const bruto = JSON.parse(dados);
+    return (Array.isArray(bruto) ? bruto : []).map((t) => this.normalizar(t));
   }
 
   private salvarStorage(lista: Turma[]) {

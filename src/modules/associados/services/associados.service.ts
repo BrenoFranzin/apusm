@@ -22,6 +22,20 @@ class AssociadosService {
   // LOCAL STORAGE
   // ==========================
 
+  private normalizar(a: any): Associado {
+    return {
+      id: a?.id ?? crypto.randomUUID(),
+      nome: a?.nome ?? "Sem nome",
+      telefone: a?.telefone ?? "",
+      status: a?.status ?? "ATIVO",
+      dataCadastro: a?.dataCadastro ?? new Date().toISOString().substring(0, 10),
+      matriculas: Array.isArray(a?.matriculas) ? a.matriculas : [],
+      frequencias: Array.isArray(a?.frequencias) ? a.frequencias : [],
+      pagamentos: Array.isArray(a?.pagamentos) ? a.pagamentos : [],
+      historico: Array.isArray(a?.historico) ? a.historico : [],
+    };
+  }
+
   private carregarStorage(): Associado[] {
     const dados = localStorage.getItem(STORAGE_KEY);
 
@@ -34,7 +48,8 @@ class AssociadosService {
       return associadosMock;
     }
 
-    return JSON.parse(dados);
+    const bruto = JSON.parse(dados);
+    return (Array.isArray(bruto) ? bruto : []).map((a) => this.normalizar(a));
   }
 
   private salvarStorage(lista: Associado[]) {
