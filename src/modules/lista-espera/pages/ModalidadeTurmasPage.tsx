@@ -5,13 +5,16 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-
+import { pdfService } from "@/modules/configuracoes/services/pdf.service";
 import { useTurmas } from "@/modules/turmas/hooks/useTurmas";
 import { useAssociados } from "@/modules/associados/hooks/useAssociados";
 import { modalidadesService } from "@/modules/modalidades/services/modalidades.service";
 import { instrutoresService } from "@/modules/instrutores/services/instrutores.service";
 import { listaEsperaService } from "../services/listaEspera.service";
 import { associadosService } from "@/modules/associados/services/associados.service";
+
+
+
 
 import type { Modalidade } from "@/modules/modalidades/types/modalidade.types";
 import type { Instrutor } from "@/modules/instrutores/types/instrutor.types";
@@ -170,6 +173,27 @@ export default function ModalidadeTurmasPage() {
             <p style={{ fontWeight: 600, fontSize: 15, margin: "0 0 4px", color: "var(--text-primary)" }}>
               {DIA_LABEL[turma.dia]} — {turma.horario} — {turma.sala}
             </p>
+
+            <button
+  onClick={() => {
+    const agora = new Date();
+    pdfService.exportarFolhaPresenca(turma.id, agora.getMonth(), agora.getFullYear());
+  }}
+  style={{
+    fontSize: 12,
+    border: "1px solid var(--border-default)",
+    borderRadius: 6,
+    padding: "5px 10px",
+    background: "var(--background-primary)",
+    color: "var(--text-primary)",
+    cursor: "pointer",
+    marginBottom: 12,
+  }}
+>
+  🖨️ Imprimir folha de presença
+</button>
+
+
             <p style={{ fontSize: 13, color: "#6b7280", margin: "0 0 12px" }}>
               Instrutor: {instrutorNome(turma.instrutorId)}
             </p>

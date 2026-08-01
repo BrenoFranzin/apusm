@@ -9,6 +9,9 @@ import { backupService } from "../services/backup.service";
 import { historicoService } from "../services/historico.service";
 import { pdfService, type RegistroExportacao } from "../services/pdf.service";
 import SalasModal from "../../salas/components/SalasModal";
+import { useTurmas } from "@/modules/turmas/hooks/useTurmas";
+import { useModalidades } from "@/modules/modalidades/hooks/useModalidades";
+import { pdfService } from "../services/pdf.service";
 
 
 
@@ -27,6 +30,16 @@ export default function ConfiguracoesPage() {
   const [mostrarSalas, setMostrarSalas] = useState(false);
 
 
+const { turmas } = useTurmas();
+const { modalidades } = useModalidades();
+const [turmaSelecionadaId, setTurmaSelecionadaId] = useState("");
+
+async function handleExportarPresenca() {
+  if (!turmaSelecionadaId) { avisar("Selecione uma turma."); return; }
+  const agora = new Date();
+  await pdfService.exportarFolhaPresenca(turmaSelecionadaId, agora.getMonth(), agora.getFullYear());
+  avisar("Folha de presença exportada.");
+}
 
 
   useEffect(() => {
