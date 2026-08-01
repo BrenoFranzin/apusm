@@ -179,7 +179,7 @@ export default function ModalidadeTurmasPage() {
                 <p style={{ fontWeight: 600, fontSize: 13, marginBottom: 8 }}>
                   Matriculados ({matriculados.length})
                 </p>
-                <table style={{ width: "100%", fontSize: 13, borderCollapse: "collapse" }}>
+                <table style={{ width: "100%", fontSize: 13, borderCollapse: "separate", borderSpacing: 0, borderRadius: 10, overflow: "hidden", border: "1px solid var(--border-default)" }}>
                   <thead>
                     <tr style={{ textAlign: "left", color: "#6b7280" }}>
                       <th style={{ padding: "4px 6px" }}>Nome</th>
@@ -231,7 +231,7 @@ export default function ModalidadeTurmasPage() {
                 </p>
                 <table style={{ width: "100%", fontSize: 13, borderCollapse: "collapse" }}>
                   <thead>
-                    <tr style={{ textAlign: "left", color: "#6b7280" }}>
+                    <tr style={{ textAlign: "left", color: "var(--text-secondary)", background: "var(--background-tertiary)" }}>
                       <th style={{ padding: "4px 6px" }}>#</th>
                       <th style={{ padding: "4px 6px" }}>Nome</th>
                       <th style={{ padding: "4px 6px" }}>Obs.</th>

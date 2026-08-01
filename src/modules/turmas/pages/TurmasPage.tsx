@@ -32,6 +32,38 @@ export default function TurmasPage() {
   const { instrutores } = useInstrutores();
   const { salas, criar: criarSala, editar: editarSala, excluir: excluirSala, erro: erroSala } = useSalas();
 
+const [agora, setAgora] = useState<{ dia: string; hhmm: string } | null>(null);
+
+  useEffect(() => {
+    async function buscarHoraInternet() {
+      try {
+        const resp = await fetch("https://worldtimeapi.org/api/timezone/America/Sao_Paulo");
+        const data = await resp.json();
+        const dt = new Date(data.datetime);
+        const diasSemana = ["dom", "seg", "ter", "qua", "qui", "sex", "sab"];
+        const dia = diasSemana[dt.getDay()];
+        const hhmm = `${String(dt.getHours()).padStart(2, "0")}:${String(dt.getMinutes()).padStart(2, "0")}`;
+        setAgora({ dia, hhmm });
+      } catch {
+        // Se a internet falhar, simplesmente nenhuma aula fica destacada
+      }
+    }
+    buscarHoraInternet();
+  }, []);
+
+  function proximoHorario(horario: string) {
+    const [h, m] = horario.split(":").map(Number);
+    const totalMin = h * 60 + m + 60;
+    const hh = String(Math.floor(totalMin / 60) % 24).padStart(2, "0");
+    const mm = String(totalMin % 60).padStart(2, "0");
+    return `${hh}:${mm}`;
+  }
+
+  function estaAcontecendoAgora(dia: string, horario: string) {
+    if (!agora || agora.dia !== dia) return false;
+    return agora.hhmm >= horario && agora.hhmm < proximoHorario(horario);
+  }
+
 
   const [mostrarForm, setMostrarForm] = useState(false);
   const [mostrarFormSala, setMostrarFormSala] = useState(false);
@@ -228,7 +260,7 @@ export default function TurmasPage() {
         )}
 
         {turmasPorDia.map(({ dia, turmas: turmasDoDia }) => (
-          <div key={dia} style={{ marginBottom: 32, paddingBottom: 24, borderBottom: "1px solid var(--border-default)" }}>
+          <div key={dia} style={{ marginBottom: 24, padding: 16, border: "2px solid var(--color-primary)", borderRadius: 12 }}>
             <div
               style={{
                 display: "flex",
@@ -268,8 +300,16 @@ export default function TurmasPage() {
                   const modalidade = modalidades.find((m) => m.id === turma.modalidadeId);
                   const instrutor = instrutores.find((i) => i.id === turma.instrutorId);
                   const cor = modalidade?.cor ?? "#6b7280";
+                  const emAndamento = estaAcontecendoAgora(turma.dia, turma.horario);
                   return (
-                    <tr key={turma.id} style={{ borderBottom: "1px solid var(--border-default)" }}>
+                    <tr
+                      key={turma.id}
+                      style={{
+                        borderBottom: "1px solid var(--border-default)",
+                        background: emAndamento ? "var(--color-primary-light)" : "transparent",
+                        boxShadow: emAndamento ? "inset 3px 0 0 var(--color-primary)" : "none",
+                      }}
+                    >
                       <td style={{ padding: "12px 8px" }}>
                         <span style={{ fontWeight: 700, color: "var(--text-primary)" }}>{turma.horario}</span>
                       </td>

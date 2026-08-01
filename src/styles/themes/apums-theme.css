@@ -201,11 +201,11 @@ Ativado quando <html> tem a classe "dark"
 */
 
 html.dark {
-  --background-primary: #2A3A52;
-  --background-secondary: #16213A;
-  --background-tertiary: #334155;
-  --border-default: #334155;
-  --border-light: #475569;
+  --background-primary: #556175;
+  --background-secondary: #454D61;
+  --background-tertiary: #5C6777;
+  --border-default: #5C6777;
+  --border-light: #6C7787;
   --page-heading: #F1F5F9;
   --page-subheading: #CBD5E1;
   --text-primary: #F1F5F9;
@@ -292,12 +292,12 @@ AGENDA - GRADE SEMANAL
 
 .agenda-turma-nome {
   font-weight: 700;
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.3;
 }
 
 .agenda-turma-info {
-  font-size: 11px;
-  opacity: 0.9;
+  font-size: 13px;
+  opacity: 0.95;
   line-height: 1.4;
 }
