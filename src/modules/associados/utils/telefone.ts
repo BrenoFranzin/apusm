@@ -4,8 +4,8 @@
 // Máscara (00) 00000-0000 / (00) 0000-0000
 // ======================================================
 
-export function formatarTelefone(valor: string): string {
-  const numeros = valor.replace(/\D/g, "").slice(0, 11);
+export function formatarTelefone(valor: string | undefined | null): string {
+  const numeros = (valor ?? "").replace(/\D/g, "").slice(0, 11);
 
   if (numeros.length <= 2) {
     return numeros.replace(/^(\d*)/, "($1");
