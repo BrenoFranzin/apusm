@@ -17,6 +17,31 @@ const NOME_DIA: Record<string, string> = {
   sab: "Sábado",
 };
 
+const DIA_PARA_WEEKDAY: Record<string, number> = {
+  dom: 0, seg: 1, ter: 2, qua: 3, qui: 4, sex: 5, sab: 6,
+};
+
+const MESES = [
+  "Janeiro","Fevereiro","Março","Abril","Maio","Junho",
+  "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro",
+];
+
+function gerarDatasDoMes(dia: string, mes: number, ano: number): string[] {
+  const weekday = DIA_PARA_WEEKDAY[dia];
+  const datas: string[] = [];
+  const data = new Date(ano, mes, 1);
+  while (data.getMonth() === mes) {
+    if (data.getDay() === weekday) {
+      const dd = String(data.getDate()).padStart(2, "0");
+      const mm = String(mes + 1).padStart(2, "0");
+      datas.push(`${dd}/${mm}`);
+    }
+    data.setDate(data.getDate() + 1);
+  }
+  return datas;
+}
+
+
 const ORDEM_DIAS = ["seg", "ter", "qua", "qui", "sex", "sab"];
 const ORDEM_DIAS_PLANTAO = ["seg", "ter", "qua", "qui", "sex"];
 
