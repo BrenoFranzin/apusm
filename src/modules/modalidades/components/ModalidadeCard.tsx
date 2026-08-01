@@ -42,7 +42,7 @@ export function ModalidadeCard({ modalidade, onEditar, onExcluir }: Props) {
       </p>
 
       <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: "4px 0 8px" }}>
-        🚪 {modalidade.salas.join(", ")}
+        🚪 {Array.isArray(modalidade.salas) ? modalidade.salas.join(", ") : (modalidade as any).sala ?? "-"}
       </p>
 
       <span
