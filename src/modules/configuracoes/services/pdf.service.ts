@@ -5,6 +5,8 @@ import { turmasService } from "@/modules/turmas/services/turmas.service";
 import { instrutoresService } from "@/modules/instrutores/services/instrutores.service";
 import { modalidadesService } from "@/modules/modalidades/services/modalidades.service";
 import { plantaoService } from "@/modules/plantao/services/plantao.service";
+import { associadosService } from "@/modules/associados/services/associados.service";
+
 
 const NOME_DIA: Record<string, string> = {
   seg: "Segunda",
@@ -23,7 +25,7 @@ const HISTORICO_LIMITE = 10;
 
 export interface RegistroExportacao {
   id: string;
-  tipo: "servico" | "turmas" | "salas";
+  tipo: "servico" | "turmas" | "salas" | "presenca";
   data: string;
   dataUri: string;
   nomeArquivo: string;
