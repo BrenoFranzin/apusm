@@ -6,7 +6,8 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import EmojiPicker from "emoji-picker-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSalas } from "@/modules/salas/hooks/useSalas";
 
 import {
   modalidadeSchema,
@@ -20,19 +21,20 @@ const CORES_PALETA = [
   "#D4537E","#F06292","#BA68C8","#64B5F6","#4DB6AC","#81C784","#FFD54F","#FF8A65",
 ];
 
-import { useSalas } from "@/modules/salas/hooks/useSalas";
-
 interface Props {
   valoresIniciais?: Partial<ModalidadeFormData>;
   onSubmit: (dados: ModalidadeFormData) => void;
 }
 
 export default function ModalidadeForm({ valoresIniciais, onSubmit }: Props) {
+  const { salas: salasCadastradas } = useSalas();
+
   const {
     register,
     handleSubmit,
     watch,
     setValue,
+    reset,
     formState: { errors },
   } = useForm<ModalidadeFormData>({
     resolver: zodResolver(modalidadeSchema) as any,
@@ -40,21 +42,22 @@ export default function ModalidadeForm({ valoresIniciais, onSubmit }: Props) {
       nome: "",
       icone: "🧘",
       cor: CORES_PALETA[0],
-      salas: [SALAS[0]],
+      salas: [],
       ...valoresIniciais,
     },
   });
 
-  const { salas: salasCadastradas } = useSalas();   // ✅ aqui, logo após o useForm
-    resolver: zodResolver(modalidadeSchema) as any,
-    defaultValues: {
-      nome: "",
-      icone: "🧘",
-      cor: CORES_PALETA[0],
-      salas: valoresIniciais?.salas ?? (salasCadastradas[0] ? [salasCadastradas[0].nome] : []),
-      ...valoresIniciais,
-    },
-  });
+  // Se as salas cadastradas carregarem depois (async) e o form ainda não tiver
+  // sala selecionada nem estiver editando, define a primeira sala como padrão.
+  useEffect(() => {
+    if (!valoresIniciais && salasCadastradas.length > 0) {
+      const atuais = watch("salas") ?? [];
+      if (atuais.length === 0) {
+        setValue("salas", [salasCadastradas[0].nome]);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [salasCadastradas]);
 
   const salasSelecionadas = watch("salas") ?? [];
 
@@ -139,6 +142,11 @@ export default function ModalidadeForm({ valoresIniciais, onSubmit }: Props) {
             </label>
           );
         })}
+        {salasCadastradas.length === 0 && (
+          <p style={{ fontSize: 12, color: "var(--text-secondary)" }}>
+            Nenhuma sala cadastrada. Cadastre em Configurações → Salas.
+          </p>
+        )}
       </div>
       <p style={{ color: "var(--color-danger)", fontSize: 12, margin: "0 0 8px" }}>
         {errors.salas?.message}
