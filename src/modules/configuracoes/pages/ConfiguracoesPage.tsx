@@ -11,7 +11,6 @@ import { pdfService, type RegistroExportacao } from "../services/pdf.service";
 import SalasModal from "../../salas/components/SalasModal";
 import { useTurmas } from "@/modules/turmas/hooks/useTurmas";
 import { useModalidades } from "@/modules/modalidades/hooks/useModalidades";
-import { pdfService } from "../services/pdf.service";
 
 
 
@@ -19,6 +18,7 @@ const LABEL_TIPO: Record<RegistroExportacao["tipo"], string> = {
   servico: "Escala de Serviço",
   turmas: "Escala de Turmas",
   salas: "Escala de Salas",
+  presenca: "Folha de Presença",
 };
 
 export default function ConfiguracoesPage() {

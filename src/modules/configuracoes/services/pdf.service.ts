@@ -420,7 +420,7 @@ class PdfService {
       turmasService.listar(),
       instrutoresService.listar(),
       modalidadesService.listar(),
-      associadosService.listarTodos(),
+      associadosService.listar(),
     ]);
 
     const turma = turmas.find((t) => t.id === turmaId);
