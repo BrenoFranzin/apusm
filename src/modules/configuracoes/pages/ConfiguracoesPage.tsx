@@ -223,6 +223,26 @@ async function handleExportarPresenca() {
         <Btn onClick={handleAbrirHistorico}>Histórico de exportações</Btn>
       </Section>
 
+
+      <Section title="Folha de presença" desc="Selecione a turma e gere a folha do mês atual">
+  <select
+    value={turmaSelecionadaId}
+    onChange={(e) => setTurmaSelecionadaId(e.target.value)}
+    style={{ padding: 8, borderRadius: 6, border: "1px solid var(--border-default)", background: "var(--background-primary)", color: "var(--text-primary)" }}
+  >
+    <option value="">Selecione a turma</option>
+    {turmas.map((t) => {
+      const mod = modalidades.find((m) => m.id === t.modalidadeId);
+      return (
+        <option key={t.id} value={t.id}>
+          {mod?.nome ?? "-"} — {t.dia} {t.horario}
+        </option>
+      );
+    })}
+  </select>
+  <Btn onClick={handleExportarPresenca}>🖨️ Exportar folha de presença</Btn>
+</Section>
+
       <Section title="Dados do sistema" desc="Backup, restauração e reset. Use com cuidado">
         <Btn onClick={handleBackup}>Fazer backup (baixar .json)</Btn>
         <Btn onClick={handleClickRestaurar}>Restaurar de um backup</Btn>
