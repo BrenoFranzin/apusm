@@ -173,8 +173,9 @@ class PdfService {
         let maxH = 18;
         row.slice(1).forEach((cell) => {
           if (Array.isArray(cell) && cell.length) {
-            const fit = fitServico(cell.length, 1);
-            const h = Math.max(cell.length * (fit.tagHeight + fit.gap) - fit.gap + 4, 18);
+            const rows = cell.length > 4 ? Math.ceil(cell.length / 2) : cell.length;
+            const fit = fitServico(rows, 1);
+            const h = Math.max(rows * (fit.tagHeight + fit.gap) - fit.gap + 4, 18);
             if (h > maxH) maxH = h;
           }
         });
@@ -214,9 +215,10 @@ class PdfService {
             data.cell.styles.fontStyle = "bold";
           } else if (Array.isArray(data.cell.raw)) {
             data.cell.text = [""];
-            const fit = fitServico(data.cell.raw.length, scaleServ);
+            const rows = data.cell.raw.length > 4 ? Math.ceil(data.cell.raw.length / 2) : data.cell.raw.length;
+            const fit = fitServico(rows, scaleServ);
             const h = Math.max(
-              data.cell.raw.length * (fit.tagHeight + fit.gap) - fit.gap + 4 * scaleServ,
+              rows * (fit.tagHeight + fit.gap) - fit.gap + 4 * scaleServ,
               18 * Math.min(scaleServ, 1)
             );
             data.cell.styles.minCellHeight = h;
@@ -229,21 +231,26 @@ class PdfService {
             const y = data.cell.y;
             const w = data.cell.width;
             const h = data.cell.height;
-            const fit = fitServico(items.length, scaleServ);
+            const duasColunas = items.length > 4;
+            const rows = duasColunas ? Math.ceil(items.length / 2) : items.length;
+            const fit = fitServico(rows, scaleServ);
             const tagHeight = fit.tagHeight;
             const gap = fit.gap;
-            const totalHeight = items.length * tagHeight + (items.length - 1) * gap;
+            const totalHeight = rows * tagHeight + (rows - 1) * gap;
             const startYCell = y + (h - totalHeight) / 2;
-            const colW = w - 4;
+            const colW = duasColunas ? (w - 6) / 2 : w - 4;
 
             items.forEach((item, idx) => {
-              const tagY = startYCell + idx * (tagHeight + gap);
+              const col = duasColunas ? idx % 2 : 0;
+              const linha = duasColunas ? Math.floor(idx / 2) : idx;
+              const tagY = startYCell + linha * (tagHeight + gap);
               const extraBolinha = item.emAula ? 3.5 : 0;
               const fontSize = fitFontSize(doc, item.nome, colW - 2 - extraBolinha, fit.fontSize, 4);
               const textW = doc.getTextWidth(item.nome);
               let tagW = Math.min(textW + 3 + extraBolinha, colW);
               tagW = Math.max(tagW, 10);
-              const tagX = x + 2 + (colW - tagW) / 2;
+              const deslocamentoCol = duasColunas ? col * (colW + 2) : 0;
+              const tagX = x + 2 + deslocamentoCol + (colW - tagW) / 2;
 
               doc.setFillColor(...hexToRgb(item.cor));
               if (doc.roundedRect) {
