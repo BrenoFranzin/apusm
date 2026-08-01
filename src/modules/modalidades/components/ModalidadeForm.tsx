@@ -20,7 +20,7 @@ const CORES_PALETA = [
   "#D4537E","#F06292","#BA68C8","#64B5F6","#4DB6AC","#81C784","#FFD54F","#FF8A65",
 ];
 
-const SALAS = ["Sala 1", "Sala 2", "Sala 3", "Sala 4", "Sala 5"];
+import { useSalas } from "@/modules/salas/hooks/useSalas";
 
 interface Props {
   valoresIniciais?: Partial<ModalidadeFormData>;
