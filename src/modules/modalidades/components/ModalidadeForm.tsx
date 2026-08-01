@@ -40,10 +40,19 @@ export default function ModalidadeForm({ valoresIniciais, onSubmit }: Props) {
       nome: "",
       icone: "🧘",
       cor: CORES_PALETA[0],
-      sala: SALAS[0],
+      salas: [SALAS[0]],
       ...valoresIniciais,
     },
   });
+
+  const salasSelecionadas = watch("salas") ?? [];
+
+  function toggleSala(sala: string) {
+    const atual = new Set(salasSelecionadas);
+    if (atual.has(sala)) atual.delete(sala);
+    else atual.add(sala);
+    setValue("salas", Array.from(atual));
+  }
 
   const corSelecionada = watch("cor");
   const iconeSelecionado = watch("icone");
@@ -94,23 +103,35 @@ export default function ModalidadeForm({ valoresIniciais, onSubmit }: Props) {
         {errors.nome?.message}
       </p>
 
-      <label style={{ fontSize: 12, color: "var(--text-secondary)" }}>Sala (obrigatório)</label>
-      <select
-        {...register("sala")}
-        style={{
-          width: "100%",
-          margin: "4px 0 12px",
-          padding: 8,
-          background: "var(--background-primary)",
-          color: "var(--text-primary)",
-          border: "1px solid var(--border-default)",
-          borderRadius: 6,
-        }}
-      >
-        {SALAS.map((sala) => (
-          <option key={sala} value={sala}>{sala}</option>
-        ))}
-      </select>
+      <label style={{ fontSize: 12, color: "var(--text-secondary)" }}>Salas (uma ou mais)</label>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, margin: "6px 0 4px" }}>
+        {SALAS.map((sala) => {
+          const marcada = salasSelecionadas.includes(sala);
+          return (
+            <label
+              key={sala}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "6px 10px",
+                borderRadius: 8,
+                border: `1px solid ${marcada ? "var(--color-primary)" : "var(--border-default)"}`,
+                background: marcada ? "var(--color-primary-light)" : "var(--background-primary)",
+                cursor: "pointer",
+                fontSize: 13,
+                color: "var(--text-primary)",
+              }}
+            >
+              <input type="checkbox" checked={marcada} onChange={() => toggleSala(sala)} />
+              {sala}
+            </label>
+          );
+        })}
+      </div>
+      <p style={{ color: "var(--color-danger)", fontSize: 12, margin: "0 0 8px" }}>
+        {errors.salas?.message}
+      </p>
 
       <label style={{ fontSize: 12, color: "var(--text-secondary)" }}>Ícone</label>
       <div style={{ margin: "6px 0 12px", position: "relative" }}>
