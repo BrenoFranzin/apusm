@@ -423,15 +423,15 @@ class PdfService {
       associadosService.listar(),
     ]);
 
-    const turma = turmas.find((t) => t.id === turmaId);
+    const turma = turmas.find((t: any) => t.id === turmaId);
     if (!turma) throw new Error("Turma não encontrada");
 
-    const modalidade = modalidades.find((m) => m.id === turma.modalidadeId);
-    const instrutor = instrutores.find((i) => i.id === turma.instrutorId);
+    const modalidade = modalidades.find((m: any) => m.id === turma.modalidadeId);
+    const instrutor = instrutores.find((i: any) => i.id === turma.instrutorId);
 
     const matriculados = associados
-      .filter((a) => a.matriculas.some((m) => m.turmaId === turmaId && m.status !== "CANCELADA"))
-      .map((a) => a.nome);
+      .filter((a: any) => a.matriculas.some((m: any) => m.turmaId === turmaId && m.status !== "CANCELADA"))
+      .map((a: any) => a.nome);
 
     const datas = gerarDatasDoMes(turma.dia, mes, ano);
 
