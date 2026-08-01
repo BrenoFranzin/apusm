@@ -1,7 +1,7 @@
 // ======================================================
 // APUSM SaaS — Módulo Turmas
 // Arquivo: TurmasPage.tsx
-// + Gerenciamento de Salas unificado com edição
+// Gerenciamento de Salas movido para Configurações
 // ======================================================
 
 import { useEffect, useState } from "react";
@@ -12,8 +12,6 @@ import { useModalidades } from "@/modules/modalidades/hooks/useModalidades";
 import { useInstrutores } from "@/modules/instrutores/hooks/useInstrutores";
 import { useSalas } from "@/modules/salas/hooks/useSalas";
 import type { Turma } from "../types/turma.types";
-import { useNotificacaoAulas } from "@/hooks/useNotificacaoAulas";
-
 
 const DIAS_ORDEM: Turma["dia"][] = ["seg", "ter", "qua", "qui", "sex", "sab"];
 
@@ -32,7 +30,7 @@ export default function TurmasPage() {
   const { instrutores } = useInstrutores();
   const { salas } = useSalas();
 
-const [agora, setAgora] = useState<{ dia: string; hhmm: string } | null>(null);
+  const [agora, setAgora] = useState<{ dia: string; hhmm: string } | null>(null);
 
   useEffect(() => {
     async function buscarHoraInternet() {
@@ -64,11 +62,7 @@ const [agora, setAgora] = useState<{ dia: string; hhmm: string } | null>(null);
     return agora.hhmm >= horario && agora.hhmm < proximoHorario(horario);
   }
 
-
   const [mostrarForm, setMostrarForm] = useState(false);
-  const [mostrarFormSala, setMostrarFormSala] = useState(false);
-  const [nomeSala, setNomeSala] = useState("");
-  const [salaEditandoId, setSalaEditandoId] = useState<string | null>(null);
 
   const turmasPorDia = DIAS_ORDEM.map((dia) => ({
     dia,
@@ -77,32 +71,6 @@ const [agora, setAgora] = useState<{ dia: string; hhmm: string } | null>(null);
       .slice()
       .sort((a, b) => a.horario.localeCompare(b.horario)),
   })).filter((grupo) => grupo.turmas.length > 0);
-
-  function iniciarNovaSala() {
-    setSalaEditandoId(null);
-    setNomeSala("");
-    setMostrarFormSala((v) => !v);
-  }
-
-  function iniciarEdicaoSala(id: string, nomeAtual: string) {
-    setSalaEditandoId(id);
-    setNomeSala(nomeAtual);
-    setMostrarFormSala(true);
-  }
-
-  async function handleSalvarSala() {
-    if (!nomeSala.trim()) return;
-
-    const ok = salaEditandoId
-      ? await editarSala(salaEditandoId, { nome: nomeSala.trim() })
-      : await criarSala({ nome: nomeSala.trim() });
-
-    if (ok) {
-      setNomeSala("");
-      setSalaEditandoId(null);
-      setMostrarFormSala(false);
-    }
-  }
 
   return (
     <div className="space-y-6">
@@ -114,115 +82,12 @@ const [agora, setAgora] = useState<{ dia: string; hhmm: string } | null>(null);
           </p>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "flex-end" }}>
-          <button
-            onClick={() => setMostrarForm((v) => !v)}
-            className="bg-green-900 text-white px-5 py-3 rounded-lg"
-          >
-            {mostrarForm ? "Fechar" : "+ Nova turma"}
-          </button>
-
-          <button
-            onClick={iniciarNovaSala}
-            className="bg-green-900 text-white px-5 py-3 rounded-lg"
-          >
-            {mostrarFormSala ? "Fechar" : "+ Nova sala"}
-          </button>
-        </div>
-      </div>
-
-      {/* ===== Bloco de Salas ===== */}
-      <div
-        style={{
-          border: "1px solid var(--border-default)",
-          borderRadius: 12,
-          padding: "1rem 1.25rem",
-          background: "var(--background-primary)",
-        }}
-      >
-        <p style={{ fontWeight: 600, fontSize: 15, margin: "0 0 12px", color: "var(--text-primary)" }}>
-          Salas cadastradas
-        </p>
-
-        {mostrarFormSala && (
-          <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
-            <input
-              type="text"
-              value={nomeSala}
-              onChange={(e) => setNomeSala(e.target.value)}
-              placeholder="Nome da sala"
-              style={{
-                flex: 1,
-                padding: 8,
-                background: "var(--background-primary)",
-                color: "var(--text-primary)",
-                border: "1px solid var(--border-default)",
-                borderRadius: 6,
-              }}
-            />
-            <button
-              onClick={handleSalvarSala}
-              className="bg-green-900 text-white px-4 py-2 rounded-lg"
-            >
-              {salaEditandoId ? "Salvar edição" : "Salvar"}
-            </button>
-          </div>
-        )}
-        {erroSala && <p style={{ color: "#dc2626", fontSize: 13, marginTop: -8, marginBottom: 8 }}>{erroSala}</p>}
-
-        {salas.length === 0 ? (
-          <p style={{ color: "#6b7280", fontSize: 14 }}>Nenhuma sala cadastrada ainda.</p>
-        ) : (
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-            {salas.map((sala) => (
-              <div
-                key={sala.id}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  padding: "6px 10px",
-                  borderRadius: 999,
-                  background: "var(--background-tertiary)",
-                  color: "var(--text-primary)",
-                  fontSize: 13,
-                }}
-              >
-                🚪 {sala.nome}
-                <button
-                  onClick={() => iniciarEdicaoSala(sala.id, sala.nome)}
-                  style={{
-                    border: "1px solid #93c5fd",
-                    color: "#2563eb",
-                    background: "transparent",
-                    borderRadius: 6,
-                    padding: "0 6px",
-                    cursor: "pointer",
-                  }}
-                >
-                  ✎
-                </button>
-                <button
-                  onClick={() => {
-                    if (window.confirm(`Excluir a sala "${sala.nome}"?`)) {
-                      excluirSala(sala.id);
-                    }
-                  }}
-                  style={{
-                    border: "1px solid #fca5a5",
-                    color: "#dc2626",
-                    background: "transparent",
-                    borderRadius: 6,
-                    padding: "0 6px",
-                    cursor: "pointer",
-                  }}
-                >
-                  ×
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
+        <button
+          onClick={() => setMostrarForm((v) => !v)}
+          className="bg-green-900 text-white px-5 py-3 rounded-lg"
+        >
+          {mostrarForm ? "Fechar" : "+ Nova turma"}
+        </button>
       </div>
 
       {/* ===== Bloco de Turmas ===== */}

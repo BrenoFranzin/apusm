@@ -4,14 +4,9 @@ import type { CSSProperties } from "react";
 import { useTurmas } from "@/modules/turmas/hooks/useTurmas";
 import { useModalidades } from "@/modules/modalidades/hooks/useModalidades";
 import { useInstrutores } from "@/modules/instrutores/hooks/useInstrutores";
-import { DiaSemana } from "@/modules/turmas/types/turma.types";
-import { useState } from "react"; // já existe, só garantir
-import TurmaForm from "@/modules/turmas/components/TurmaForm";
 import { useSalas } from "@/modules/salas/hooks/useSalas";
-
-
-
-
+import { DiaSemana } from "@/modules/turmas/types/turma.types";
+import TurmaForm from "@/modules/turmas/components/TurmaForm";
 
 const NOME_DIA: Record<string, string> = {
   seg: "Segunda",
@@ -41,18 +36,15 @@ const inputStyle: CSSProperties = {
 
 export default function AgendaPage() {
   const navigate = useNavigate();
-  const { turmas } = useTurmas();
+  const { turmas, criar: criarTurma } = useTurmas();
   const { modalidades } = useModalidades();
   const { instrutores } = useInstrutores();
+  const { salas: listaSalas } = useSalas();
 
   const [modalidadesSelecionadas, setModalidadesSelecionadas] = useState<Set<string> | null>(null);
   const [salaFiltro, setSalaFiltro] = useState("TODAS");
   const [instrutorFiltro, setInstrutorFiltro] = useState("TODOS");
-
-  const { criar: criarTurma } = useTurmas();
-  const { salas: listaSalas } = useSalas();
   const [mostrarFormTurma, setMostrarFormTurma] = useState(false);
-
 
   const salas = useMemo(
     () => Array.from(new Set(turmas.map((t) => t.sala))).sort(),
@@ -110,12 +102,26 @@ export default function AgendaPage() {
           <p style={{ color: "var(--page-subheading)" }}>Grade semanal de turmas</p>
         </div>
         <button
-  onClick={() => setMostrarFormTurma((v) => !v)}
-  style={{ background: "var(--color-primary)", color: "#fff", padding: "10px 18px", borderRadius: 8, border: "none", fontWeight: 600, cursor: "pointer" }}
->
-  {mostrarFormTurma ? "Fechar" : "+ Nova aula"}
-</button>
+          onClick={() => setMostrarFormTurma((v) => !v)}
+          style={{ background: "var(--color-primary)", color: "#fff", padding: "10px 18px", borderRadius: 8, border: "none", fontWeight: 600, cursor: "pointer" }}
+        >
+          {mostrarFormTurma ? "Fechar" : "+ Nova aula"}
+        </button>
       </div>
+
+      {mostrarFormTurma && (
+        <div className="apusm-card">
+          <TurmaForm
+            modalidades={modalidades}
+            instrutores={instrutores}
+            salas={listaSalas}
+            onSubmit={async (dados) => {
+              const ok = await criarTurma(dados);
+              if (ok) setMostrarFormTurma(false);
+            }}
+          />
+        </div>
+      )}
 
       <div className="apusm-card space-y-3">
         <div className="flex flex-wrap gap-3 items-center">
@@ -171,20 +177,6 @@ export default function AgendaPage() {
         </div>
       </div>
 
-    {mostrarFormTurma && (
-  <div className="apusm-card">
-    <TurmaForm
-      modalidades={modalidades}
-      instrutores={instrutores}
-      salas={listaSalas}
-      onSubmit={async (dados) => {
-        const ok = await criarTurma(dados);
-        if (ok) setMostrarFormTurma(false);
-      }}
-    />
-  </div>
-)}
-
       <div className="apusm-card agenda-grid-wrapper">
         <div className="agenda-grid">
           <div className="agenda-head-cell">Horário</div>
@@ -212,10 +204,14 @@ export default function AgendaPage() {
                         <div
                           key={t.id}
                           className="agenda-turma-card"
-                          style={{ backgroundColor: modalidade ? modalidade.cor : "var(--text-disabled)" }}
+                          style={{
+                            backgroundColor: modalidade ? modalidade.cor : "var(--text-disabled)",
+                            boxShadow: "0 2px 6px rgba(0,0,0,0.25)",
+                            border: "1px solid rgba(0,0,0,0.15)",
+                          }}
                           title={t.sala}
                         >
-                          <div className="agenda-turma-nome">{modalidade ? modalidade.nome : "-"}</div>
+                          <div className="agenda-turma-nome" style={{ fontWeight: 700 }}>{modalidade ? modalidade.nome : "-"}</div>
                           <div className="agenda-turma-info">{instrutor ? instrutor.nome : "-"}</div>
                           <div className="agenda-turma-info">{t.sala}</div>
                         </div>
