@@ -35,12 +35,13 @@ export default function ModalidadeForm({ valoresIniciais, onSubmit }: Props) {
     setValue,
     formState: { errors },
   } = useForm<ModalidadeFormData>({
+    const { salas: salasCadastradas } = useSalas();
     resolver: zodResolver(modalidadeSchema) as any,
     defaultValues: {
       nome: "",
       icone: "🧘",
       cor: CORES_PALETA[0],
-      salas: [SALAS[0]],
+      salas: valoresIniciais?.salas ?? (salasCadastradas[0] ? [salasCadastradas[0].nome] : []),
       ...valoresIniciais,
     },
   });
@@ -105,7 +106,7 @@ export default function ModalidadeForm({ valoresIniciais, onSubmit }: Props) {
 
       <label style={{ fontSize: 12, color: "var(--text-secondary)" }}>Salas (uma ou mais)</label>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, margin: "6px 0 4px" }}>
-        {SALAS.map((sala) => {
+        {salasCadastradas.map((s) => s.nome).map((sala) => {
           const marcada = salasSelecionadas.includes(sala);
           return (
             <label
