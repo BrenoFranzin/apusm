@@ -8,7 +8,7 @@ export interface Modalidade {
   nome: string;
   icone: string;
   cor: string;
-  sala: string;
+  salas: string[];
   instrutoresIds: string[];
 }
 
@@ -16,7 +16,7 @@ export interface CriarModalidadeDTO {
   nome: string;
   icone: string;
   cor: string;
-  sala: string;
+  salas: string[];
 }
 
 export type AtualizarModalidadeDTO = Partial<CriarModalidadeDTO>;

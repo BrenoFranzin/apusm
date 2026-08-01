@@ -6,7 +6,7 @@
 import type { Modalidade } from "../types/modalidade.types";
 
 export const modalidadesMock: Modalidade[] = [
-  { id: "1",  nome: "Pilates Solo",     icone: "🧘",  cor: "#7F77DD", sala: "Sala 1", instrutoresIds: [] },
+  { id: "1",  nome: "Pilates Solo",     icone: "🧘",  cor: "#7F77DD", salas: ["Sala 1"], instrutoresIds: [] },
   { id: "2",  nome: "Yoga",             icone: "🧘‍♀️", cor: "#1D9E75", sala: "Sala 1", instrutoresIds: [] },
   { id: "3",  nome: "Alongamento",      icone: "🤸",  cor: "#378ADD", sala: "Sala 1", instrutoresIds: [] },
   { id: "4",  nome: "Bike",             icone: "🚴",  cor: "#D85A30", sala: "Sala 5", instrutoresIds: [] },
