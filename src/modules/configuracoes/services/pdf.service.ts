@@ -412,6 +412,86 @@ class PdfService {
   }
 
   // ==========================
+  // FOLHA DE PRESENÇA (por turma, para imprimir e marcar à mão)
+  // ==========================
+
+  async exportarFolhaPresenca(turmaId: string, mes: number, ano: number): Promise<void> {
+    const [turmas, instrutores, modalidades, associados] = await Promise.all([
+      turmasService.listar(),
+      instrutoresService.listar(),
+      modalidadesService.listar(),
+      associadosService.listarTodos(),
+    ]);
+
+    const turma = turmas.find((t) => t.id === turmaId);
+    if (!turma) throw new Error("Turma não encontrada");
+
+    const modalidade = modalidades.find((m) => m.id === turma.modalidadeId);
+    const instrutor = instrutores.find((i) => i.id === turma.instrutorId);
+
+    const matriculados = associados
+      .filter((a) => a.matriculas.some((m) => m.turmaId === turmaId && m.status !== "CANCELADA"))
+      .map((a) => a.nome);
+
+    const datas = gerarDatasDoMes(turma.dia, mes, ano);
+
+    const TOTAL_LINHAS = Math.max(15, matriculados.length);
+    const linhas: string[] = [...matriculados];
+    while (linhas.length < TOTAL_LINHAS) linhas.push("");
+
+    const doc = new jsPDF("landscape");
+
+    doc.setFontSize(13);
+    doc.setFont("helvetica", "bold");
+    doc.text(`MODALIDADE: ${(modalidade?.nome ?? "-").toUpperCase()}`, 14, 15);
+
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "normal");
+    doc.text(`PROFESSOR(A): ${instrutor?.nome ?? "_______________________"}`, 14, 22);
+
+    const nomeDiaExtenso: Record<string, string> = {
+      dom: "DOMINGOS", seg: "SEGUNDAS-FEIRAS", ter: "TERÇAS-FEIRAS",
+      qua: "QUARTAS-FEIRAS", qui: "QUINTAS-FEIRAS", sex: "SEXTAS-FEIRAS", sab: "SÁBADOS",
+    };
+    doc.text(`DIA/HORÁRIO: ${nomeDiaExtenso[turma.dia] ?? turma.dia} ÀS ${turma.horario}`, 14, 28);
+    doc.text(`MÊS: ${MESES[mes].toUpperCase()}/${ano}`, 14, 34);
+
+    const head = [["Nº", "Nome do Aluno", ...datas]];
+    const body = linhas.map((nome, i) => [
+      String(i + 1).padStart(2, "0"),
+      nome,
+      ...datas.map(() => ""),
+    ]);
+
+    autoTable(doc, {
+      head,
+      body,
+      startY: 40,
+      theme: "grid",
+      styles: { fontSize: 9, cellPadding: 2, halign: "center", valign: "middle", lineWidth: 0.3, lineColor: [0, 0, 0] },
+      headStyles: { fillColor: [20, 83, 45], textColor: [255, 255, 255], fontStyle: "bold" },
+      columnStyles: {
+        0: { cellWidth: 12 },
+        1: { cellWidth: 60, halign: "left" },
+      },
+      didDrawCell: (data) => {
+        if (data.section === "body" && data.column.index > 1) {
+          const { x, y, width, height } = data.cell;
+          const cx = x + width / 2;
+          const cy = y + height / 2;
+          const s = 3;
+          doc.setDrawColor(0);
+          doc.setLineWidth(0.3);
+          doc.rect(cx - s / 2, cy - s / 2, s, s);
+        }
+      },
+    });
+
+    const nomeArquivo = `presenca-${(modalidade?.nome ?? "turma").toLowerCase().replace(/\s+/g, "-")}-${turma.dia}-${turma.horario.replace(":", "")}-${MESES[mes].toLowerCase()}-${ano}.pdf`;
+    baixarEregistrar(doc, nomeArquivo, "presenca");
+  }
+
+  // ==========================
   // HISTÓRICO DE EXPORTAÇÕES
   // ==========================
 
