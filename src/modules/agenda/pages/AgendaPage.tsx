@@ -49,6 +49,11 @@ export default function AgendaPage() {
   const [salaFiltro, setSalaFiltro] = useState("TODAS");
   const [instrutorFiltro, setInstrutorFiltro] = useState("TODOS");
 
+  const { criar: criarTurma } = useTurmas();
+  const { salas: listaSalas } = useSalas();
+  const [mostrarFormTurma, setMostrarFormTurma] = useState(false);
+
+
   const salas = useMemo(
     () => Array.from(new Set(turmas.map((t) => t.sala))).sort(),
     [turmas]
@@ -105,11 +110,11 @@ export default function AgendaPage() {
           <p style={{ color: "var(--page-subheading)" }}>Grade semanal de turmas</p>
         </div>
         <button
-          onClick={() => navigate("/modalidades")}
-          style={{ background: "var(--color-primary)", color: "#fff", padding: "10px 18px", borderRadius: 8, border: "none", fontWeight: 600, cursor: "pointer" }}
-        >
-          + Nova modalidade
-        </button>
+  onClick={() => setMostrarFormTurma((v) => !v)}
+  style={{ background: "var(--color-primary)", color: "#fff", padding: "10px 18px", borderRadius: 8, border: "none", fontWeight: 600, cursor: "pointer" }}
+>
+  {mostrarFormTurma ? "Fechar" : "+ Nova aula"}
+</button>
       </div>
 
       <div className="apusm-card space-y-3">
@@ -165,6 +170,20 @@ export default function AgendaPage() {
           </div>
         </div>
       </div>
+
+    {mostrarFormTurma && (
+  <div className="apusm-card">
+    <TurmaForm
+      modalidades={modalidades}
+      instrutores={instrutores}
+      salas={listaSalas}
+      onSubmit={async (dados) => {
+        const ok = await criarTurma(dados);
+        if (ok) setMostrarFormTurma(false);
+      }}
+    />
+  </div>
+)}
 
       <div className="apusm-card agenda-grid-wrapper">
         <div className="agenda-grid">

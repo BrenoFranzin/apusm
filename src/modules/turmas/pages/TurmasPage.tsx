@@ -285,7 +285,7 @@ const [agora, setAgora] = useState<{ dia: string; hhmm: string } | null>(null);
               </span>
             </div>
 
-            <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 8 }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 8, background: "var(--background-secondary)", borderRadius: 8, overflow: "hidden" }}>
               <thead>
                 <tr style={{ borderBottom: "2px solid var(--border-default)" }}>
                   <th style={{ textAlign: "left", padding: "10px 8px", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--text-secondary)" }}>Horário</th>
