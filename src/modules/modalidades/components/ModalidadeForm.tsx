@@ -35,7 +35,17 @@ export default function ModalidadeForm({ valoresIniciais, onSubmit }: Props) {
     setValue,
     formState: { errors },
   } = useForm<ModalidadeFormData>({
-    const { salas: salasCadastradas } = useSalas();
+    resolver: zodResolver(modalidadeSchema) as any,
+    defaultValues: {
+      nome: "",
+      icone: "🧘",
+      cor: CORES_PALETA[0],
+      salas: [SALAS[0]],
+      ...valoresIniciais,
+    },
+  });
+
+  const { salas: salasCadastradas } = useSalas();   // ✅ aqui, logo após o useForm
     resolver: zodResolver(modalidadeSchema) as any,
     defaultValues: {
       nome: "",
