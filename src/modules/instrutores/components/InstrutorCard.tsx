@@ -64,14 +64,16 @@ export function InstrutorCard({ instrutor, onEditar, onExcluir }: Props) {
         <button
           onClick={() => onEditar(instrutor)}
           style={{
-            fontSize: 12,
-            color: "#2563eb",
-            border: "1px solid #93c5fd",
+            fontSize: 13,
+            fontWeight: 600,
+            color: "#ffffff",
+            border: "none",
             borderRadius: 6,
-            padding: "5px 10px",
-            background: "var(--background-primary)",
+            padding: "7px 14px",
+            background: "#2563eb",
             marginLeft: 8,
-             whiteSpace: "nowrap",
+            whiteSpace: "nowrap",
+            cursor: "pointer",
           }}
         >
           ✎ Editar
@@ -87,14 +89,16 @@ export function InstrutorCard({ instrutor, onEditar, onExcluir }: Props) {
             if (confirmar) onExcluir(instrutor.id);
           }}
           style={{
-            fontSize: 12,
-            color: "var(--color-danger)",
-            border: "1px solid var(--color-danger)",
+            fontSize: 13,
+            fontWeight: 600,
+            color: "#ffffff",
+            border: "none",
             borderRadius: 6,
-            padding: "5px 10px",
-            background: "var(--background-primary)",
+            padding: "7px 14px",
+            background: "var(--color-danger)",
             marginLeft: 8,
             whiteSpace: "nowrap",
+            cursor: "pointer",
           }}
         >
           🗑️ Excluir
