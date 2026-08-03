@@ -1,5 +1,5 @@
 // ======================================================
-// APUSM SaaS — Módulo Turmas
+// APUSM SaaS â€” MÃ³dulo Turmas
 // Arquivo: TurmaCard.tsx
 // ======================================================
 
@@ -15,8 +15,8 @@ interface Props {
 }
 
 const DIA_LABEL: Record<string, string> = {
-  seg: "Segunda", ter: "Terça", qua: "Quarta",
-  qui: "Quinta", sex: "Sexta", sab: "Sábado",
+  seg: "Segunda", ter: "TerÃ§a", qua: "Quarta",
+  qui: "Quinta", sex: "Sexta", sab: "SÃ¡bado",
 };
 
 export function TurmaCard({ turma, modalidade, instrutor, onExcluir }: Props) {
@@ -55,7 +55,7 @@ export function TurmaCard({ turma, modalidade, instrutor, onExcluir }: Props) {
           {modalidade ? `${modalidade.icone} ${modalidade.nome}` : "Modalidade removida"}
         </p>
         <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: "3px 0 0" }}>
-          👤 {instrutor?.nome ?? "Sem instrutor"} · 🚪 {turma.sala}
+          ðŸ‘¤ {instrutor?.nome ?? "Sem instrutor"} Â· ðŸšª {turma.sala}
         </p>
       </div>
 
@@ -63,7 +63,7 @@ export function TurmaCard({ turma, modalidade, instrutor, onExcluir }: Props) {
         <button
           onClick={() => {
             const confirmar = window.confirm(
-              `Excluir esta turma (${DIA_LABEL[turma.dia]} ${turma.horario})? Essa ação não pode ser desfeita.`
+              `Excluir esta turma (${DIA_LABEL[turma.dia]} ${turma.horario})? Essa aÃ§Ã£o nÃ£o pode ser desfeita.`
             );
             if (confirmar) onExcluir(turma.id);
           }}
@@ -77,7 +77,7 @@ export function TurmaCard({ turma, modalidade, instrutor, onExcluir }: Props) {
             flexShrink: 0,
           }}
         >
-          🗑️
+          ðŸ—‘ï¸
         </button>
       )}
     </div>

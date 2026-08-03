@@ -1,6 +1,6 @@
 // ======================================================
 // APUSM SaaS
-// Módulo: Salas
+// MÃ³dulo: Salas
 // Arquivo: SalasModal.tsx
 // ======================================================
 
@@ -48,7 +48,7 @@ export default function SalasModal({ onFechar }: { onFechar: () => void }) {
   }
 
   async function handleExcluir(id: string) {
-    const confirmar = window.confirm("Excluir esta sala? Essa ação não pode ser desfeita.");
+    const confirmar = window.confirm("Excluir esta sala? Essa aÃ§Ã£o nÃ£o pode ser desfeita.");
     if (!confirmar) return;
 
     await salasService.excluir(id);
@@ -89,7 +89,7 @@ export default function SalasModal({ onFechar }: { onFechar: () => void }) {
             onClick={onFechar}
             style={{ fontSize: 20, lineHeight: 1, color: "var(--text-muted)", background: "none", border: "none" }}
           >
-            ×
+            Ã—
           </button>
         </div>
 

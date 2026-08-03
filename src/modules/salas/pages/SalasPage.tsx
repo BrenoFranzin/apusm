@@ -52,12 +52,12 @@ export default function SalasPage() {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 12 }}>
         {salas.map((sala) => (
           <div key={sala.id} style={{ background: "var(--background-primary)", border: "1px solid var(--border-default)", borderRadius: 12, padding: 16 }}>
-            <p style={{ fontWeight: 600, fontSize: 15, margin: "0 0 12px", color: "var(--text-primary)" }}>🚪 {sala.nome}</p>
+            <p style={{ fontWeight: 600, fontSize: 15, margin: "0 0 12px", color: "var(--text-primary)" }}>ðŸšª {sala.nome}</p>
             <button
               onClick={() => { if (window.confirm(`Excluir "${sala.nome}"?`)) excluir(sala.id); }}
               style={{ fontSize: 12, color: "#ffffff", border: "none", borderRadius: 6, padding: "5px 10px", background: "var(--color-danger)", fontWeight: 600, cursor: "pointer" }}
             >
-              🗑️ Excluir
+              ðŸ—‘ï¸ Excluir
             </button>
           </div>
         ))}

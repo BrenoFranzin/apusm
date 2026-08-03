@@ -1,4 +1,4 @@
-﻿// ======================================================
+// ======================================================
 // APUSM SaaS â€” MÃ³dulo ConfiguraÃ§Ãµes
 // Arquivo: ConfiguracoesPage.tsx
 // HistÃ³rico de exportaÃ§Ãµes agora Ã© um modal

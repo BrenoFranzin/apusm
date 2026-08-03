@@ -1,8 +1,7 @@
-﻿// ======================================================
-// APUSM SaaS â€” MÃ³dulo Modalidades
+// ======================================================
+// APUSM SaaS — Módulo Modalidades
 // Arquivo: ModalidadeCard.tsx
 // ======================================================
-
 import type { Modalidade } from "../types/modalidade.types";
 
 interface Props {
@@ -15,7 +14,7 @@ export function ModalidadeCard({ modalidade, onEditar, onExcluir }: Props) {
   return (
     <div
       style={{
-        background: "var(--color-danger)",
+        background: "var(--background-primary)",
         border: "1px solid var(--border-default)",
         borderRadius: 12,
         padding: 16,
@@ -36,15 +35,12 @@ export function ModalidadeCard({ modalidade, onEditar, onExcluir }: Props) {
       >
         {modalidade.icone}
       </div>
-
       <p style={{ fontWeight: 500, fontSize: 14, margin: 0, color: "var(--text-primary)" }}>
         {modalidade.nome}
       </p>
-
       <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: "4px 0 8px" }}>
-        ðŸšª {Array.isArray(modalidade.salas) ? modalidade.salas.join(", ") : (modalidade as any).sala ?? "-"}
+        🚪 {Array.isArray(modalidade.salas) ? modalidade.salas.join(", ") : (modalidade as any).sala ?? "-"}
       </p>
-
       <span
         style={{
           fontSize: 11,
@@ -57,7 +53,6 @@ export function ModalidadeCard({ modalidade, onEditar, onExcluir }: Props) {
       >
         {modalidade.instrutoresIds.length} instrutor(es)
       </span>
-
       {(onEditar || onExcluir) && (
         <div
           style={{
@@ -79,32 +74,33 @@ export function ModalidadeCard({ modalidade, onEditar, onExcluir }: Props) {
                 border: "none",
                 borderRadius: 6,
                 padding: "5px 10px",
-                background: "#ffffff",
+                background: "#2563eb",
                 cursor: "pointer",
               }}
             >
-              âœŽ Editar
+              ✎ Editar
             </button>
           )}
-
           {onExcluir && (
             <button
               onClick={() => {
                 const confirmar = window.confirm(
-                  `Excluir a modalidade "${modalidade.nome}"? Essa aÃ§Ã£o nÃ£o pode ser desfeita.`
+                  `Excluir a modalidade "${modalidade.nome}"? Essa ação não pode ser desfeita.`
                 );
                 if (confirmar) onExcluir(modalidade.id);
               }}
               style={{
                 fontSize: 12,
+                fontWeight: 600,
                 color: "#ffffff",
                 border: "none",
                 borderRadius: 6,
                 padding: "5px 10px",
-                background: "var(--background-primary)",
+                background: "var(--color-danger)",
+                cursor: "pointer",
               }}
             >
-              ðŸ—‘ï¸ Excluir
+              🗑️ Excluir
             </button>
           )}
         </div>
@@ -114,6 +110,3 @@ export function ModalidadeCard({ modalidade, onEditar, onExcluir }: Props) {
 }
 
 export default ModalidadeCard;
-
-
-

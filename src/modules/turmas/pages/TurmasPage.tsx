@@ -1,7 +1,7 @@
 // ======================================================
-// APUSM SaaS — Módulo Turmas
+// APUSM SaaS â€” MÃ³dulo Turmas
 // Arquivo: TurmasPage.tsx
-// Gerenciamento de Salas movido para Configurações
+// Gerenciamento de Salas movido para ConfiguraÃ§Ãµes
 // ======================================================
 
 import { useEffect, useState } from "react";
@@ -17,11 +17,11 @@ const DIAS_ORDEM: Turma["dia"][] = ["seg", "ter", "qua", "qui", "sex", "sab"];
 
 const DIA_LABEL: Record<string, string> = {
   seg: "Segunda-feira",
-  ter: "Terça-feira",
+  ter: "TerÃ§a-feira",
   qua: "Quarta-feira",
   qui: "Quinta-feira",
   sex: "Sexta-feira",
-  sab: "Sábado",
+  sab: "SÃ¡bado",
 };
 
 export default function TurmasPage() {
@@ -153,7 +153,7 @@ export default function TurmasPage() {
             <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 8, background: "var(--background-secondary)", borderRadius: 8, overflow: "hidden" }}>
               <thead>
                 <tr style={{ borderBottom: "2px solid var(--border-default)" }}>
-                  <th style={{ textAlign: "left", padding: "10px 8px", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--text-secondary)" }}>Horário</th>
+                  <th style={{ textAlign: "left", padding: "10px 8px", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--text-secondary)" }}>HorÃ¡rio</th>
                   <th style={{ textAlign: "left", padding: "10px 8px", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--text-secondary)" }}>Modalidade</th>
                   <th style={{ textAlign: "left", padding: "10px 8px", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--text-secondary)" }}>Instrutor</th>
                   <th style={{ textAlign: "left", padding: "10px 8px", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--text-secondary)" }}>Sala</th>
@@ -194,7 +194,7 @@ export default function TurmasPage() {
                         <button
                           onClick={() => {
                             const confirmar = window.confirm(
-                              `Excluir esta turma (${DIA_LABEL[turma.dia]} ${turma.horario})? Essa ação não pode ser desfeita.`
+                              `Excluir esta turma (${DIA_LABEL[turma.dia]} ${turma.horario})? Essa aÃ§Ã£o nÃ£o pode ser desfeita.`
                             );
                             if (confirmar) excluir(turma.id);
                           }}
@@ -207,7 +207,7 @@ export default function TurmasPage() {
                             background: "var(--color-danger)",
                           }}
                         >
-                          🗑️
+                          ðŸ—‘ï¸
                         </button>
                       </td>
                     </tr>
