@@ -101,7 +101,7 @@ export function ModalidadeCard({ modalidade, onEditar, onExcluir }: Props) {
                 border: "none",
                 borderRadius: 6,
                 padding: "5px 10px",
-                background: "var(--color-danger)",
+                background: "var(--background-primary)",
               }}
             >
               ðŸ—‘ï¸ Excluir
