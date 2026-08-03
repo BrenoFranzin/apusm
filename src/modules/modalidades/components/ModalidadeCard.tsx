@@ -1,5 +1,5 @@
-// ======================================================
-// APUSM SaaS — Módulo Modalidades
+﻿// ======================================================
+// APUSM SaaS â€” MÃ³dulo Modalidades
 // Arquivo: ModalidadeCard.tsx
 // ======================================================
 
@@ -42,7 +42,7 @@ export function ModalidadeCard({ modalidade, onEditar, onExcluir }: Props) {
       </p>
 
       <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: "4px 0 8px" }}>
-        🚪 {Array.isArray(modalidade.salas) ? modalidade.salas.join(", ") : (modalidade as any).sala ?? "-"}
+        ðŸšª {Array.isArray(modalidade.salas) ? modalidade.salas.join(", ") : (modalidade as any).sala ?? "-"}
       </p>
 
       <span
@@ -83,7 +83,7 @@ export function ModalidadeCard({ modalidade, onEditar, onExcluir }: Props) {
                 cursor: "pointer",
               }}
             >
-              ✎ Editar
+              âœŽ Editar
             </button>
           )}
 
@@ -91,7 +91,7 @@ export function ModalidadeCard({ modalidade, onEditar, onExcluir }: Props) {
             <button
               onClick={() => {
                 const confirmar = window.confirm(
-                  `Excluir a modalidade "${modalidade.nome}"? Essa ação não pode ser desfeita.`
+                  `Excluir a modalidade "${modalidade.nome}"? Essa aÃ§Ã£o nÃ£o pode ser desfeita.`
                 );
                 if (confirmar) onExcluir(modalidade.id);
               }}
@@ -104,7 +104,7 @@ export function ModalidadeCard({ modalidade, onEditar, onExcluir }: Props) {
                 background: "var(--color-danger)",
               }}
             >
-              🗑️ Excluir
+              ðŸ—‘ï¸ Excluir
             </button>
           )}
         </div>
@@ -114,5 +114,6 @@ export function ModalidadeCard({ modalidade, onEditar, onExcluir }: Props) {
 }
 
 export default ModalidadeCard;
+
 
 
