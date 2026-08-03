@@ -74,11 +74,13 @@ export function ModalidadeCard({ modalidade, onEditar, onExcluir }: Props) {
               onClick={() => onEditar(modalidade)}
               style={{
                 fontSize: 12,
-                color: "#2563eb",
-                border: "1px solid #93c5fd",
+                fontWeight: 600,
+                color: "#ffffff",
+                border: "none",
                 borderRadius: 6,
                 padding: "5px 10px",
-                background: "var(--background-primary)",
+                background: "#2563eb",
+                cursor: "pointer",
               }}
             >
               ✎ Editar
