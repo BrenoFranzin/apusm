@@ -15,7 +15,7 @@ export function ModalidadeCard({ modalidade, onEditar, onExcluir }: Props) {
   return (
     <div
       style={{
-        background: "var(--background-primary)",
+        background: "var(--color-danger)",
         border: "1px solid var(--border-default)",
         borderRadius: 12,
         padding: 16,
@@ -79,7 +79,7 @@ export function ModalidadeCard({ modalidade, onEditar, onExcluir }: Props) {
                 border: "none",
                 borderRadius: 6,
                 padding: "5px 10px",
-                background: "#2563eb",
+                background: "#ffffff",
                 cursor: "pointer",
               }}
             >
@@ -97,11 +97,11 @@ export function ModalidadeCard({ modalidade, onEditar, onExcluir }: Props) {
               }}
               style={{
                 fontSize: 12,
-                color: "var(--color-danger)",
-                border: "1px solid var(--color-danger)",
+                color: "#ffffff",
+                border: "none",
                 borderRadius: 6,
                 padding: "5px 10px",
-                background: "var(--background-primary)",
+                background: "var(--color-danger)",
               }}
             >
               🗑️ Excluir
@@ -114,3 +114,5 @@ export function ModalidadeCard({ modalidade, onEditar, onExcluir }: Props) {
 }
 
 export default ModalidadeCard;
+
+

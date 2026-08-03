@@ -96,7 +96,7 @@ export default function TurmasPage() {
           border: "1px solid var(--border-default)",
           borderRadius: 12,
           padding: "1rem 1.25rem",
-          background: "var(--background-primary)",
+          background: "var(--color-danger)",
         }}
       >
         <p style={{ fontWeight: 600, fontSize: 15, margin: "0 0 12px", color: "var(--text-primary)" }}>
@@ -200,11 +200,11 @@ export default function TurmasPage() {
                           }}
                           style={{
                             fontSize: 12,
-                            color: "var(--color-danger)",
-                            border: "1px solid var(--color-danger)",
+                            color: "#ffffff",
+                            border: "none",
                             borderRadius: 6,
                             padding: "5px 10px",
-                            background: "var(--background-primary)",
+                            background: "var(--color-danger)",
                           }}
                         >
                           🗑️

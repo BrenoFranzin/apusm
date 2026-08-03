@@ -99,7 +99,7 @@ export function AssociadoTable({
                           );
                           if (confirmar) onExcluir(associado.id);
                         }}
-                        style={{ fontSize: 13, padding: "6px 10px", border: "1px solid var(--color-danger)", borderRadius: 6, background: "var(--background-primary)", color: "var(--color-danger)" }}
+                        style={{ fontSize: 13, padding: "6px 10px", border: "none", borderRadius: 6, background: "var(--color-danger)", color: "#ffffff", fontWeight: 600, cursor: "pointer" }}
                       >
                         Excluir
                       </button>

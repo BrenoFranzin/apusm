@@ -170,7 +170,7 @@ export default function SalasModal({ onFechar }: { onFechar: () => void }) {
                   </button>
                   <button
                     onClick={() => handleExcluir(sala.id)}
-                    style={{ fontSize: 12, border: "1px solid var(--color-danger)", borderRadius: 6, padding: "5px 9px", background: "var(--background-primary)", color: "var(--color-danger)" }}
+                    style={{ fontSize: 12, border: "none", borderRadius: 6, padding: "5px 9px", background: "var(--color-danger)", color: "#ffffff", fontWeight: 600, cursor: "pointer" }}
                   >
                     Excluir
                   </button>

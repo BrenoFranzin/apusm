@@ -25,7 +25,7 @@ export function TurmaCard({ turma, modalidade, instrutor, onExcluir }: Props) {
   return (
     <div
       style={{
-        background: "var(--background-primary)",
+        background: "var(--color-danger)",
         border: "1px solid var(--border-default)",
         borderRadius: 12,
         padding: 14,
@@ -69,11 +69,11 @@ export function TurmaCard({ turma, modalidade, instrutor, onExcluir }: Props) {
           }}
           style={{
             fontSize: 12,
-            color: "var(--color-danger)",
-            border: "1px solid var(--color-danger)",
+            color: "#ffffff",
+            border: "none",
             borderRadius: 6,
             padding: "5px 10px",
-            background: "var(--background-primary)",
+            background: "var(--color-danger)",
             flexShrink: 0,
           }}
         >
@@ -85,3 +85,4 @@ export function TurmaCard({ turma, modalidade, instrutor, onExcluir }: Props) {
 }
 
 export default TurmaCard;
+

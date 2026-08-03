@@ -55,7 +55,7 @@ export default function SalasPage() {
             <p style={{ fontWeight: 600, fontSize: 15, margin: "0 0 12px", color: "var(--text-primary)" }}>🚪 {sala.nome}</p>
             <button
               onClick={() => { if (window.confirm(`Excluir "${sala.nome}"?`)) excluir(sala.id); }}
-              style={{ fontSize: 12, color: "var(--color-danger)", border: "1px solid var(--color-danger)", borderRadius: 6, padding: "5px 10px", background: "var(--background-primary)", cursor: "pointer" }}
+              style={{ fontSize: 12, color: "#ffffff", border: "none", borderRadius: 6, padding: "5px 10px", background: "var(--color-danger)", fontWeight: 600, cursor: "pointer" }}
             >
               🗑️ Excluir
             </button>
