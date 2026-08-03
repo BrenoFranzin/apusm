@@ -4,6 +4,11 @@
 // ======================================================
 
 import type { Instrutor } from "../types/instrutor.types";
+import { useTurmas } from "@/modules/turmas/hooks/useTurmas";
+import { useModalidades } from "@/modules/modalidades/hooks/useModalidades";
+
+
+
 
 interface Props {
   instrutor: Instrutor;
@@ -12,6 +17,19 @@ interface Props {
 }
 
 export function InstrutorCard({ instrutor, onEditar, onExcluir }: Props) {
+
+  const { turmas } = useTurmas();
+  const { modalidades } = useModalidades();
+
+  const turmasDoInstrutor = turmas.filter((t) => t.instrutorId === instrutor.id);
+  const modalidadesNomes = Array.from(
+    new Set(
+      turmasDoInstrutor
+        .map((t) => modalidades.find((m) => m.id === t.modalidadeId)?.nome)
+        .filter(Boolean)
+    )
+  );
+
   return (
     <div
       style={{
@@ -55,7 +73,9 @@ export function InstrutorCard({ instrutor, onEditar, onExcluir }: Props) {
           {instrutor.nome}
         </p>
         <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: "2px 0 0" }}>
-          {instrutor.especialidades?.length ? instrutor.especialidades.join(", ") : "—"}
+          {modalidadesNomes.length > 0
+            ? `${modalidadesNomes.join(", ")} · ${turmasDoInstrutor.length} turma(s)`
+            : "Sem turmas vinculadas"}
           {instrutor.terceirizado ? " · Terceirizado" : ""}
         </p>
       </div>

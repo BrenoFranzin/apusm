@@ -15,15 +15,24 @@ const STORAGE_KEY = "apusm:instrutores";
 
 class InstrutoresService {
 
+  private normalizar(i: any): Instrutor {
+    return {
+      id: i?.id ?? crypto.randomUUID(),
+      nome: i?.nome ?? "Sem nome",
+      cor: i?.cor ?? "#6b7280",
+      especialidades: Array.isArray(i?.especialidades) ? i.especialidades : [],
+      terceirizado: i?.terceirizado ?? false,
+    };
+  }
+
   private carregarStorage(): Instrutor[] {
     const dados = localStorage.getItem(STORAGE_KEY);
-
     if (!dados) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(instrutoresMock));
       return instrutoresMock;
     }
-
-    return JSON.parse(dados);
+    const bruto = JSON.parse(dados);
+    return (Array.isArray(bruto) ? bruto : []).map((i) => this.normalizar(i));
   }
 
   private salvarStorage(lista: Instrutor[]) {
