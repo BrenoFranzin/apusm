@@ -14,6 +14,7 @@ import type { Associado } from "../types/associado.types";
 import type { EntradaListaEspera } from "@/modules/lista-espera/types/listaEspera.types";
 import type { Turma } from "@/modules/turmas/types/turma.types";
 import type { Modalidade } from "@/modules/modalidades/types/modalidade.types";
+import { listaEsperaService } from "@/modules/lista-espera/services/listaEspera.service";
 
 interface Props {
   aberto: boolean;
@@ -35,6 +36,10 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
   const [grupoAberto, setGrupoAberto] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
   const [inserindo, setInserindo] = useState(false);
+  const [nomeParaCadastrar, setNomeParaCadastrar] = useState("");
+  const [telefoneParaCadastrar, setTelefoneParaCadastrar] = useState("");
+  const [cadastrando, setCadastrando] = useState(false);
+  const [filasContagem, setFilasContagem] = useState<Record<string, number>>({});
 
   useEffect(() => {
     if (!aberto) return;
@@ -42,8 +47,22 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
     modalidadesService.listar().then(setModalidades);
   }, [aberto]);
 
+  useEffect(() => {
+    async function carregarContagens() {
+      if (turmas.length === 0) return;
+      const contagens: Record<string, number> = {};
+      for (const t of turmas) {
+        const fila = await listaEsperaService.listarPorTurma(t.id);
+        contagens[t.id] = fila.length;
+      }
+      setFilasContagem(contagens);
+    }
+    carregarContagens();
+  }, [turmas]);
+
   async function handleBuscar(texto: string) {
     setBusca(texto);
+    setNomeParaCadastrar("");
     if (texto.trim().length < 2) {
       setResultados([]);
       return;
@@ -53,6 +72,28 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
       (a) => buscaAproximada(texto, a.nome) || a.telefone.includes(texto)
     );
     setResultados(lista);
+    if (lista.length === 0) {
+      setNomeParaCadastrar(texto);
+    }
+  }
+
+  async function handleCadastrarRapido() {
+    if (!nomeParaCadastrar.trim()) return;
+    setCadastrando(true);
+    try {
+      const novo = await associadosService.criar({
+        nome: nomeParaCadastrar.trim(),
+        telefone: telefoneParaCadastrar.trim(),
+        status: "ATIVO",
+      });
+      setNomeParaCadastrar("");
+      setTelefoneParaCadastrar("");
+      await handleSelecionar(novo);
+    } catch (e) {
+      setAviso(e instanceof Error ? e.message : "Erro ao cadastrar associado");
+    } finally {
+      setCadastrando(false);
+    }
   }
 
   async function handleSelecionar(associado: Associado) {
