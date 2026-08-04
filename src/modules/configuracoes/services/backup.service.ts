@@ -9,6 +9,8 @@ const CHAVES = [
   "apusm:instrutores",
   "apusm:modalidades",
   "apusm:turmas",
+  "apusm:listaEspera",
+  "apusm:presencaSemanal",
 ] as const;
 
 export interface BackupData {
@@ -36,6 +38,20 @@ class BackupService {
     const backup = this.montarBackup();
     this.baixarArquivo(backup, "seed-teste.json");
   }
+
+// ==========================
+  // CARREGAR DADOS DE TESTE DIRETO DO ARQUIVO DO PROJETO (public/seed-teste.json)
+  // ==========================
+  async carregarSeedTesteDoProjeto(): Promise<void> {
+    const resposta = await fetch("/seed-teste.json");
+    if (!resposta.ok) {
+      throw new Error("Arquivo seed-teste.json não encontrado em public/. Faça o export primeiro e mova o arquivo pra lá.");
+    }
+    const seed: BackupData = await resposta.json();
+    this.carregarSeedTeste(seed);
+  }
+
+
 
   // ==========================
   // CARREGAR DADOS DE TESTE (já embutido no projeto, sem escolher arquivo)

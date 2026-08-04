@@ -98,6 +98,27 @@ export default function ConfiguracoesPage() {
     e.target.value = "";
   }
 
+function handleSalvarDadosNoProjeto() {
+    backupService.exportarSeedTeste();
+    avisar("Arquivo seed-teste.json baixado. Mova ele pra pasta public/ do projeto e faça o commit/push.");
+  }
+
+  async function handleCarregarDadosDoProjeto() {
+    const confirmar = window.confirm(
+      "Isso vai substituir todos os dados atuais pelos dados do arquivo seed-teste.json do projeto. Deseja continuar?"
+    );
+    if (!confirmar) return;
+
+    try {
+      await backupService.carregarSeedTesteDoProjeto();
+      avisar("Dados carregados do projeto. Recarregando a página...");
+      setTimeout(() => window.location.reload(), 1500);
+    } catch (e) {
+      avisar(e instanceof Error ? e.message : "Erro ao carregar dados do projeto.");
+    }
+  }
+
+
   function handleResetarFabrica() {
     const confirmar = window.confirm(
       "Isso vai apagar todos os dados e voltar ao estado inicial do sistema. Essa ação não pode ser desfeita. Deseja continuar?"
@@ -273,6 +294,11 @@ export default function ConfiguracoesPage() {
           style={{ display: "none" }}
           onChange={handleArquivoRestaurar}
         />
+      </Section>
+
+      <Section title="Sincronizar dados entre PCs (temporário)" desc="Salva os dados de teste como arquivo do projeto, pra levar via Git de um PC pro outro">
+        <Btn onClick={handleSalvarDadosNoProjeto}>💾 Salvar dados no projeto</Btn>
+        <Btn onClick={handleCarregarDadosDoProjeto}>📥 Carregar dados do projeto</Btn>
       </Section>
 
       <Section title="Desfazer / Refazer" desc="Reverter as últimas alterações feitas no sistema">
