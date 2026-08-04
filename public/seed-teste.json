@@ -1,0 +1,836 @@
+{
+  "versao": 1,
+  "dataExportacao": "2026-08-04T23:14:25.682Z",
+  "dados": {
+    "apusm:associados": [
+      {
+        "id": "1",
+        "nome": "João Silva",
+        "telefone": "55999999999",
+        "status": "ATIVO",
+        "dataCadastro": "2026-07-22",
+        "matriculas": [],
+        "frequencias": [],
+        "pagamentos": [],
+        "historico": []
+      },
+      {
+        "id": "2",
+        "nome": "Maria Oliveira",
+        "telefone": "55988888888",
+        "status": "PENDENTE",
+        "dataCadastro": "2026-06-10",
+        "matriculas": [],
+        "frequencias": [],
+        "pagamentos": [],
+        "historico": []
+      },
+      {
+        "id": "3",
+        "nome": "Carlos Souza",
+        "telefone": "55977777777",
+        "status": "INATIVO",
+        "dataCadastro": "2026-03-01",
+        "matriculas": [],
+        "frequencias": [],
+        "pagamentos": [],
+        "historico": []
+      },
+      {
+        "id": "fake-1",
+        "nome": "Bruno Almeida",
+        "telefone": "55911111001",
+        "status": "ATIVO",
+        "dataCadastro": "2026-01-15",
+        "matriculas": [],
+        "frequencias": [],
+        "pagamentos": [],
+        "historico": []
+      },
+      {
+        "id": "fake-2",
+        "nome": "Ana Beatriz Costa",
+        "telefone": "55911111002",
+        "status": "ATIVO",
+        "dataCadastro": "2026-02-03",
+        "matriculas": [],
+        "frequencias": [],
+        "pagamentos": [],
+        "historico": []
+      },
+      {
+        "id": "fake-3",
+        "nome": "José Ricardo Pereira",
+        "telefone": "55911111003",
+        "status": "PENDENTE",
+        "dataCadastro": "2026-02-18",
+        "matriculas": [],
+        "frequencias": [],
+        "pagamentos": [],
+        "historico": []
+      },
+      {
+        "id": "fake-4",
+        "nome": "Fernanda Lima",
+        "telefone": "55911111004",
+        "status": "ATIVO",
+        "dataCadastro": "2026-03-05",
+        "matriculas": [],
+        "frequencias": [],
+        "pagamentos": [],
+        "historico": []
+      },
+      {
+        "id": "fake-5",
+        "nome": "Rafael Nunes",
+        "telefone": "55911111005",
+        "status": "ATIVO",
+        "dataCadastro": "2026-03-20",
+        "matriculas": [],
+        "frequencias": [],
+        "pagamentos": [],
+        "historico": []
+      },
+      {
+        "id": "fake-6",
+        "nome": "Camila Rodrigues",
+        "telefone": "55911111006",
+        "status": "INATIVO",
+        "dataCadastro": "2026-04-01",
+        "matriculas": [],
+        "frequencias": [],
+        "pagamentos": [],
+        "historico": []
+      },
+      {
+        "id": "fake-7",
+        "nome": "Thiago Martins",
+        "telefone": "55911111007",
+        "status": "ATIVO",
+        "dataCadastro": "2026-04-11",
+        "matriculas": [],
+        "frequencias": [],
+        "pagamentos": [],
+        "historico": []
+      },
+      {
+        "id": "fake-8",
+        "nome": "Larissa Santos",
+        "telefone": "55911111008",
+        "status": "PENDENTE",
+        "dataCadastro": "2026-04-22",
+        "matriculas": [],
+        "frequencias": [],
+        "pagamentos": [],
+        "historico": []
+      },
+      {
+        "id": "fake-9",
+        "nome": "Gustavo Henrique Barros",
+        "telefone": "55911111009",
+        "status": "ATIVO",
+        "dataCadastro": "2026-05-02",
+        "matriculas": [],
+        "frequencias": [],
+        "pagamentos": [],
+        "historico": []
+      },
+      {
+        "id": "fake-10",
+        "nome": "Juliana Ferreira",
+        "telefone": "55911111010",
+        "status": "ATIVO",
+        "dataCadastro": "2026-05-14",
+        "matriculas": [],
+        "frequencias": [],
+        "pagamentos": [],
+        "historico": []
+      },
+      {
+        "id": "fake-11",
+        "nome": "Eduardo Vieira",
+        "telefone": "55911111011",
+        "status": "BLOQUEADO",
+        "dataCadastro": "2026-05-28",
+        "matriculas": [],
+        "frequencias": [],
+        "pagamentos": [],
+        "historico": []
+      },
+      {
+        "id": "fake-12",
+        "nome": "Patrícia Gomes",
+        "telefone": "55911111012",
+        "status": "ATIVO",
+        "dataCadastro": "2026-06-06",
+        "matriculas": [],
+        "frequencias": [],
+        "pagamentos": [],
+        "historico": []
+      },
+      {
+        "id": "fake-13",
+        "nome": "Vinícius Cardoso",
+        "telefone": "55911111013",
+        "status": "ATIVO",
+        "dataCadastro": "2026-06-19",
+        "matriculas": [],
+        "frequencias": [],
+        "pagamentos": [],
+        "historico": []
+      },
+      {
+        "id": "fake-14",
+        "nome": "Sabrina Teixeira",
+        "telefone": "55911111014",
+        "status": "PENDENTE",
+        "dataCadastro": "2026-07-01",
+        "matriculas": [],
+        "frequencias": [],
+        "pagamentos": [],
+        "historico": []
+      },
+      {
+        "id": "fake-15",
+        "nome": "Leonardo Batista",
+        "telefone": "55911111015",
+        "status": "ATIVO",
+        "dataCadastro": "2026-07-10",
+        "matriculas": [],
+        "frequencias": [],
+        "pagamentos": [],
+        "historico": []
+      },
+      {
+        "nome": "teste",
+        "telefone": "(00) 7007-0070",
+        "status": "ATIVO",
+        "id": "13d5265a-bc0f-4363-b317-ae907369503b",
+        "dataCadastro": "2026-08-04",
+        "historico": [],
+        "matriculas": [],
+        "frequencias": [],
+        "pagamentos": []
+      }
+    ],
+    "apusm:instrutores": [
+      {
+        "id": "1",
+        "nome": "Rochester",
+        "cor": "#444441",
+        "especialidades": [
+          "Coordenador"
+        ],
+        "terceirizado": false
+      },
+      {
+        "id": "2",
+        "nome": "Rafaela",
+        "cor": "#185fa5",
+        "especialidades": [
+          "Pilates"
+        ],
+        "terceirizado": false
+      },
+      {
+        "id": "3",
+        "nome": "Eduardo",
+        "cor": "#BA7517",
+        "especialidades": [
+          "Coordenador Adjunto"
+        ],
+        "terceirizado": false
+      },
+      {
+        "id": "4",
+        "nome": "Bia",
+        "cor": "#993556",
+        "especialidades": [
+          "Alongamento"
+        ],
+        "terceirizado": false
+      },
+      {
+        "id": "5",
+        "nome": "Carol",
+        "cor": "#D4537E",
+        "especialidades": [
+          "Dança Ritmos"
+        ],
+        "terceirizado": false
+      },
+      {
+        "id": "6",
+        "nome": "Josi",
+        "cor": "#378ADD",
+        "especialidades": [
+          "Pilates"
+        ],
+        "terceirizado": false
+      },
+      {
+        "id": "7",
+        "nome": "Leonardo",
+        "cor": "#5F5E5A",
+        "especialidades": [
+          "Funcional"
+        ],
+        "terceirizado": false
+      },
+      {
+        "id": "8",
+        "nome": "Liriana",
+        "cor": "#534AB7",
+        "especialidades": [
+          "Yoga"
+        ],
+        "terceirizado": false
+      },
+      {
+        "id": "9",
+        "nome": "Ticiana",
+        "cor": "#854F0B",
+        "especialidades": [
+          "Yoga"
+        ],
+        "terceirizado": false
+      },
+      {
+        "id": "10",
+        "nome": "Manu",
+        "cor": "#085041",
+        "especialidades": [
+          "Bike",
+          "Hit Dance"
+        ],
+        "terceirizado": false
+      },
+      {
+        "id": "11",
+        "nome": "Jane",
+        "cor": "#639922",
+        "especialidades": [
+          "Musicalização"
+        ],
+        "terceirizado": false
+      },
+      {
+        "id": "12",
+        "nome": "Marion",
+        "cor": "#A32D2D",
+        "especialidades": [
+          "Dança de Salão"
+        ],
+        "terceirizado": false
+      },
+      {
+        "id": "13",
+        "nome": "Mauren",
+        "cor": "#7F77DD",
+        "especialidades": [],
+        "terceirizado": false
+      },
+      {
+        "id": "14",
+        "nome": "João",
+        "cor": "#412402",
+        "especialidades": [
+          "Jiu-Jitsu"
+        ],
+        "terceirizado": true
+      }
+    ],
+    "apusm:modalidades": [
+      {
+        "id": "1",
+        "nome": "Pilates Solo",
+        "icone": "🧘",
+        "cor": "#7F77DD",
+        "salas": [
+          "Sala 1"
+        ],
+        "instrutoresIds": []
+      },
+      {
+        "id": "2",
+        "nome": "Yoga",
+        "icone": "🧘‍♀️",
+        "cor": "#1D9E75",
+        "salas": [
+          "Sala 1"
+        ],
+        "instrutoresIds": []
+      },
+      {
+        "id": "3",
+        "nome": "Alongamento",
+        "icone": "🤸",
+        "cor": "#378ADD",
+        "salas": [
+          "Sala 1"
+        ],
+        "instrutoresIds": []
+      },
+      {
+        "id": "4",
+        "nome": "Bike",
+        "icone": "🚴",
+        "cor": "#D85A30",
+        "salas": [
+          "Sala 5"
+        ],
+        "instrutoresIds": []
+      },
+      {
+        "id": "5",
+        "nome": "Hit Dance",
+        "icone": "💃",
+        "cor": "#D4537E",
+        "salas": [
+          "Sala 3"
+        ],
+        "instrutoresIds": []
+      },
+      {
+        "id": "6",
+        "nome": "Musicalização",
+        "icone": "🎵",
+        "cor": "#639922",
+        "salas": [
+          "Sala 2"
+        ],
+        "instrutoresIds": []
+      },
+      {
+        "id": "7",
+        "nome": "Ritmos",
+        "icone": "🕺",
+        "cor": "#9333EA",
+        "salas": [
+          "Sala 3"
+        ],
+        "instrutoresIds": []
+      },
+      {
+        "id": "8",
+        "nome": "Jump",
+        "icone": "🏃",
+        "cor": "#534AB7",
+        "salas": [
+          "Sala 2"
+        ],
+        "instrutoresIds": []
+      },
+      {
+        "id": "9",
+        "nome": "Funcional",
+        "icone": "🏋️",
+        "cor": "#BA7517",
+        "salas": [
+          "Sala 2"
+        ],
+        "instrutoresIds": []
+      },
+      {
+        "id": "10",
+        "nome": "Dança de Salão",
+        "icone": "💃",
+        "cor": "#A32D2D",
+        "salas": [
+          "Sala 3"
+        ],
+        "instrutoresIds": []
+      },
+      {
+        "id": "11",
+        "nome": "Jiu-Jitsu",
+        "icone": "🥋",
+        "cor": "#2C2C2A",
+        "salas": [
+          "Sala 2"
+        ],
+        "instrutoresIds": []
+      }
+    ],
+    "apusm:turmas": [
+      {
+        "id": "1",
+        "modalidadeId": "1",
+        "instrutorId": "2",
+        "dia": "seg",
+        "horario": "08:00",
+        "sala": "Sala 1"
+      },
+      {
+        "id": "2",
+        "modalidadeId": "2",
+        "instrutorId": "8",
+        "dia": "ter",
+        "horario": "08:00",
+        "sala": "Sala 1"
+      },
+      {
+        "id": "3",
+        "modalidadeId": "1",
+        "instrutorId": "2",
+        "dia": "qua",
+        "horario": "08:00",
+        "sala": "Sala 1"
+      },
+      {
+        "id": "4",
+        "modalidadeId": "3",
+        "instrutorId": "2",
+        "dia": "qui",
+        "horario": "08:00",
+        "sala": "Sala 1"
+      },
+      {
+        "id": "5",
+        "modalidadeId": "1",
+        "instrutorId": "2",
+        "dia": "sex",
+        "horario": "08:00",
+        "sala": "Sala 1"
+      },
+      {
+        "id": "6",
+        "modalidadeId": "1",
+        "instrutorId": "2",
+        "dia": "seg",
+        "horario": "09:00",
+        "sala": "Sala 1"
+      },
+      {
+        "id": "7",
+        "modalidadeId": "3",
+        "instrutorId": "2",
+        "dia": "ter",
+        "horario": "09:00",
+        "sala": "Sala 1"
+      },
+      {
+        "id": "8",
+        "modalidadeId": "4",
+        "instrutorId": "10",
+        "dia": "ter",
+        "horario": "09:00",
+        "sala": "Sala 5"
+      },
+      {
+        "id": "9",
+        "modalidadeId": "1",
+        "instrutorId": "2",
+        "dia": "qua",
+        "horario": "09:00",
+        "sala": "Sala 1"
+      },
+      {
+        "id": "10",
+        "modalidadeId": "2",
+        "instrutorId": "9",
+        "dia": "qui",
+        "horario": "09:00",
+        "sala": "Sala 1"
+      },
+      {
+        "id": "11",
+        "modalidadeId": "1",
+        "instrutorId": "2",
+        "dia": "sex",
+        "horario": "09:00",
+        "sala": "Sala 1"
+      },
+      {
+        "id": "12",
+        "modalidadeId": "5",
+        "instrutorId": "10",
+        "dia": "seg",
+        "horario": "10:00",
+        "sala": "Sala 3"
+      },
+      {
+        "id": "13",
+        "modalidadeId": "2",
+        "instrutorId": "9",
+        "dia": "ter",
+        "horario": "10:00",
+        "sala": "Sala 1"
+      },
+      {
+        "id": "14",
+        "modalidadeId": "5",
+        "instrutorId": "10",
+        "dia": "qua",
+        "horario": "10:00",
+        "sala": "Sala 3"
+      },
+      {
+        "id": "15",
+        "modalidadeId": "4",
+        "instrutorId": "10",
+        "dia": "qui",
+        "horario": "10:00",
+        "sala": "Sala 5"
+      },
+      {
+        "id": "16",
+        "modalidadeId": "4",
+        "instrutorId": "10",
+        "dia": "sex",
+        "horario": "10:00",
+        "sala": "Sala 5"
+      },
+      {
+        "id": "17",
+        "modalidadeId": "3",
+        "instrutorId": "4",
+        "dia": "seg",
+        "horario": "15:00",
+        "sala": "Sala 1"
+      },
+      {
+        "id": "18",
+        "modalidadeId": "4",
+        "instrutorId": "4",
+        "dia": "qua",
+        "horario": "15:00",
+        "sala": "Sala 5"
+      },
+      {
+        "id": "19",
+        "modalidadeId": "1",
+        "instrutorId": "6",
+        "dia": "ter",
+        "horario": "17:00",
+        "sala": "Sala 1"
+      },
+      {
+        "id": "20",
+        "modalidadeId": "4",
+        "instrutorId": "10",
+        "dia": "ter",
+        "horario": "17:00",
+        "sala": "Sala 5"
+      },
+      {
+        "id": "21",
+        "modalidadeId": "1",
+        "instrutorId": "6",
+        "dia": "qua",
+        "horario": "17:00",
+        "sala": "Sala 1"
+      },
+      {
+        "id": "22",
+        "modalidadeId": "1",
+        "instrutorId": "6",
+        "dia": "qui",
+        "horario": "17:00",
+        "sala": "Sala 1"
+      },
+      {
+        "id": "23",
+        "modalidadeId": "9",
+        "instrutorId": "5",
+        "dia": "sex",
+        "horario": "17:00",
+        "sala": "Sala 2"
+      },
+      {
+        "id": "24",
+        "modalidadeId": "1",
+        "instrutorId": "6",
+        "dia": "seg",
+        "horario": "18:00",
+        "sala": "Sala 1"
+      },
+      {
+        "id": "25",
+        "modalidadeId": "6",
+        "instrutorId": "11",
+        "dia": "seg",
+        "horario": "18:00",
+        "sala": "Sala 2"
+      },
+      {
+        "id": "26",
+        "modalidadeId": "2",
+        "instrutorId": "9",
+        "dia": "seg",
+        "horario": "18:00",
+        "sala": "Sala 1"
+      },
+      {
+        "id": "27",
+        "modalidadeId": "6",
+        "instrutorId": "11",
+        "dia": "ter",
+        "horario": "18:00",
+        "sala": "Sala 2"
+      },
+      {
+        "id": "28",
+        "modalidadeId": "2",
+        "instrutorId": "8",
+        "dia": "ter",
+        "horario": "18:00",
+        "sala": "Sala 1"
+      },
+      {
+        "id": "29",
+        "modalidadeId": "4",
+        "instrutorId": "4",
+        "dia": "ter",
+        "horario": "18:00",
+        "sala": "Sala 5"
+      },
+      {
+        "id": "30",
+        "modalidadeId": "6",
+        "instrutorId": "11",
+        "dia": "qua",
+        "horario": "18:00",
+        "sala": "Sala 2"
+      },
+      {
+        "id": "31",
+        "modalidadeId": "7",
+        "instrutorId": "5",
+        "dia": "qua",
+        "horario": "18:00",
+        "sala": "Sala 3"
+      },
+      {
+        "id": "32",
+        "modalidadeId": "8",
+        "instrutorId": "4",
+        "dia": "qua",
+        "horario": "18:00",
+        "sala": "Sala 2"
+      },
+      {
+        "id": "33",
+        "modalidadeId": "2",
+        "instrutorId": "8",
+        "dia": "qui",
+        "horario": "18:00",
+        "sala": "Sala 1"
+      },
+      {
+        "id": "34",
+        "modalidadeId": "5",
+        "instrutorId": "10",
+        "dia": "qui",
+        "horario": "18:00",
+        "sala": "Sala 3"
+      },
+      {
+        "id": "35",
+        "modalidadeId": "7",
+        "instrutorId": "5",
+        "dia": "sex",
+        "horario": "18:00",
+        "sala": "Sala 3"
+      },
+      {
+        "id": "36",
+        "modalidadeId": "10",
+        "instrutorId": "12",
+        "dia": "ter",
+        "horario": "18:30",
+        "sala": "Sala 3"
+      },
+      {
+        "id": "37",
+        "modalidadeId": "6",
+        "instrutorId": "11",
+        "dia": "qui",
+        "horario": "18:30",
+        "sala": "Sala 2"
+      },
+      {
+        "id": "38",
+        "modalidadeId": "7",
+        "instrutorId": "13",
+        "dia": "seg",
+        "horario": "19:00",
+        "sala": "Sala 3"
+      },
+      {
+        "id": "39",
+        "modalidadeId": "1",
+        "instrutorId": "6",
+        "dia": "ter",
+        "horario": "19:00",
+        "sala": "Sala 1"
+      },
+      {
+        "id": "40",
+        "modalidadeId": "2",
+        "instrutorId": "8",
+        "dia": "qua",
+        "horario": "19:00",
+        "sala": "Sala 1"
+      },
+      {
+        "id": "41",
+        "modalidadeId": "9",
+        "instrutorId": "7",
+        "dia": "qua",
+        "horario": "19:00",
+        "sala": "Sala 2"
+      },
+      {
+        "id": "42",
+        "modalidadeId": "4",
+        "instrutorId": "4",
+        "dia": "qui",
+        "horario": "19:00",
+        "sala": "Sala 5"
+      },
+      {
+        "id": "43",
+        "modalidadeId": "1",
+        "instrutorId": "6",
+        "dia": "qui",
+        "horario": "19:00",
+        "sala": "Sala 1"
+      },
+      {
+        "id": "44",
+        "modalidadeId": "4",
+        "instrutorId": "4",
+        "dia": "sex",
+        "horario": "19:00",
+        "sala": "Sala 5"
+      },
+      {
+        "id": "45",
+        "modalidadeId": "10",
+        "instrutorId": "12",
+        "dia": "ter",
+        "horario": "19:30",
+        "sala": "Sala 3"
+      },
+      {
+        "id": "46",
+        "modalidadeId": "11",
+        "instrutorId": "14",
+        "dia": "sab",
+        "horario": "10:00",
+        "sala": "Sala 2"
+      },
+      {
+        "id": "47",
+        "modalidadeId": "11",
+        "instrutorId": "14",
+        "dia": "sab",
+        "horario": "11:00",
+        "sala": "Sala 2"
+      }
+    ],
+    "apusm:listaEspera": null,
+    "apusm:presencaSemanal": null
+  }
+}
