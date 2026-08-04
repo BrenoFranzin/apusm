@@ -11,6 +11,8 @@ import { pdfService, type RegistroExportacao } from "../services/pdf.service";
 import SalasModal from "../../salas/components/SalasModal";
 import { useTurmas } from "@/modules/turmas/hooks/useTurmas";
 import { useModalidades } from "@/modules/modalidades/hooks/useModalidades";
+import seedTeste from "../../../data/seed-teste.json";
+import type { BackupData } from "../services/backup.service";
 
 const LABEL_TIPO: Record<RegistroExportacao["tipo"], string> = {
   servico: "Escala de Serviço",
@@ -52,6 +54,23 @@ export default function ConfiguracoesPage() {
   function handleBackup() {
     backupService.exportar();
     avisar("Backup baixado com sucesso.");
+  }
+
+  function handleSalvarSeedTeste() {
+    backupService.exportarSeedTeste();
+    avisar("Arquivo seed-teste.json baixado. Mova ele pra src/data e faça o commit.");
+  }
+
+  function handleCarregarSeedTeste() {
+    const confirmar = window.confirm(
+      "Isso vai substituir todos os dados atuais pelos dados de teste salvos no projeto. Deseja continuar?"
+    );
+
+    if (confirmar) {
+      backupService.carregarSeedTeste(seedTeste as BackupData);
+      avisar("Dados de teste carregados. Recarregando a página...");
+      setTimeout(() => window.location.reload(), 1500);
+    }
   }
 
   function handleClickRestaurar() {
@@ -236,6 +255,11 @@ export default function ConfiguracoesPage() {
           })}
         </select>
         <Btn onClick={handleExportarPresenca}>🖨️ Exportar folha de presença</Btn>
+      </Section>
+
+      <Section title="Dados de teste (sincronizado via Git)" desc="Salvar ou carregar dados de teste que ficam junto com o código do projeto">
+        <Btn onClick={handleSalvarSeedTeste}>Salvar dados atuais como dados de teste</Btn>
+        <Btn onClick={handleCarregarSeedTeste}>Carregar dados de teste do projeto</Btn>
       </Section>
 
       <Section title="Dados do sistema" desc="Backup, restauração e reset. Use com cuidado">
