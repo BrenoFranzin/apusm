@@ -1,7 +1,7 @@
 // ======================================================
 // APUSM SaaS — Modal grande de Associado
 // Arquivo: AssociadoDetalhesModal.tsx
-// Busca, matricula, historico e posicao na fila
+// Busca, matricula em lote, historico e posicao na fila
 // ======================================================
 
 import { useEffect, useState } from "react";
@@ -31,8 +31,10 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
   const [filas, setFilas] = useState<EntradaListaEspera[]>([]);
   const [turmas, setTurmas] = useState<Turma[]>([]);
   const [modalidades, setModalidades] = useState<Modalidade[]>([]);
-  const [turmaEscolhida, setTurmaEscolhida] = useState("");
+  const [turmasEscolhidas, setTurmasEscolhidas] = useState<string[]>([]);
+  const [grupoAberto, setGrupoAberto] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
+  const [inserindo, setInserindo] = useState(false);
 
   useEffect(() => {
     if (!aberto) return;
@@ -47,11 +49,6 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
       return;
     }
     const todos = await associadosService.listar();
-    console.log("DEBUG - texto buscado:", texto);
-    console.log("DEBUG - total associados:", todos.length);
-    todos.forEach((a) => {
-      console.log("DEBUG -", a.nome, "->", buscaAproximada(texto, a.nome));
-    });
     const lista = todos.filter(
       (a) => buscaAproximada(texto, a.nome) || a.telefone.includes(texto)
     );
@@ -65,6 +62,7 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
     const entradas = await listaEsperaService.listarPorAssociado(associado.id);
     setFilas(entradas);
     setAviso(null);
+    setTurmasEscolhidas([]);
   }
 
   async function recarregarSelecionado() {
@@ -75,30 +73,52 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
     setFilas(entradas);
   }
 
-  async function handleInserirNaTurma() {
-    if (!selecionado || !turmaEscolhida) return;
-    const turma = turmas.find((t) => t.id === turmaEscolhida);
-    if (!turma) return;
-    const modalidade = modalidades.find((m) => m.id === turma.modalidadeId);
+  function toggleTurmaEscolhida(turmaId: string) {
+    setTurmasEscolhidas((prev) =>
+      prev.includes(turmaId) ? prev.filter((id) => id !== turmaId) : [...prev, turmaId]
+    );
+  }
 
-    try {
-      const resultado = await associadosService.matricular(selecionado.id, {
-        turmaId: turma.id,
-        turmaNome: `${DIA_LABEL[turma.dia]} ${turma.horario}`,
-        modalidadeId: turma.modalidadeId,
-        modalidadeNome: modalidade?.nome ?? "",
-      });
+  async function handleInserirEmLote() {
+    if (!selecionado || turmasEscolhidas.length === 0) return;
+    setInserindo(true);
 
-      if (resultado.status === "LISTA_ESPERA") {
-        setAviso(`Turma cheia. Entrou na lista de espera na posição ${resultado.posicaoFila}.`);
-      } else {
-        setAviso("Matriculado com sucesso.");
+    let matriculados = 0;
+    let naFila = 0;
+    let erros = 0;
+
+    for (const turmaId of turmasEscolhidas) {
+      const turma = turmas.find((t) => t.id === turmaId);
+      if (!turma) continue;
+      const modalidade = modalidades.find((m) => m.id === turma.modalidadeId);
+
+      try {
+        const resultado = await associadosService.matricular(selecionado.id, {
+          turmaId: turma.id,
+          turmaNome: `${DIA_LABEL[turma.dia]} ${turma.horario}`,
+          modalidadeId: turma.modalidadeId,
+          modalidadeNome: modalidade?.nome ?? "",
+        });
+
+        if (resultado.status === "LISTA_ESPERA") {
+          naFila++;
+        } else {
+          matriculados++;
+        }
+      } catch {
+        erros++;
       }
-      setTurmaEscolhida("");
-      await recarregarSelecionado();
-    } catch (e) {
-      setAviso(e instanceof Error ? e.message : "Erro ao matricular");
     }
+
+    const partes: string[] = [];
+    if (matriculados > 0) partes.push(`${matriculados} matrícula(s) confirmada(s)`);
+    if (naFila > 0) partes.push(`${naFila} na lista de espera`);
+    if (erros > 0) partes.push(`${erros} não puderam ser inseridas (limite atingido)`);
+
+    setAviso(partes.join(" · "));
+    setTurmasEscolhidas([]);
+    setInserindo(false);
+    await recarregarSelecionado();
   }
 
   async function handleCancelar(matriculaId: string) {
@@ -145,12 +165,12 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
               value={busca}
               onChange={(e) => handleBuscar(e.target.value)}
               placeholder="Buscar por nome ou telefone..."
-              style={{ width: "100%", padding: "10px 14px", borderRadius: 8, border: "1px solid var(--border-default)", fontSize: 14 }}
+              style={{ width: "100%", padding: "10px 14px", borderRadius: 8, border: "1px solid var(--border-default)", fontSize: 14, background: "var(--background-primary)", color: "var(--text-primary)" }}
             />
             {resultados.length > 0 && (
               <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "var(--background-primary)", border: "1px solid var(--border-default)", borderRadius: 8, marginTop: 4, zIndex: 10, maxHeight: 240, overflowY: "auto" }}>
                 {resultados.map((a) => (
-                  <div key={a.id} onClick={() => handleSelecionar(a)} style={{ padding: "10px 14px", cursor: "pointer", fontSize: 14, borderBottom: "1px solid var(--border-light)" }}>
+                  <div key={a.id} onClick={() => handleSelecionar(a)} style={{ padding: "10px 14px", cursor: "pointer", fontSize: 14, borderBottom: "1px solid var(--border-light)", color: "var(--text-primary)" }}>
                     {a.nome} — {a.telefone}
                   </div>
                 ))}
@@ -163,70 +183,101 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
           {selecionado && (
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
               <div style={{ gridColumn: "1 / -1" }}>
-                <p style={{ fontWeight: 700, fontSize: 18, margin: 0 }}>{selecionado.nome}</p>
+                <p style={{ fontWeight: 700, fontSize: 18, margin: 0, color: "var(--text-primary)" }}>{selecionado.nome}</p>
                 <p style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 12 }}>
                   {selecionado.telefone} — Status: {selecionado.status}
                 </p>
 
-                <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-                  <select
-                    value={turmaEscolhida}
-                    onChange={(e) => setTurmaEscolhida(e.target.value)}
-                    style={{
-                      flex: 1, padding: 8, borderRadius: 8,
-                      border: "1px solid var(--border-default)",
-                      color: "var(--text-primary)",
-                      background: "var(--background-primary)",
-                    }}
-                  >
-                    <option value="" style={{ color: "var(--text-primary)", background: "var(--background-primary)" }}>
-                      Selecione uma turma para inserir...
-                    </option>
-                    {[...modalidades].sort((a, b) => a.nome.localeCompare(b.nome)).map((mod) => {
-                      const turmasDaModalidade = turmas
-                        .filter((t) => t.modalidadeId === mod.id)
-                        .slice()
-                        .sort((a, b) => a.dia.localeCompare(b.dia) || a.horario.localeCompare(b.horario));
+                <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", marginBottom: 8 }}>
+                  Inserir em várias turmas de uma vez
+                </p>
 
-                      if (turmasDaModalidade.length === 0) return null;
+                <div style={{ border: "1px solid var(--border-default)", borderRadius: 8, maxHeight: 260, overflowY: "auto", marginBottom: 8 }}>
+                  {[...modalidades].sort((a, b) => a.nome.localeCompare(b.nome)).map((mod) => {
+                    const turmasDaModalidade = turmas
+                      .filter((t) => t.modalidadeId === mod.id)
+                      .slice()
+                      .sort((a, b) => a.dia.localeCompare(b.dia) || a.horario.localeCompare(b.horario));
 
-                      return (
-                        <optgroup
-                          key={mod.id}
-                          label={`${mod.icone ?? ""} ${mod.nome}`}
-                          style={{ color: "var(--text-primary)", background: "var(--background-primary)" }}
+                    if (turmasDaModalidade.length === 0) return null;
+
+                    const qtdEscolhidas = turmasDaModalidade.filter((t) => turmasEscolhidas.includes(t.id)).length;
+                    const estaAberto = grupoAberto === mod.id;
+
+                    return (
+                      <div key={mod.id} style={{ borderBottom: "1px solid var(--border-light)" }}>
+                        <button
+                          type="button"
+                          onClick={() => setGrupoAberto(estaAberto ? null : mod.id)}
+                          style={{
+                            width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center",
+                            padding: "10px 12px", background: "none", border: "none", cursor: "pointer", textAlign: "left",
+                          }}
                         >
-                          {turmasDaModalidade.map((t) => (
-                            <option
-                              key={t.id}
-                              value={t.id}
-                              style={{ color: "var(--text-primary)", background: "var(--background-primary)" }}
-                            >
-                              {DIA_LABEL[t.dia]} — {t.horario}
-                            </option>
-                          ))}
-                        </optgroup>
-                      );
-                    })}
-                  </select>
-                  <button
-                    onClick={handleInserirNaTurma}
-                    disabled={!turmaEscolhida}
-                    style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: "var(--color-primary)", color: "#fff", cursor: "pointer" }}
-                  >
-                    Inserir
-                  </button>
+                          <span style={{ display: "flex", alignItems: "center", gap: 8, color: "var(--text-primary)" }}>
+                            <span>{mod.icone}</span>
+                            <span style={{ fontWeight: 500 }}>{mod.nome}</span>
+                            <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>({turmasDaModalidade.length})</span>
+                          </span>
+                          <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            {qtdEscolhidas > 0 && (
+                              <span style={{ fontSize: 11, background: "var(--color-success-light)", color: "var(--color-success)", padding: "3px 8px", borderRadius: 999 }}>
+                                {qtdEscolhidas}
+                              </span>
+                            )}
+                            <span style={{ color: "var(--text-secondary)" }}>{estaAberto ? "▲" : "▼"}</span>
+                          </span>
+                        </button>
+
+                        {estaAberto && (
+                          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 6, padding: "8px 12px 12px", background: "var(--background-tertiary)" }}>
+                            {turmasDaModalidade.map((t) => {
+                              const marcada = turmasEscolhidas.includes(t.id);
+                              return (
+                                <label
+                                  key={t.id}
+                                  style={{
+                                    display: "flex", alignItems: "center", gap: 6, fontSize: 13,
+                                    border: `1px solid ${marcada ? "var(--color-success)" : "var(--border-default)"}`,
+                                    borderRadius: 6, padding: "6px 8px", cursor: "pointer",
+                                    background: marcada ? "var(--color-success-light)" : "var(--background-primary)",
+                                    color: "var(--text-primary)",
+                                  }}
+                                >
+                                  <input type="checkbox" checked={marcada} onChange={() => toggleTurmaEscolhida(t.id)} />
+                                  {DIA_LABEL[t.dia]} — {t.horario}
+                                </label>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
-                {aviso && <p style={{ fontSize: 13, color: "var(--color-primary)" }}>{aviso}</p>}
+
+                <button
+                  onClick={handleInserirEmLote}
+                  disabled={turmasEscolhidas.length === 0 || inserindo}
+                  style={{
+                    padding: "10px 18px", borderRadius: 8, border: "none",
+                    background: turmasEscolhidas.length === 0 ? "var(--text-disabled)" : "var(--color-primary)",
+                    color: "#fff", cursor: turmasEscolhidas.length === 0 ? "not-allowed" : "pointer", fontWeight: 600,
+                  }}
+                >
+                  {inserindo ? "Inserindo..." : `Inserir em ${turmasEscolhidas.length} turma(s)`}
+                </button>
+
+                {aviso && <p style={{ fontSize: 13, color: "var(--color-primary)", marginTop: 8 }}>{aviso}</p>}
               </div>
 
               <div>
-                <p style={{ fontWeight: 600, fontSize: 14, marginBottom: 8 }}>
+                <p style={{ fontWeight: 600, fontSize: 14, marginBottom: 8, color: "var(--text-primary)" }}>
                   Turmas matriculadas ({matriculasAtivas.length})
                 </p>
                 {matriculasAtivas.length === 0 && <p style={{ fontSize: 13, color: "var(--text-secondary)" }}>Nenhuma turma ativa.</p>}
                 {matriculasAtivas.map((m) => (
-                  <div key={m.id} style={{ fontSize: 13, padding: "8px 0", borderTop: "1px solid var(--border-light)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div key={m.id} style={{ fontSize: 13, padding: "8px 0", borderTop: "1px solid var(--border-light)", display: "flex", justifyContent: "space-between", alignItems: "center", color: "var(--text-primary)" }}>
                     <span>{m.modalidadeNome} — {m.turmaNome}</span>
                     <button onClick={() => handleCancelar(m.id)} style={{ fontSize: 12, border: "none", background: "var(--color-danger)", color: "#fff", borderRadius: 6, padding: "4px 8px", cursor: "pointer" }}>
                       Cancelar
@@ -236,25 +287,25 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
               </div>
 
               <div>
-                <p style={{ fontWeight: 600, fontSize: 14, marginBottom: 8 }}>
+                <p style={{ fontWeight: 600, fontSize: 14, marginBottom: 8, color: "var(--text-primary)" }}>
                   Listas de espera ({filas.length})
                 </p>
                 {filas.length === 0 && <p style={{ fontSize: 13, color: "var(--text-secondary)" }}>Não está em nenhuma fila.</p>}
                 {filas.map((f) => (
-                  <div key={f.id} style={{ fontSize: 13, padding: "8px 0", borderTop: "1px solid var(--border-light)" }}>
+                  <div key={f.id} style={{ fontSize: 13, padding: "8px 0", borderTop: "1px solid var(--border-light)", color: "var(--text-primary)" }}>
                     {f.modalidadeNome} — {f.turmaNome} — <strong>{f.posicao}º lugar</strong>
                   </div>
                 ))}
               </div>
 
               <div style={{ gridColumn: "1 / -1" }}>
-                <p style={{ fontWeight: 600, fontSize: 14, marginBottom: 8 }}>
+                <p style={{ fontWeight: 600, fontSize: 14, marginBottom: 8, color: "var(--text-primary)" }}>
                   Histórico de modificações ({historicoOrdenado.length})
                 </p>
                 {historicoOrdenado.length === 0 && <p style={{ fontSize: 13, color: "var(--text-secondary)" }}>Nenhuma modificação registrada ainda.</p>}
                 <div style={{ maxHeight: 220, overflowY: "auto" }}>
                   {historicoOrdenado.map((h) => (
-                    <div key={h.id} style={{ fontSize: 13, padding: "8px 0", borderTop: "1px solid var(--border-light)" }}>
+                    <div key={h.id} style={{ fontSize: 13, padding: "8px 0", borderTop: "1px solid var(--border-light)", color: "var(--text-primary)" }}>
                       <span style={{ color: "var(--text-secondary)" }}>
                         {new Date(h.data).toLocaleString("pt-BR")}
                       </span>
