@@ -474,17 +474,6 @@ class PdfService {
         0: { cellWidth: 12 },
         1: { cellWidth: 60, halign: "left" },
       },
-      didDrawCell: (data) => {
-        if (data.section === "body" && data.column.index > 1) {
-          const { x, y, width, height } = data.cell;
-          const cx = x + width / 2;
-          const cy = y + height / 2;
-          const s = 3;
-          doc.setDrawColor(0);
-          doc.setLineWidth(0.3);
-          doc.rect(cx - s / 2, cy - s / 2, s, s);
-        }
-      },
     });
 
     const nomeArquivo = `presenca-${(modalidade?.nome ?? "turma").toLowerCase().replace(/\s+/g, "-")}-${turma.dia}-${turma.horario.replace(":", "")}-${MESES[mes].toLowerCase()}-${ano}.pdf`;
