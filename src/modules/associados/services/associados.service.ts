@@ -212,6 +212,13 @@ class AssociadosService {
         modalidadeNome: dadosMatricula.modalidadeNome,
       });
 
+      lista[index].historico.push({
+        id: crypto.randomUUID(),
+        data: new Date().toISOString(),
+        descricao: `Entrou na lista de espera de ${dadosMatricula.modalidadeNome} (posição ${entrada.posicao})`,
+      });
+      this.salvarStorage(lista);
+
       return { status: "LISTA_ESPERA", posicaoFila: entrada.posicao };
     }
 
@@ -226,6 +233,11 @@ class AssociadosService {
     };
 
     lista[index].matriculas.push(novaMatricula);
+    lista[index].historico.push({
+      id: crypto.randomUUID(),
+      data: new Date().toISOString(),
+      descricao: `Matriculado em ${dadosMatricula.modalidadeNome} (${dadosMatricula.turmaNome})`,
+    });
     this.salvarStorage(lista);
 
     return { status: "MATRICULADO", associado: lista[index] };
@@ -242,6 +254,14 @@ class AssociadosService {
     lista[index].matriculas = lista[index].matriculas.map((m) =>
       m.id === matriculaId ? { ...m, status: "CANCELADA" } : m
     );
+
+    if (matriculaCancelada) {
+      lista[index].historico.push({
+        id: crypto.randomUUID(),
+        data: new Date().toISOString(),
+        descricao: `Cancelou matrícula em ${matriculaCancelada.modalidadeNome} (${matriculaCancelada.turmaNome})`,
+      });
+    }
 
     this.salvarStorage(lista);
 
