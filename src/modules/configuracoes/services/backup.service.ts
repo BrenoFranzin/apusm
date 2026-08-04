@@ -46,6 +46,15 @@ class BackupService {
       throw new Error("Arquivo de dados de teste inválido.");
     }
 
+    const totalRegistros = CHAVES.reduce((soma, chave) => {
+      const valor = seed.dados[chave];
+      return soma + (Array.isArray(valor) ? valor.length : 0);
+    }, 0);
+
+    if (totalRegistros === 0) {
+      throw new Error("O arquivo de dados de teste está vazio. Nada foi carregado, pra não apagar seus dados atuais.");
+    }
+
     for (const chave of CHAVES) {
       const valor = seed.dados[chave];
       if (valor !== undefined && valor !== null) {
