@@ -2,24 +2,20 @@ interface EmptyStateProps {
   title: string;
   description?: string;
 }
-
 export function EmptyState({
   title,
   description,
 }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center py-12 text-center">
-
-      <h3 className="font-semibold text-lg">
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "48px 0", textAlign: "center" }}>
+      <h3 style={{ fontWeight: 600, fontSize: 18, color: "var(--text-primary)" }}>
         {title}
       </h3>
-
       {description && (
-        <p className="text-gray-500 mt-2">
+        <p style={{ color: "var(--text-secondary)", marginTop: 8 }}>
           {description}
         </p>
       )}
-
     </div>
   );
 }

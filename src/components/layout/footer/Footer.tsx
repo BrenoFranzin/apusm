@@ -1,6 +1,6 @@
 export function Footer() {
   return (
-    <footer className="border-t bg-white px-6 py-4 text-sm text-gray-500">
+    <footer style={{ borderTop: "1px solid var(--border-default)", background: "var(--background-primary)", padding: "16px 24px", fontSize: 14, color: "var(--text-secondary)" }}>
       APUSM © {new Date().getFullYear()}
     </footer>
   );

@@ -1,10 +1,9 @@
 interface BreadcrumbProps {
   items: string[];
 }
-
 export function Breadcrumb({ items }: BreadcrumbProps) {
   return (
-    <nav className="text-sm text-gray-500">
+    <nav style={{ fontSize: 13, color: "var(--text-secondary)" }}>
       {items.join(" / ")}
     </nav>
   );

@@ -1,25 +1,12 @@
 interface Props{
-
 message:string;
-
 }
-
-
 export default function EmptyState({
-
 message
-
 }:Props){
-
-
 return(
-
-<div className="text-center p-10 text-gray-500">
-
+<div style={{ textAlign: "center", padding: 40, color: "var(--text-secondary)" }}>
 {message}
-
 </div>
-
 )
-
 }
