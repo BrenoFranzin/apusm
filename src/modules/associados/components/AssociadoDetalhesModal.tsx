@@ -6,6 +6,7 @@
 
 import { useEffect, useState } from "react";
 import { associadosService } from "../services/associados.service";
+import { buscaAproximada } from "@/utils/textoBusca";
 import { listaEsperaService } from "@/modules/lista-espera/services/listaEspera.service";
 import { turmasService } from "@/modules/turmas/services/turmas.service";
 import { modalidadesService } from "@/modules/modalidades/services/modalidades.service";
@@ -45,7 +46,10 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
       setResultados([]);
       return;
     }
-    const lista = await associadosService.pesquisar(texto);
+    const todos = await associadosService.listar();
+    const lista = todos.filter(
+      (a) => buscaAproximada(texto, a.nome) || a.telefone.includes(texto)
+    );
     setResultados(lista);
   }
 
@@ -163,15 +167,40 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
                   <select
                     value={turmaEscolhida}
                     onChange={(e) => setTurmaEscolhida(e.target.value)}
-                    style={{ flex: 1, padding: 8, borderRadius: 8, border: "1px solid var(--border-default)" }}
+                    style={{
+                      flex: 1, padding: 8, borderRadius: 8,
+                      border: "1px solid var(--border-default)",
+                      color: "var(--text-primary)",
+                      background: "var(--background-primary)",
+                    }}
                   >
-                    <option value="">Selecione uma turma para inserir...</option>
-                    {turmas.map((t) => {
-                      const mod = modalidades.find((m) => m.id === t.modalidadeId);
+                    <option value="" style={{ color: "var(--text-primary)", background: "var(--background-primary)" }}>
+                      Selecione uma turma para inserir...
+                    </option>
+                    {[...modalidades].sort((a, b) => a.nome.localeCompare(b.nome)).map((mod) => {
+                      const turmasDaModalidade = turmas
+                        .filter((t) => t.modalidadeId === mod.id)
+                        .slice()
+                        .sort((a, b) => a.dia.localeCompare(b.dia) || a.horario.localeCompare(b.horario));
+
+                      if (turmasDaModalidade.length === 0) return null;
+
                       return (
-                        <option key={t.id} value={t.id}>
-                          {mod?.nome ?? "Modalidade"} — {DIA_LABEL[t.dia]} {t.horario}
-                        </option>
+                        <optgroup
+                          key={mod.id}
+                          label={`${mod.icone ?? ""} ${mod.nome}`}
+                          style={{ color: "var(--text-primary)", background: "var(--background-primary)" }}
+                        >
+                          {turmasDaModalidade.map((t) => (
+                            <option
+                              key={t.id}
+                              value={t.id}
+                              style={{ color: "var(--text-primary)", background: "var(--background-primary)" }}
+                            >
+                              {DIA_LABEL[t.dia]} — {t.horario}
+                            </option>
+                          ))}
+                        </optgroup>
                       );
                     })}
                   </select>
