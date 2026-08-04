@@ -237,13 +237,42 @@ class AssociadosService {
 
     if (index < 0) return undefined;
 
+    const matriculaCancelada = lista[index].matriculas.find((m) => m.id === matriculaId);
+
     lista[index].matriculas = lista[index].matriculas.map((m) =>
       m.id === matriculaId ? { ...m, status: "CANCELADA" } : m
     );
 
     this.salvarStorage(lista);
 
-    return lista[index];
+    // Promove o próximo da lista de espera, se houver vaga liberada
+    if (matriculaCancelada) {
+      const proximo = await listaEsperaService.chamarProximo(matriculaCancelada.turmaId);
+
+      if (proximo) {
+        const listaAtualizada = this.carregarStorage();
+        const indexPromovido = listaAtualizada.findIndex((a) => a.id === proximo.associadoId);
+
+        if (indexPromovido >= 0) {
+          const novaMatricula = {
+            id: crypto.randomUUID(),
+            modalidadeId: proximo.modalidadeId,
+            modalidadeNome: proximo.modalidadeNome,
+            turmaId: proximo.turmaId,
+            turmaNome: proximo.turmaNome,
+            dataMatricula: new Date().toISOString().substring(0, 10),
+            status: "ATIVA",
+          };
+
+          listaAtualizada[indexPromovido].matriculas.push(novaMatricula);
+          this.salvarStorage(listaAtualizada);
+        }
+
+        await listaEsperaService.sairDaFila(proximo.id);
+      }
+    }
+
+    return this.carregarStorage().find((a) => a.id === associadoId);
   }
 
   
