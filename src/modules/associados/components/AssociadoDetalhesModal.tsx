@@ -47,6 +47,11 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
       return;
     }
     const todos = await associadosService.listar();
+    console.log("DEBUG - texto buscado:", texto);
+    console.log("DEBUG - total associados:", todos.length);
+    todos.forEach((a) => {
+      console.log("DEBUG -", a.nome, "->", buscaAproximada(texto, a.nome));
+    });
     const lista = todos.filter(
       (a) => buscaAproximada(texto, a.nome) || a.telefone.includes(texto)
     );
