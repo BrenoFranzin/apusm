@@ -58,63 +58,112 @@ export default function ModalSelecionarTurmas({ aberto, onFechar, onConfirmar }:
   if (!aberto) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-lg w-full max-w-lg max-h-[85vh] flex flex-col">
-        <div className="flex items-center justify-between p-4 border-b">
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(0,0,0,0.4)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 50,
+        padding: 16,
+      }}
+    >
+      <div
+        style={{
+          background: "var(--background-primary)",
+          borderRadius: 12,
+          boxShadow: "var(--shadow-lg)",
+          width: "100%",
+          maxWidth: 520,
+          maxHeight: "85vh",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: 16, borderBottom: "1px solid var(--border-default)" }}>
           <div>
-            <h2 className="font-semibold text-lg">Selecionar turmas</h2>
-            <p className="text-sm text-gray-500">Opcional. Pode pular e matricular depois.</p>
+            <h2 style={{ fontWeight: 600, fontSize: 17, margin: 0, color: "var(--text-primary)" }}>Selecionar turmas</h2>
+            <p style={{ fontSize: 13, color: "var(--text-secondary)", margin: "2px 0 0" }}>Opcional. Pode pular e matricular depois.</p>
           </div>
-          <button onClick={onFechar} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
+          <button
+            onClick={onFechar}
+            style={{ fontSize: 20, lineHeight: 1, color: "var(--text-muted)", background: "none", border: "none", cursor: "pointer" }}
+          >
+            ×
+          </button>
         </div>
 
-        <div className="overflow-y-auto flex-1 divide-y">
-          {modalidades.map((mod) => {
+        <div style={{ overflowY: "auto", flex: 1 }}>
+          {modalidades.map((mod, i) => {
             const turmasDoGrupo = turmasPorModalidade[mod.id] || [];
             const qtdSelecionadasNoGrupo = turmasDoGrupo.filter((t) => selecionadas.includes(t.id)).length;
             const estaAberta = grupoAberto === mod.id;
 
             return (
-              <div key={mod.id}>
+              <div key={mod.id} style={{ borderTop: i > 0 ? "1px solid var(--border-default)" : "none" }}>
                 <button
                   type="button"
                   onClick={() => setGrupoAberto(estaAberta ? null : mod.id)}
-                  className="w-full flex items-center justify-between p-3 hover:bg-gray-50 text-left"
+                  style={{
+                    width: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    padding: 12,
+                    background: "none",
+                    border: "none",
+                    textAlign: "left",
+                    cursor: "pointer",
+                  }}
                 >
-                  <span className="flex items-center gap-2">
+                  <span style={{ display: "flex", alignItems: "center", gap: 8, color: "var(--text-primary)" }}>
                     <span>{mod.icone}</span>
-                    <span className="font-medium">{mod.nome}</span>
-                    <span className="text-xs text-gray-400">({turmasDoGrupo.length})</span>
+                    <span style={{ fontWeight: 500 }}>{mod.nome}</span>
+                    <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>({turmasDoGrupo.length})</span>
                   </span>
-                  <span className="flex items-center gap-2">
+                  <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     {qtdSelecionadasNoGrupo > 0 && (
-                      <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+                      <span style={{ fontSize: 11, background: "var(--color-success-light)", color: "var(--color-success)", padding: "3px 8px", borderRadius: 999 }}>
                         {qtdSelecionadasNoGrupo}
                       </span>
                     )}
-                    <span className="text-gray-400">{estaAberta ? "▲" : "▼"}</span>
+                    <span style={{ color: "var(--text-secondary)" }}>{estaAberta ? "▲" : "▼"}</span>
                   </span>
                 </button>
 
                 {estaAberta && (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 p-3 bg-gray-50">
-                    {turmasDoGrupo.map((turma) => (
-                      <label
-                        key={turma.id}
-                        className={`flex items-center gap-2 text-sm border rounded-lg px-2 py-1.5 cursor-pointer ${
-                          selecionadas.includes(turma.id) ? "bg-green-50 border-green-400" : "bg-white"
-                        }`}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={selecionadas.includes(turma.id)}
-                          onChange={() => toggleTurma(turma.id)}
-                        />
-                        <span>{DIA_LABEL[turma.dia] ?? turma.dia} {turma.horario}</span>
-                      </label>
-                    ))}
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8, padding: 12, background: "var(--background-tertiary)" }}>
+                    {turmasDoGrupo.map((turma) => {
+                      const marcada = selecionadas.includes(turma.id);
+                      return (
+                        <label
+                          key={turma.id}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 8,
+                            fontSize: 13,
+                            border: `1px solid ${marcada ? "var(--color-success)" : "var(--border-default)"}`,
+                            borderRadius: 8,
+                            padding: "6px 8px",
+                            cursor: "pointer",
+                            background: marcada ? "var(--color-success-light)" : "var(--background-primary)",
+                            color: "var(--text-primary)",
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={marcada}
+                            onChange={() => toggleTurma(turma.id)}
+                          />
+                          <span>{DIA_LABEL[turma.dia] ?? turma.dia} {turma.horario}</span>
+                        </label>
+                      );
+                    })}
                     {turmasDoGrupo.length === 0 && (
-                      <p className="text-sm text-gray-400 col-span-full">Nenhuma turma cadastrada</p>
+                      <p style={{ fontSize: 13, color: "var(--text-secondary)", gridColumn: "1 / -1" }}>Nenhuma turma cadastrada</p>
                     )}
                   </div>
                 )}
@@ -123,13 +172,16 @@ export default function ModalSelecionarTurmas({ aberto, onFechar, onConfirmar }:
           })}
         </div>
 
-        <div className="flex justify-end gap-2 p-4 border-t">
-          <button onClick={onFechar} className="px-4 py-2 rounded-lg border hover:bg-gray-50">
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, padding: 16, borderTop: "1px solid var(--border-default)" }}>
+          <button
+            onClick={onFechar}
+            style={{ padding: "9px 16px", borderRadius: 8, border: "1px solid var(--border-default)", background: "var(--background-primary)", color: "var(--text-primary)", cursor: "pointer" }}
+          >
             Pular
           </button>
           <button
             onClick={() => onConfirmar(selecionadas)}
-            className="px-4 py-2 rounded-lg bg-green-900 text-white"
+            style={{ padding: "9px 16px", borderRadius: 8, border: "none", background: "var(--color-primary)", color: "#ffffff", fontWeight: 600, cursor: "pointer" }}
           >
             Confirmar {selecionadas.length > 0 ? `(${selecionadas.length})` : ""}
           </button>
