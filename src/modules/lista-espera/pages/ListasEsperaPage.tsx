@@ -9,7 +9,6 @@ import { useNavigate } from "react-router-dom";
 import { modalidadesService } from "@/modules/modalidades/services/modalidades.service";
 import type { Modalidade } from "@/modules/modalidades/types/modalidade.types";
 import AssociadoDetalhesModal from "@/modules/associados/components/AssociadoDetalhesModal";
-import AssociadoDetalhesModal from "@/modules/associados/components/AssociadoDetalhesModal";
 
 function ehModoEscuro() {
   return document.documentElement.classList.contains("dark");
@@ -29,10 +28,9 @@ function ajustarCorParaTema(cor: string, escuro: boolean) {
 
 export default function ListasEsperaPage() {
   const navigate = useNavigate();
-  <p style={{ color: "var(--page-subheading)" }}>
-          {modalidades.length} modalidades
-        </p>
-      </div>
+  const [modalidades, setModalidades] = useState<Modalidade[]>([]);
+  const [escuro, setEscuro] = useState(ehModoEscuro());
+  const [modalAssociadoAberto, setModalAssociadoAberto] = useState(false);
 
   useEffect(() => {
     modalidadesService.listar().then(setModalidades);
@@ -54,6 +52,18 @@ export default function ListasEsperaPage() {
           {modalidades.length} modalidades
         </p>
       </div>
+
+      <button
+        onClick={() => setModalAssociadoAberto(true)}
+        className="bg-blue-700 text-white px-5 py-3 rounded-lg"
+      >
+        🔍 Buscar / inserir associado
+      </button>
+
+      <AssociadoDetalhesModal
+        aberto={modalAssociadoAberto}
+        onFechar={() => setModalAssociadoAberto(false)}
+      />
 
       <div
         style={{
