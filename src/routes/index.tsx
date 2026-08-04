@@ -6,6 +6,7 @@ import {
 } from "react-router-dom"
 
 import RelatorioMatriculasPage from "@/modules/relatorios/pages/RelatorioMatriculasPage"
+import RelatorioPresencaSemanalPage from "@/modules/relatorios/pages/RelatorioPresencaSemanalPage"
 import ConfiguracoesPage from "@/modules/configuracoes/pages/ConfiguracoesPage"
 import MainLayout from "@/components/layout/MainLayout"
 import ConsultaAssociadoPage from "@/modules/relatorios/pages/ConsultaAssociadoPage"
@@ -37,6 +38,7 @@ return (
 <Route path="/configuracoes" element={<ConfiguracoesPage/>} />
 <Route path="/relatorios" element={<Navigate to="/relatorios/matriculas" replace />} />
 <Route path="/relatorios/matriculas" element={<RelatorioMatriculasPage/>} />
+<Route path="/relatorios/presenca-semanal" element={<RelatorioPresencaSemanalPage/>} />
 <Route path="/relatorios/consulta" element={<ConsultaAssociadoPage/>} />
 <Route path="/plantao" element={<PlantaoPage/>} />
 <Route path="/lista-espera" element={<ListasEsperaPage/>} />

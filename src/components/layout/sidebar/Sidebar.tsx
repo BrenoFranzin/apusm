@@ -9,6 +9,7 @@ const menu = [
   { label: "Instrutores", path: "/instrutores", icon: "🧑‍🏫" },
   { label: "Agenda", path: "/agenda", icon: "🗓️" },
   { label: "Relatórios", path: "/relatorios", icon: "📈" },
+  { label: "Presença Semanal", path: "/relatorios/presenca-semanal", icon: "📝" },
   { label: "Configurações", path: "/configuracoes", icon: "⚙️" },
   { label: "Plantão de Serviço", path: "/plantao", icon: "🕒" },
 ];
