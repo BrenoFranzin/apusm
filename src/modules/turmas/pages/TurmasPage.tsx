@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 
 import { useTurmas } from "../hooks/useTurmas";
 import TurmaForm from "../components/TurmaForm";
+import AssociadoDetalhesModal from "@/modules/associados/components/AssociadoDetalhesModal";
 import { useModalidades } from "@/modules/modalidades/hooks/useModalidades";
 import { useInstrutores } from "@/modules/instrutores/hooks/useInstrutores";
 import { useSalas } from "@/modules/salas/hooks/useSalas";
@@ -26,6 +27,7 @@ const DIA_LABEL: Record<string, string> = {
 
 export default function TurmasPage() {
   const { turmas, criar, excluir, erro } = useTurmas();
+  const [modalAssociadoAberto, setModalAssociadoAberto] = useState(false);
   const { modalidades } = useModalidades();
   const { instrutores } = useInstrutores();
   const { salas } = useSalas();
@@ -82,13 +84,26 @@ export default function TurmasPage() {
           </p>
         </div>
 
-        <button
-          onClick={() => setMostrarForm((v) => !v)}
-          className="bg-green-900 text-white px-5 py-3 rounded-lg"
-        >
-          {mostrarForm ? "Fechar" : "+ Nova turma"}
-        </button>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button
+            onClick={() => setModalAssociadoAberto(true)}
+            className="bg-blue-700 text-white px-5 py-3 rounded-lg"
+          >
+            🔍 Buscar / inserir associado
+          </button>
+          <button
+            onClick={() => setMostrarForm((v) => !v)}
+            className="bg-green-900 text-white px-5 py-3 rounded-lg"
+          >
+            {mostrarForm ? "Fechar" : "+ Nova turma"}
+          </button>
+        </div>
       </div>
+
+      <AssociadoDetalhesModal
+        aberto={modalAssociadoAberto}
+        onFechar={() => setModalAssociadoAberto(false)}
+      />
 
       {/* ===== Bloco de Turmas ===== */}
       <div

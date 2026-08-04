@@ -8,6 +8,8 @@ import { useNavigate } from "react-router-dom";
 
 import { modalidadesService } from "@/modules/modalidades/services/modalidades.service";
 import type { Modalidade } from "@/modules/modalidades/types/modalidade.types";
+import AssociadoDetalhesModal from "@/modules/associados/components/AssociadoDetalhesModal";
+import AssociadoDetalhesModal from "@/modules/associados/components/AssociadoDetalhesModal";
 
 function ehModoEscuro() {
   return document.documentElement.classList.contains("dark");
@@ -27,8 +29,10 @@ function ajustarCorParaTema(cor: string, escuro: boolean) {
 
 export default function ListasEsperaPage() {
   const navigate = useNavigate();
-  const [modalidades, setModalidades] = useState<Modalidade[]>([]);
-  const [escuro, setEscuro] = useState(ehModoEscuro());
+  <p style={{ color: "var(--page-subheading)" }}>
+          {modalidades.length} modalidades
+        </p>
+      </div>
 
   useEffect(() => {
     modalidadesService.listar().then(setModalidades);
