@@ -109,4 +109,4 @@ export function ModalidadeCard({ modalidade, onEditar, onExcluir }: Props) {
   );
 }
 
-export default ModalidadeCard;git ls-files | findstr /i "relatorio"
+export default ModalidadeCard;
