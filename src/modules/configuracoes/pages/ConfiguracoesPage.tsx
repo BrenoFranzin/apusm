@@ -1,7 +1,7 @@
 // ======================================================
-// APUSM SaaS â€” MÃ³dulo ConfiguraÃ§Ãµes
+// APUSM SaaS — Módulo Configurações
 // Arquivo: ConfiguracoesPage.tsx
-// HistÃ³rico de exportaÃ§Ãµes agora Ã© um modal
+// Histórico de exportações agora é um modal
 // ======================================================
 
 import { useEffect, useRef, useState } from "react";
@@ -12,13 +12,11 @@ import SalasModal from "../../salas/components/SalasModal";
 import { useTurmas } from "@/modules/turmas/hooks/useTurmas";
 import { useModalidades } from "@/modules/modalidades/hooks/useModalidades";
 
-
-
 const LABEL_TIPO: Record<RegistroExportacao["tipo"], string> = {
-  servico: "Escala de ServiÃ§o",
+  servico: "Escala de Serviço",
   turmas: "Escala de Turmas",
   salas: "Escala de Salas",
-  presenca: "Folha de PresenÃ§a",
+  presenca: "Folha de Presença",
 };
 
 export default function ConfiguracoesPage() {
@@ -29,18 +27,16 @@ export default function ConfiguracoesPage() {
   const [, forcarAtualizacao] = useState(0);
   const [mostrarSalas, setMostrarSalas] = useState(false);
 
+  const { turmas } = useTurmas();
+  const { modalidades } = useModalidades();
+  const [turmaSelecionadaId, setTurmaSelecionadaId] = useState("");
 
-const { turmas } = useTurmas();
-const { modalidades } = useModalidades();
-const [turmaSelecionadaId, setTurmaSelecionadaId] = useState("");
-
-async function handleExportarPresenca() {
-  if (!turmaSelecionadaId) { avisar("Selecione uma turma."); return; }
-  const agora = new Date();
-  await pdfService.exportarFolhaPresenca(turmaSelecionadaId, agora.getMonth(), agora.getFullYear());
-  avisar("Folha de presenÃ§a exportada.");
-}
-
+  async function handleExportarPresenca() {
+    if (!turmaSelecionadaId) { avisar("Selecione uma turma."); return; }
+    const agora = new Date();
+    await pdfService.exportarFolhaPresenca(turmaSelecionadaId, agora.getMonth(), agora.getFullYear());
+    avisar("Folha de presença exportada.");
+  }
 
   useEffect(() => {
     const atualizar = () => forcarAtualizacao((v) => v + 1);
@@ -73,10 +69,10 @@ async function handleExportarPresenca() {
     if (confirmar) {
       try {
         await backupService.restaurar(arquivo);
-        avisar("Dados restaurados. Recarregando a pÃ¡gina...");
+        avisar("Dados restaurados. Recarregando a página...");
         setTimeout(() => window.location.reload(), 1500);
       } catch {
-        avisar("Arquivo de backup invÃ¡lido.");
+        avisar("Arquivo de backup inválido.");
       }
     }
 
@@ -85,58 +81,58 @@ async function handleExportarPresenca() {
 
   function handleResetarFabrica() {
     const confirmar = window.confirm(
-      "Isso vai apagar todos os dados e voltar ao estado inicial do sistema. Essa aÃ§Ã£o nÃ£o pode ser desfeita. Deseja continuar?"
+      "Isso vai apagar todos os dados e voltar ao estado inicial do sistema. Essa ação não pode ser desfeita. Deseja continuar?"
     );
 
     if (confirmar) {
       backupService.resetarFabrica();
-      avisar("Sistema restaurado ao padrÃ£o de fÃ¡brica. Recarregando...");
+      avisar("Sistema restaurado ao padrão de fábrica. Recarregando...");
       setTimeout(() => window.location.reload(), 1500);
     }
   }
 
   function handleApagarTudo() {
-  const FRASE = "APUSM ACADEMIA MODALIDADES";
+    const FRASE = "APUSM ACADEMIA MODALIDADES";
 
-  if (!window.confirm("ATENÃ‡ÃƒO 1/3: isso vai apagar TODOS os associados, turmas, modalidades e instrutores. Deseja continuar?")) return;
-  if (!window.confirm("ATENÃ‡ÃƒO 2/3: essa aÃ§Ã£o NÃƒO PODE ser desfeita. Tem certeza absoluta?")) return;
-  if (!window.confirm("ATENÃ‡ÃƒO 3/3: Ãºltima chance. Confirmar a exclusÃ£o definitiva de todos os dados?")) return;
+    if (!window.confirm("ATENÇÃO 1/3: isso vai apagar TODOS os associados, turmas, modalidades e instrutores. Deseja continuar?")) return;
+    if (!window.confirm("ATENÇÃO 2/3: essa ação NÃO PODE ser desfeita. Tem certeza absoluta?")) return;
+    if (!window.confirm("ATENÇÃO 3/3: última chance. Confirmar a exclusão definitiva de todos os dados?")) return;
 
-  const digitado = window.prompt(`Para confirmar, digite exatamente: ${FRASE}`);
-  if (digitado?.trim() !== FRASE) {
-    avisar("ConfirmaÃ§Ã£o incorreta. Nenhum dado foi apagado.");
-    return;
+    const digitado = window.prompt(`Para confirmar, digite exatamente: ${FRASE}`);
+    if (digitado?.trim() !== FRASE) {
+      avisar("Confirmação incorreta. Nenhum dado foi apagado.");
+      return;
+    }
+
+    backupService.apagarTudo();
+    avisar("Todos os dados foram apagados. Recarregando...");
+    setTimeout(() => window.location.reload(), 1500);
   }
-
-  backupService.apagarTudo();
-  avisar("Todos os dados foram apagados. Recarregando...");
-  setTimeout(() => window.location.reload(), 1500);
-}
 
   function handleDesfazer() {
     const ok = historicoService.desfazer();
     if (ok) {
-      avisar("Ãšltima alteraÃ§Ã£o desfeita. Recarregando...");
+      avisar("Última alteração desfeita. Recarregando...");
       setTimeout(() => window.location.reload(), 1000);
     } else {
-      avisar("NÃ£o hÃ¡ nada para desfazer.");
+      avisar("Não há nada para desfazer.");
     }
   }
 
   function handleRefazer() {
     const ok = historicoService.refazer();
     if (ok) {
-      avisar("AlteraÃ§Ã£o refeita. Recarregando...");
+      avisar("Alteração refeita. Recarregando...");
       setTimeout(() => window.location.reload(), 1000);
     } else {
-      avisar("NÃ£o hÃ¡ nada para refazer.");
+      avisar("Não há nada para refazer.");
     }
   }
 
   async function handleExportarEscalaServico() {
     try {
       await pdfService.exportarEscalaServico();
-      avisar("Escala de serviÃ§o exportada.");
+      avisar("Escala de serviço exportada.");
     } catch {
       avisar("Erro ao gerar o PDF.");
     }
@@ -190,7 +186,7 @@ async function handleExportarPresenca() {
     <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
       <div>
         <h1 style={{ fontSize: 26, fontWeight: 700, margin: 0, color: "var(--text-primary)" }}>
-          ConfiguraÃ§Ãµes
+          Configurações
         </h1>
         <p style={{ color: "var(--text-secondary)", margin: "4px 0 0" }}>
           Ajustes administrativos do sistema APUSM
@@ -216,37 +212,36 @@ async function handleExportarPresenca() {
         <Btn onClick={() => setMostrarSalas(true)}>Gerenciar salas</Btn>
       </Section>
 
-      <Section title="ExportaÃ§Ãµes" desc="Gerar PDFs e consultar exportaÃ§Ãµes anteriores">
-        <Btn onClick={handleExportarEscalaServico}>Exportar escala de serviÃ§o</Btn>
+      <Section title="Exportações" desc="Gerar PDFs e consultar exportações anteriores">
+        <Btn onClick={handleExportarEscalaServico}>Exportar escala de serviço</Btn>
         <Btn onClick={handleExportarEscalaTurmas}>Exportar escala de turmas</Btn>
         <Btn onClick={handleExportarEscalaSalas}>Exportar salas</Btn>
-        <Btn onClick={handleAbrirHistorico}>HistÃ³rico de exportaÃ§Ãµes</Btn>
+        <Btn onClick={handleAbrirHistorico}>Histórico de exportações</Btn>
       </Section>
 
+      <Section title="Folha de presença" desc="Selecione a turma e gere a folha do mês atual">
+        <select
+          value={turmaSelecionadaId}
+          onChange={(e) => setTurmaSelecionadaId(e.target.value)}
+          style={{ padding: 8, borderRadius: 6, border: "1px solid var(--border-default)", background: "var(--background-primary)", color: "var(--text-primary)" }}
+        >
+          <option value="">Selecione a turma</option>
+          {turmas.map((t) => {
+            const mod = modalidades.find((m) => m.id === t.modalidadeId);
+            return (
+              <option key={t.id} value={t.id}>
+                {mod?.nome ?? "-"} — {t.dia} {t.horario}
+              </option>
+            );
+          })}
+        </select>
+        <Btn onClick={handleExportarPresenca}>🖨️ Exportar folha de presença</Btn>
+      </Section>
 
-      <Section title="Folha de presenÃ§a" desc="Selecione a turma e gere a folha do mÃªs atual">
-  <select
-    value={turmaSelecionadaId}
-    onChange={(e) => setTurmaSelecionadaId(e.target.value)}
-    style={{ padding: 8, borderRadius: 6, border: "1px solid var(--border-default)", background: "var(--background-primary)", color: "var(--text-primary)" }}
-  >
-    <option value="">Selecione a turma</option>
-    {turmas.map((t) => {
-      const mod = modalidades.find((m) => m.id === t.modalidadeId);
-      return (
-        <option key={t.id} value={t.id}>
-          {mod?.nome ?? "-"} â€” {t.dia} {t.horario}
-        </option>
-      );
-    })}
-  </select>
-  <Btn onClick={handleExportarPresenca}>??? Exportar folha de presenÃ§a</Btn>
-</Section>
-
-      <Section title="Dados do sistema" desc="Backup, restauraÃ§Ã£o e reset. Use com cuidado">
+      <Section title="Dados do sistema" desc="Backup, restauração e reset. Use com cuidado">
         <Btn onClick={handleBackup}>Fazer backup (baixar .json)</Btn>
         <Btn onClick={handleClickRestaurar}>Restaurar de um backup</Btn>
-        <Btn danger onClick={handleResetarFabrica}>Restaurar padrÃ£o de fÃ¡brica</Btn>
+        <Btn danger onClick={handleResetarFabrica}>Restaurar padrão de fábrica</Btn>
         <input
           ref={inputRestaurarRef}
           type="file"
@@ -256,26 +251,26 @@ async function handleExportarPresenca() {
         />
       </Section>
 
-      <Section title="Desfazer / Refazer" desc="Reverter as Ãºltimas alteraÃ§Ãµes feitas no sistema">
+      <Section title="Desfazer / Refazer" desc="Reverter as últimas alterações feitas no sistema">
         <Btn onClick={handleDesfazer} disabled={!historicoService.podeDesfazer()}>
-          ?? Desfazer Ãºltima aÃ§Ã£o
+          ↩️ Desfazer última ação
         </Btn>
         <Btn onClick={handleRefazer} disabled={!historicoService.podeRefazer()}>
-          ?? Refazer
+          ↪️ Refazer
         </Btn>
       </Section>
 
-      <Section title="PreferÃªncias" desc="AparÃªncia e comportamento do sistema">
+      <Section title="Preferências" desc="Aparência e comportamento do sistema">
         <p style={{ fontSize: 13, color: "var(--text-secondary)" }}>
-          O tema escuro agora fica disponÃ­vel no botÃ£o ?? no canto superior direito, em qualquer tela.
+          O tema escuro agora fica disponível no botão 🌙 no canto superior direito, em qualquer tela.
         </p>
         <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, color: "var(--text-primary)" }}>
-          <input type="checkbox" defaultChecked /> Pedir confirmaÃ§Ã£o antes de excluir
+          <input type="checkbox" defaultChecked /> Pedir confirmação antes de excluir
         </label>
       </Section>
 
-      <Section title="Zona de risco" desc="AÃ§Ãµes que apagam dados permanentemente" perigo>
-        <Btn danger onClick={handleApagarTudo}>Apagar tudo e recomeÃ§ar</Btn>
+      <Section title="Zona de risco" desc="Ações que apagam dados permanentemente" perigo>
+        <Btn danger onClick={handleApagarTudo}>Apagar tudo e recomeçar</Btn>
       </Section>
 
       {mostrarHistorico && (
@@ -294,7 +289,7 @@ async function handleExportarPresenca() {
 }
 
 // ==========================
-// MODAL DE HISTÃ“RICO
+// MODAL DE HISTÓRICO
 // ==========================
 
 function ModalHistorico({
@@ -337,19 +332,19 @@ function ModalHistorico({
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <h2 style={{ fontWeight: 600, fontSize: 17, margin: 0, color: "var(--text-primary)" }}>
-            HistÃ³rico de exportaÃ§Ãµes
+            Histórico de exportações
           </h2>
           <button
             onClick={onFechar}
             style={{ fontSize: 20, lineHeight: 1, color: "var(--text-muted)", background: "none", border: "none" }}
           >
-            Ã—
+            ×
           </button>
         </div>
 
         {historico.length === 0 ? (
           <p style={{ color: "var(--text-muted)", fontSize: 14 }}>
-            Nenhuma exportaÃ§Ã£o registrada ainda.
+            Nenhuma exportação registrada ainda.
           </p>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -404,7 +399,7 @@ function ModalHistorico({
 }
 
 // ==========================
-// SEÃ‡ÃƒO PADRÃƒO
+// SEÇÃO PADRÃO
 // ==========================
 
 function Section({
@@ -459,4 +454,3 @@ function Btn({
     </button>
   );
 }
-

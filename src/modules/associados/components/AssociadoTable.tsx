@@ -1,6 +1,6 @@
 // ======================================================
 // APUSM SaaS
-// MÃ³dulo: Associados
+// Módulo: Associados
 // Arquivo: AssociadoTable.tsx
 // ======================================================
 
@@ -37,7 +37,7 @@ export function AssociadoTable({
             <th style={{ padding: "12px 16px", fontSize: 13, color: "var(--text-secondary)", fontWeight: 500 }}>Nome</th>
             <th style={{ padding: "12px 16px", fontSize: 13, color: "var(--text-secondary)", fontWeight: 500 }}>Telefone</th>
             <th style={{ padding: "12px 16px", fontSize: 13, color: "var(--text-secondary)", fontWeight: 500 }}>Status</th>
-            <th style={{ padding: "12px 16px", fontSize: 13, color: "var(--text-secondary)", fontWeight: 500, textAlign: "right" }}>AÃ§Ãµes</th>
+            <th style={{ padding: "12px 16px", fontSize: 13, color: "var(--text-secondary)", fontWeight: 500, textAlign: "right" }}>Ações</th>
           </tr>
         </thead>
 
@@ -53,7 +53,7 @@ export function AssociadoTable({
                 </td>
 
                 <td style={{ padding: "12px 16px", color: "var(--text-secondary)" }}>
-                  ðŸ“ž {formatarTelefone(associado.telefone)}
+                  📞 {formatarTelefone(associado.telefone)}
                 </td>
 
                 <td style={{ padding: "12px 16px" }}>
@@ -95,7 +95,7 @@ export function AssociadoTable({
                       <button
                         onClick={() => {
                           const confirmar = window.confirm(
-                            `Excluir o associado "${associado.nome}"? Essa aÃ§Ã£o nÃ£o pode ser desfeita.`
+                            `Excluir o associado "${associado.nome}"? Essa ação não pode ser desfeita.`
                           );
                           if (confirmar) onExcluir(associado.id);
                         }}
