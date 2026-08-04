@@ -28,25 +28,55 @@ export default function ConsultaAssociadoPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Consulta de Associado</h1>
-        <p className="text-gray-500">Veja as turmas e listas de espera de um associado específico</p>
+        <h1 style={{ fontSize: 24, fontWeight: 700, color: "var(--page-heading)" }}>Consulta de Associado</h1>
+        <p style={{ color: "var(--page-subheading)" }}>Veja as turmas e listas de espera de um associado específico</p>
       </div>
 
-      <div className="relative">
+      <div style={{ position: "relative" }}>
         <input
           value={busca}
           onChange={(e) => setBusca(e.target.value)}
           placeholder="Digite o nome do associado..."
-          className="w-full border p-3 rounded-lg"
+          style={{
+            width: "100%",
+            padding: 12,
+            borderRadius: 8,
+            border: "1px solid var(--border-default)",
+            background: "var(--background-primary)",
+            color: "var(--text-primary)",
+            boxSizing: "border-box",
+          }}
         />
 
         {resultados.length > 0 && (
-          <div className="absolute z-10 bg-white border rounded-lg mt-1 w-full shadow-lg max-h-60 overflow-y-auto">
+          <div
+            style={{
+              position: "absolute",
+              zIndex: 10,
+              background: "var(--background-primary)",
+              border: "1px solid var(--border-default)",
+              borderRadius: 8,
+              marginTop: 4,
+              width: "100%",
+              boxShadow: "var(--shadow-lg)",
+              maxHeight: 240,
+              overflowY: "auto",
+            }}
+          >
             {resultados.map((a) => (
               <button
                 key={a.id}
                 onClick={() => selecionar(a)}
-                className="block w-full text-left px-4 py-2 hover:bg-gray-50"
+                style={{
+                  display: "block",
+                  width: "100%",
+                  textAlign: "left",
+                  padding: "10px 16px",
+                  background: "none",
+                  border: "none",
+                  color: "var(--text-primary)",
+                  cursor: "pointer",
+                }}
               >
                 {a.nome} — {a.telefone}
               </button>
@@ -56,22 +86,22 @@ export default function ConsultaAssociadoPage() {
       </div>
 
       {selecionado && (
-        <div className="border rounded-xl p-5 space-y-4">
+        <div style={{ border: "1px solid var(--border-default)", borderRadius: 12, padding: 20, display: "flex", flexDirection: "column", gap: 16 }}>
           <div>
-            <h2 className="font-semibold text-lg">{selecionado.nome}</h2>
-            <p className="text-gray-500 text-sm">{selecionado.telefone}</p>
+            <h2 style={{ fontWeight: 600, fontSize: 18, color: "var(--text-primary)" }}>{selecionado.nome}</h2>
+            <p style={{ fontSize: 13, color: "var(--text-secondary)" }}>{selecionado.telefone}</p>
           </div>
 
           <div>
-            <p className="font-medium text-sm text-gray-700 mb-2">Turmas matriculadas</p>
+            <p style={{ fontWeight: 500, fontSize: 13, color: "var(--text-secondary)", marginBottom: 8 }}>Turmas matriculadas</p>
             {selecionado.matriculas.filter((m) => m.status !== "CANCELADA").length === 0 ? (
-              <p className="text-sm text-gray-400">Nenhuma turma</p>
+              <p style={{ fontSize: 13, color: "var(--text-muted)" }}>Nenhuma turma</p>
             ) : (
-              <ul className="space-y-1">
+              <ul style={{ display: "flex", flexDirection: "column", gap: 4, listStyle: "none", padding: 0, margin: 0 }}>
                 {selecionado.matriculas
                   .filter((m) => m.status !== "CANCELADA")
                   .map((m) => (
-                    <li key={m.id} className="text-sm bg-green-50 text-green-700 px-3 py-2 rounded-lg">
+                    <li key={m.id} style={{ fontSize: 13, background: "var(--color-success-light)", color: "var(--color-success)", padding: "8px 12px", borderRadius: 8 }}>
                       {m.modalidadeNome} — {m.turmaNome} (matriculado em {m.dataMatricula})
                     </li>
                   ))}
@@ -80,13 +110,13 @@ export default function ConsultaAssociadoPage() {
           </div>
 
           <div>
-            <p className="font-medium text-sm text-gray-700 mb-2">Listas de espera</p>
+            <p style={{ fontWeight: 500, fontSize: 13, color: "var(--text-secondary)", marginBottom: 8 }}>Listas de espera</p>
             {fila.length === 0 ? (
-              <p className="text-sm text-gray-400">Não está em nenhuma lista de espera</p>
+              <p style={{ fontSize: 13, color: "var(--text-muted)" }}>Não está em nenhuma lista de espera</p>
             ) : (
-              <ul className="space-y-1">
+              <ul style={{ display: "flex", flexDirection: "column", gap: 4, listStyle: "none", padding: 0, margin: 0 }}>
                 {fila.map((f) => (
-                  <li key={f.id} className="text-sm bg-amber-50 text-amber-700 px-3 py-2 rounded-lg">
+                  <li key={f.id} style={{ fontSize: 13, background: "var(--color-warning-light)", color: "var(--color-warning)", padding: "8px 12px", borderRadius: 8 }}>
                     {f.modalidadeNome} — {f.turmaNome}: posição {f.posicao} (entrou em{" "}
                     {new Date(f.dataEntrada).toLocaleDateString("pt-BR")})
                   </li>

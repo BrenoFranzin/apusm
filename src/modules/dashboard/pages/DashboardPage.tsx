@@ -19,8 +19,8 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold">Painel Administrativo</h1>
-        <p className="text-gray-500">Visão geral da Academia APUSM</p>
+        <h1 style={{ fontSize: 28, fontWeight: 700, color: "var(--page-heading)" }}>Painel Administrativo</h1>
+        <p style={{ color: "var(--page-subheading)" }}>Visão geral da Academia APUSM</p>
       </div>
 
       <div
@@ -83,12 +83,12 @@ function Atalho({ to, emoji, label }: { to: string; emoji: string; label: string
         display: "flex",
         alignItems: "center",
         gap: 10,
-        background: "#fff",
-        border: "1px solid #e5e7eb",
+        background: "var(--background-primary)",
+        border: "1px solid var(--border-default)",
         borderRadius: 10,
         padding: "14px 16px",
         textDecoration: "none",
-        color: "#111827",
+        color: "var(--text-primary)",
         fontWeight: 500,
         fontSize: 14,
       }}
