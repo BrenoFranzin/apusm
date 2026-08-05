@@ -39,7 +39,7 @@ class AssociadosService {
   private normalizar(a: any): Associado {
     return {
       id: a?.id ?? crypto.randomUUID(),
-      nome: a?.nome ?? "Sem nome",
+      nome: capitalizarNome(a?.nome ?? "Sem nome"),
       telefone: a?.telefone ?? "",
       status: a?.status ?? "ATIVO",
       dataCadastro: a?.dataCadastro ?? new Date().toISOString().substring(0, 10),

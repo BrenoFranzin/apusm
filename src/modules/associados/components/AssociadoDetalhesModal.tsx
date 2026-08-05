@@ -266,9 +266,9 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 <input
                   value={nomeParaCadastrar}
-                  onChange={(e) => setNomeParaCadastrar(e.target.value)}
-                  placeholder="Nome completo"
-                  style={{ flex: "1 1 180px", padding: 8, borderRadius: 6, border: "1px solid var(--border-default)", background: "var(--background-primary)", color: "var(--text-primary)" }}
+                  onChange={(e) => setNomeParaCadastrar(e.target.value.toUpperCase())}
+                  placeholder="NOME COMPLETO"
+                  style={{ textTransform: "uppercase", flex: "1 1 180px", padding: 8, borderRadius: 6, border: "1px solid var(--border-default)", background: "var(--background-primary)", color: "var(--text-primary)" }}
                 />
                 <input
                   value={telefoneParaCadastrar}

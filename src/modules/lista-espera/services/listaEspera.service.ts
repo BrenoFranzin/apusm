@@ -8,7 +8,29 @@ import type { EntradaListaEspera } from "../types/listaEspera.types";
 
 const STORAGE_KEY = "apusm:lista-espera";
 
+function capitalizarNome(nome: string): string {
+  const minusculas = ["de", "da", "do", "das", "dos", "e"];
+  return nome
+    .trim()
+    .toLowerCase()
+    .split(" ")
+    .filter((p) => p.length > 0)
+    .map((palavra) =>
+      minusculas.includes(palavra)
+        ? palavra
+        : palavra.charAt(0).toUpperCase() + palavra.slice(1)
+    )
+    .join(" ");
+}
+
 class ListaEsperaService {
+  private normalizar(e: any): EntradaListaEspera {
+    return {
+      ...e,
+      associadoNome: capitalizarNome(e?.associadoNome ?? ""),
+    };
+  }
+
   private carregarStorage(): EntradaListaEspera[] {
     const dados = localStorage.getItem(STORAGE_KEY);
 
@@ -17,7 +39,8 @@ class ListaEsperaService {
       return listaEsperaMock;
     }
 
-    return JSON.parse(dados);
+    const bruto = JSON.parse(dados);
+    return (Array.isArray(bruto) ? bruto : []).map((e) => this.normalizar(e));
   }
 
   private salvarStorage(lista: EntradaListaEspera[]) {
@@ -50,6 +73,7 @@ class ListaEsperaService {
     const nova: EntradaListaEspera = {
       id: crypto.randomUUID(),
       ...dados,
+      associadoNome: capitalizarNome(dados.associadoNome),
       dataEntrada: new Date().toISOString(),
       posicao: proximaPosicao,
     };
@@ -79,7 +103,7 @@ class ListaEsperaService {
     this.salvarStorage(restante);
   }
 
-async atualizarObservacao(entradaId: string, observacao: string): Promise<void> {
+  async atualizarObservacao(entradaId: string, observacao: string): Promise<void> {
     const lista = this.carregarStorage();
     const index = lista.findIndex((e) => e.id === entradaId);
 
@@ -88,7 +112,6 @@ async atualizarObservacao(entradaId: string, observacao: string): Promise<void> 
     lista[index] = { ...lista[index], observacao };
     this.salvarStorage(lista);
   }
-
 
   async chamarProximo(turmaId: string): Promise<EntradaListaEspera | undefined> {
     const fila = await this.listarPorTurma(turmaId);
