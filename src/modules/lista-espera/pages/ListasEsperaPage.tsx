@@ -7,6 +7,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { modalidadesService } from "@/modules/modalidades/services/modalidades.service";
+import { turmasService } from "@/modules/turmas/services/turmas.service";
+import { listaEsperaService } from "../services/listaEspera.service";
 import type { Modalidade } from "@/modules/modalidades/types/modalidade.types";
 import AssociadoDetalhesModal from "@/modules/associados/components/AssociadoDetalhesModal";
 
@@ -29,11 +31,30 @@ function ajustarCorParaTema(cor: string, escuro: boolean) {
 export default function ListasEsperaPage() {
   const navigate = useNavigate();
   const [modalidades, setModalidades] = useState<Modalidade[]>([]);
+  const [contagemPorModalidade, setContagemPorModalidade] = useState<Record<string, number>>({});
   const [escuro, setEscuro] = useState(ehModoEscuro());
   const [modalAssociadoAberto, setModalAssociadoAberto] = useState(false);
 
   useEffect(() => {
-    modalidadesService.listar().then(setModalidades);
+    async function carregar() {
+      const mods = await modalidadesService.listar();
+      setModalidades(mods);
+
+      const turmas = await turmasService.listar();
+      const contagens: Record<string, number> = {};
+
+      for (const mod of mods) {
+        const turmasDaModalidade = turmas.filter((t) => t.modalidadeId === mod.id);
+        let total = 0;
+        for (const turma of turmasDaModalidade) {
+          const fila = await listaEsperaService.listarPorTurma(turma.id);
+          total += fila.length;
+        }
+        contagens[mod.id] = total;
+      }
+      setContagemPorModalidade(contagens);
+    }
+    carregar();
   }, []);
 
   useEffect(() => {
@@ -76,6 +97,7 @@ export default function ListasEsperaPage() {
           .sort((a, b) => a.nome.localeCompare(b.nome))
           .map((mod) => {
             const cor = ajustarCorParaTema(mod.cor || "#374151", escuro);
+            const qtdFila = contagemPorModalidade[mod.id] ?? 0;
 
             return (
               <button
@@ -83,10 +105,11 @@ export default function ListasEsperaPage() {
                 onClick={() => navigate(`/lista-espera/${mod.id}`)}
                 style={{
                   display: "flex",
+                  flexDirection: "column",
                   alignItems: "center",
                   justifyContent: "center",
                   textAlign: "center",
-                  gap: 10,
+                  gap: 4,
                   background: cor + "1a",
                   color: cor,
                   border: `2px solid ${cor}`,
@@ -98,8 +121,13 @@ export default function ListasEsperaPage() {
                   cursor: "pointer",
                 }}
               >
-                <span style={{ fontSize: 20 }}>{mod.icone}</span>
-                <span>{mod.nome}</span>
+                <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ fontSize: 20 }}>{mod.icone}</span>
+                  <span>{mod.nome}</span>
+                </span>
+                <span style={{ fontSize: 12, fontWeight: 500, opacity: 0.85 }}>
+                  {qtdFila} na fila de espera
+                </span>
               </button>
             );
           })}
