@@ -219,7 +219,36 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
             )}
           </div>
 
-          {!selecionado && <p style={{ color: "var(--text-secondary)", fontSize: 14 }}>Busque um associado pra ver detalhes.</p>}
+          {!selecionado && nomeParaCadastrar && (
+            <div style={{ border: "1px solid var(--border-default)", borderRadius: 8, padding: 16, marginBottom: 16 }}>
+              <p style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 10 }}>
+                Nenhum associado encontrado com "{nomeParaCadastrar}". Cadastrar agora?
+              </p>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <input
+                  value={nomeParaCadastrar}
+                  onChange={(e) => setNomeParaCadastrar(e.target.value)}
+                  placeholder="Nome completo"
+                  style={{ flex: "1 1 180px", padding: 8, borderRadius: 6, border: "1px solid var(--border-default)", background: "var(--background-primary)", color: "var(--text-primary)" }}
+                />
+                <input
+                  value={telefoneParaCadastrar}
+                  onChange={(e) => setTelefoneParaCadastrar(e.target.value)}
+                  placeholder="Telefone"
+                  style={{ flex: "1 1 140px", padding: 8, borderRadius: 6, border: "1px solid var(--border-default)", background: "var(--background-primary)", color: "var(--text-primary)" }}
+                />
+                <button
+                  onClick={handleCadastrarRapido}
+                  disabled={cadastrando}
+                  style={{ padding: "8px 16px", borderRadius: 6, border: "none", background: "var(--color-primary)", color: "#fff", cursor: "pointer", fontWeight: 600 }}
+                >
+                  {cadastrando ? "Cadastrando..." : "Cadastrar e continuar"}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {!selecionado && !nomeParaCadastrar && <p style={{ color: "var(--text-secondary)", fontSize: 14 }}>Busque um associado pra ver detalhes.</p>}
 
           {selecionado && (
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
@@ -286,7 +315,14 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
                                   }}
                                 >
                                   <input type="checkbox" checked={marcada} onChange={() => toggleTurmaEscolhida(t.id)} />
-                                  {DIA_LABEL[t.dia]} — {t.horario}
+                                  <span>
+                                    {DIA_LABEL[t.dia]} — {t.horario}
+                                    {(filasContagem[t.id] ?? 0) > 0 && (
+                                      <span style={{ fontSize: 11, color: "var(--color-warning)", marginLeft: 4 }}>
+                                        ({filasContagem[t.id]} na fila)
+                                      </span>
+                                    )}
+                                  </span>
                                 </label>
                               );
                             })}
