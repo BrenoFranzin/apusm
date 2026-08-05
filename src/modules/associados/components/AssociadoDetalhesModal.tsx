@@ -259,14 +259,22 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
                 boxSizing: "border-box",
               }}
             />
-            {resultados.length > 0 && (
+            {busca.trim().length >= 2 && resultados.length > 0 && (
               <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "var(--background-primary)", border: "1px solid var(--border-default)", borderRadius: 8, marginTop: 4, zIndex: 10, maxHeight: 240, overflowY: "auto" }}>
+                <p style={{ fontSize: 12, color: "var(--color-success)", padding: "6px 14px", margin: 0 }}>
+                  {resultados.length} associado(s) encontrado(s)
+                </p>
                 {resultados.map((a) => (
                   <div key={a.id} onClick={() => handleSelecionar(a)} style={{ padding: "10px 14px", cursor: "pointer", fontSize: 14, borderBottom: "1px solid var(--border-light)", color: "var(--text-primary)" }}>
                     {a.nome} — {a.telefone}
                   </div>
                 ))}
               </div>
+            )}
+            {busca.trim().length >= 2 && resultados.length === 0 && !nomeParaCadastrar && (
+              <p style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 4 }}>
+                Buscando...
+              </p>
             )}
           </div>
 
