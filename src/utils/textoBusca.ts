@@ -34,13 +34,17 @@ function distanciaEdicao(a: string, b: string): number {
 export function buscaAproximada(termo: string, alvo: string): boolean {
   const termoNorm = normalizar(termo);
   const alvoNorm = normalizar(alvo);
-
+  if (termoNorm.length === 0) return false;
   if (alvoNorm.includes(termoNorm)) return true;
 
-  const palavrasAlvo = alvoNorm.split(" ");
+  // Nomes muito curtos (3 letras ou menos) exigem correspondência exata de substring,
+  // pra evitar que a tolerância a erro de digitação combine com nomes completamente diferentes.
+  if (termoNorm.length <= 3) return false;
 
+  const palavrasAlvo = alvoNorm.split(" ");
   return palavrasAlvo.some((palavra) => {
-    const tolerancia = palavra.length <= 4 ? 1 : 2;
+    if (Math.abs(palavra.length - termoNorm.length) > 2) return false;
+    const tolerancia = palavra.length <= 5 ? 1 : 2;
     return distanciaEdicao(termoNorm, palavra) <= tolerancia;
   });
 }

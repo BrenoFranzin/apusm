@@ -233,8 +233,19 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
             <input
               value={busca}
               onChange={(e) => handleBuscar(e.target.value)}
-              placeholder="Buscar por nome ou telefone..."
-              style={{ width: "100%", padding: "10px 14px", borderRadius: 8, border: "1px solid var(--border-default)", fontSize: 14, background: "var(--background-primary)", color: "var(--text-primary)" }}
+              placeholder="🔍 Buscar por nome ou telefone..."
+              style={{
+                width: "100%",
+                padding: "14px 16px",
+                borderRadius: 10,
+                border: "2px solid var(--color-primary)",
+                fontSize: 16,
+                fontWeight: 500,
+                background: "var(--background-primary)",
+                color: "var(--text-primary)",
+                boxShadow: "0 0 0 3px var(--color-primary-light)",
+                boxSizing: "border-box",
+              }}
             />
             {resultados.length > 0 && (
               <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "var(--background-primary)", border: "1px solid var(--border-default)", borderRadius: 8, marginTop: 4, zIndex: 10, maxHeight: 240, overflowY: "auto" }}>
