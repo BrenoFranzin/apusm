@@ -16,6 +16,21 @@ import type {
 
 const STORAGE_KEY = "apusm:associados";
 
+function capitalizarNome(nome: string): string {
+  const minusculas = ["de", "da", "do", "das", "dos", "e"];
+  return nome
+    .trim()
+    .toLowerCase()
+    .split(" ")
+    .filter((p) => p.length > 0)
+    .map((palavra) =>
+      minusculas.includes(palavra)
+        ? palavra
+        : palavra.charAt(0).toUpperCase() + palavra.slice(1)
+    )
+    .join(" ");
+}
+
 class AssociadosService {
   // ==========================
   // LOCAL STORAGE
@@ -75,7 +90,8 @@ class AssociadosService {
   async criar(dados: CriarAssociadoDTO): Promise<Associado> {
     const lista = this.carregarStorage();
 
-    const nomeNormalizado = dados.nome.trim().toLowerCase();
+    const nomeFormatado = capitalizarNome(dados.nome);
+    const nomeNormalizado = nomeFormatado.toLowerCase();
     const jaExiste = lista.some(
       (a) => a.nome.trim().toLowerCase() === nomeNormalizado
     );
@@ -86,6 +102,7 @@ class AssociadosService {
 
     const novo: Associado = {
       ...dados,
+      nome: nomeFormatado,
       id: crypto.randomUUID(),
       dataCadastro: new Date().toISOString().substring(0, 10),
       historico: [
@@ -119,6 +136,7 @@ class AssociadosService {
     lista[index] = {
       ...lista[index],
       ...dados,
+      nome: dados.nome ? capitalizarNome(dados.nome) : lista[index].nome,
     };
 
     lista[index].historico.push({
