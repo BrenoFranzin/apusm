@@ -208,6 +208,8 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
     await recarregarSelecionado();
   }
 
+  const [modalHistoricoAberto, setModalHistoricoAberto] = useState(false);
+
   if (!aberto) return null;
 
   const matriculasAtivas = selecionado?.matriculas.filter((m) => m.status !== "CANCELADA") ?? [];
@@ -438,20 +440,12 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
               </div>
 
               <div style={{ gridColumn: "1 / -1" }}>
-                <p style={{ fontWeight: 600, fontSize: 14, marginBottom: 8, color: "var(--text-primary)" }}>
-                  Histórico de modificações ({historicoOrdenado.length})
-                </p>
-                {historicoOrdenado.length === 0 && <p style={{ fontSize: 13, color: "var(--text-secondary)" }}>Nenhuma modificação registrada ainda.</p>}
-                <div style={{ maxHeight: 220, overflowY: "auto" }}>
-                  {historicoOrdenado.map((h) => (
-                    <div key={h.id} style={{ fontSize: 13, padding: "8px 0", borderTop: "1px solid var(--border-light)", color: "var(--text-primary)" }}>
-                      <span style={{ color: "var(--text-secondary)" }}>
-                        {new Date(h.data).toLocaleString("pt-BR")}
-                      </span>
-                      {" — "}{h.descricao}
-                    </div>
-                  ))}
-                </div>
+                <button
+                  onClick={() => setModalHistoricoAberto(true)}
+                  style={{ fontSize: 13, fontWeight: 600, color: "var(--color-primary)", border: "1px solid var(--color-primary)", background: "transparent", borderRadius: 6, padding: "6px 12px", cursor: "pointer" }}
+                >
+                  📋 Ver histórico de modificações ({historicoOrdenado.length})
+                </button>
               </div>
             </div>
           )}
@@ -459,4 +453,5 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
       </div>
     </div>
   );
+  
 }
