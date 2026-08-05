@@ -4,7 +4,6 @@
 // Arquivo: associados.service.ts
 // ======================================================
 
-import { api } from "@/services/api";
 import { limitesService } from "@/modules/limites/services/limites.service";
 import { listaEsperaService } from "@/modules/lista-espera/services/listaEspera.service";
 import { associadosMock } from "../data/associados.mock";
@@ -40,11 +39,7 @@ class AssociadosService {
     const dados = localStorage.getItem(STORAGE_KEY);
 
     if (!dados) {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify(associadosMock)
-      );
-
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(associadosMock));
       return associadosMock;
     }
 
@@ -53,10 +48,7 @@ class AssociadosService {
   }
 
   private salvarStorage(lista: Associado[]) {
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(lista)
-    );
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(lista));
   }
 
   // ==========================
@@ -71,11 +63,8 @@ class AssociadosService {
   // BUSCAR
   // ==========================
 
-  async buscarPorId(
-    id: string
-  ): Promise<Associado | undefined> {
+  async buscarPorId(id: string): Promise<Associado | undefined> {
     const lista = this.carregarStorage();
-
     return lista.find((a) => a.id === id);
   }
 
@@ -83,9 +72,7 @@ class AssociadosService {
   // CRIAR
   // ==========================
 
-  async criar(
-    dados: CriarAssociadoDTO
-  ): Promise<Associado> {
+  async criar(dados: CriarAssociadoDTO): Promise<Associado> {
     const lista = this.carregarStorage();
 
     const nomeNormalizado = dados.nome.trim().toLowerCase();
@@ -101,14 +88,19 @@ class AssociadosService {
       ...dados,
       id: crypto.randomUUID(),
       dataCadastro: new Date().toISOString().substring(0, 10),
-      historico: [],
+      historico: [
+        {
+          id: crypto.randomUUID(),
+          data: new Date().toISOString(),
+          descricao: "Cadastro criado",
+        },
+      ],
       matriculas: [],
       frequencias: [],
       pagamentos: [],
     };
 
     lista.push(novo);
-
     this.salvarStorage(lista);
 
     return novo;
@@ -118,12 +110,8 @@ class AssociadosService {
   // EDITAR
   // ==========================
 
-  async atualizar(
-    id: string,
-    dados: AtualizarAssociadoDTO
-  ): Promise<Associado | undefined> {
+  async atualizar(id: string, dados: AtualizarAssociadoDTO): Promise<Associado | undefined> {
     const lista = this.carregarStorage();
-
     const index = lista.findIndex((a) => a.id === id);
 
     if (index < 0) return undefined;
@@ -132,6 +120,12 @@ class AssociadosService {
       ...lista[index],
       ...dados,
     };
+
+    lista[index].historico.push({
+      id: crypto.randomUUID(),
+      data: new Date().toISOString(),
+      descricao: "Dados do cadastro atualizados",
+    });
 
     this.salvarStorage(lista);
 
@@ -144,12 +138,9 @@ class AssociadosService {
 
   async excluir(id: string): Promise<void> {
     const lista = this.carregarStorage();
-
     const novaLista = lista.filter((a) => a.id !== id);
-
     this.salvarStorage(novaLista);
   }
-
 
   // ==========================
   // MATRICULAR EM TURMA (limite 10 vagas)
@@ -186,7 +177,6 @@ class AssociadosService {
 
     const associado = lista[index];
 
-    // Checa limite de turmas por modalidade (padrão 2, exceções tipo Bike/Jiu-Jitsu = 1)
     const limiteModalidade = await limitesService.obterLimiteDaModalidade(dadosMatricula.modalidadeId);
 
     const turmasNaModalidade = associado.matriculas.filter(
@@ -199,7 +189,6 @@ class AssociadosService {
       );
     }
 
-    // Checa vaga na turma. Se estiver cheia, cai na lista de espera
     const vagasOcupadas = await this.contarMatriculasPorTurma(dadosMatricula.turmaId);
 
     if (vagasOcupadas >= LIMITE_VAGAS_TURMA) {
@@ -269,14 +258,44 @@ class AssociadosService {
   }
 
   // ==========================
+  // OBSERVAÇÕES
+  // ==========================
+
+  async atualizarObservacaoMatricula(
+    associadoId: string,
+    matriculaId: string,
+    observacao: string
+  ): Promise<Associado | undefined> {
+    const lista = this.carregarStorage();
+    const index = lista.findIndex((a) => a.id === associadoId);
+
+    if (index < 0) return undefined;
+
+    const matricula = lista[index].matriculas.find((m) => m.id === matriculaId);
+
+    lista[index].matriculas = lista[index].matriculas.map((m) =>
+      m.id === matriculaId ? { ...m, observacao } : m
+    );
+
+    if (matricula) {
+      lista[index].historico.push({
+        id: crypto.randomUUID(),
+        data: new Date().toISOString(),
+        descricao: `Observação atualizada em ${matricula.modalidadeNome} (${matricula.turmaNome}): "${observacao}"`,
+      });
+    }
+
+    this.salvarStorage(lista);
+
+    return lista[index];
+  }
+
+  // ==========================
   // PESQUISAR
   // ==========================
 
-  async pesquisar(
-    texto: string
-  ): Promise<Associado[]> {
+  async pesquisar(texto: string): Promise<Associado[]> {
     const lista = this.carregarStorage();
-
     const busca = texto.toLowerCase();
 
     return lista.filter((a) => {
