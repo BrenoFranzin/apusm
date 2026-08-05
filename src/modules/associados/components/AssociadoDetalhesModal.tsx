@@ -119,8 +119,37 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
     );
   }
 
+  function turmasQueVaoParaFila(): { turma: Turma; modalidadeNome: string }[] {
+    return turmasEscolhidas
+      .map((turmaId) => {
+        const turma = turmas.find((t) => t.id === turmaId);
+        if (!turma) return null;
+        const jaOcupadas = filasContagem[turma.id] ?? 0;
+        // aproximação: se já tem fila, ou está perto do limite, avisamos; a confirmação real de "cheio" só sabemos no momento do matricular,
+        // então aqui avisamos sempre que a turma já tiver fila (indício forte de que vai continuar na fila)
+        if (jaOcupadas > 0) {
+          const modalidade = modalidades.find((m) => m.id === turma.modalidadeId);
+          return { turma, modalidadeNome: modalidade?.nome ?? "" };
+        }
+        return null;
+      })
+      .filter((x): x is { turma: Turma; modalidadeNome: string } => x !== null);
+  }
+
   async function handleInserirEmLote() {
     if (!selecionado || turmasEscolhidas.length === 0) return;
+
+    const emRisco = turmasQueVaoParaFila();
+    if (emRisco.length > 0) {
+      const listaTexto = emRisco
+        .map((r) => `${r.modalidadeNome} (${DIA_LABEL[r.turma.dia]} ${r.turma.horario})`)
+        .join(", ");
+      const confirmar = window.confirm(
+        `Tem certeza que ${selecionado.nome} ficará na lista de espera para: ${listaTexto}?`
+      );
+      if (!confirmar) return;
+    }
+
     setInserindo(true);
 
     let matriculados = 0;

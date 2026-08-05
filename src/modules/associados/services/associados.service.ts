@@ -249,67 +249,19 @@ class AssociadosService {
 
     if (index < 0) return undefined;
 
-    const matriculaCancelada = lista[index].matriculas.find((m) => m.id === matriculaId);
+    const matricula = lista[index].matriculas.find((m) => m.id === matriculaId);
 
     lista[index].matriculas = lista[index].matriculas.map((m) =>
       m.id === matriculaId ? { ...m, status: "CANCELADA" } : m
     );
 
-    if (matriculaCancelada) {
+    if (matricula) {
       lista[index].historico.push({
         id: crypto.randomUUID(),
         data: new Date().toISOString(),
-        descricao: `Cancelou matrícula em ${matriculaCancelada.modalidadeNome} (${matriculaCancelada.turmaNome})`,
+        descricao: `Cancelou matrícula em ${matricula.modalidadeNome} (${matricula.turmaNome})`,
       });
     }
-
-    this.salvarStorage(lista);
-
-    // Promove o próximo da lista de espera, se houver vaga liberada
-    if (matriculaCancelada) {
-      const proximo = await listaEsperaService.chamarProximo(matriculaCancelada.turmaId);
-
-      if (proximo) {
-        const listaAtualizada = this.carregarStorage();
-        const indexPromovido = listaAtualizada.findIndex((a) => a.id === proximo.associadoId);
-
-        if (indexPromovido >= 0) {
-          const novaMatricula = {
-            id: crypto.randomUUID(),
-            modalidadeId: proximo.modalidadeId,
-            modalidadeNome: proximo.modalidadeNome,
-            turmaId: proximo.turmaId,
-            turmaNome: proximo.turmaNome,
-            dataMatricula: new Date().toISOString().substring(0, 10),
-            status: "ATIVA",
-          };
-
-          listaAtualizada[indexPromovido].matriculas.push(novaMatricula);
-          this.salvarStorage(listaAtualizada);
-        }
-
-        await listaEsperaService.sairDaFila(proximo.id);
-      }
-    }
-
-    return this.carregarStorage().find((a) => a.id === associadoId);
-  }
-
-  
-
-  async atualizarObservacaoMatricula(
-    associadoId: string,
-    matriculaId: string,
-    observacao: string
-  ): Promise<Associado | undefined> {
-    const lista = this.carregarStorage();
-    const index = lista.findIndex((a) => a.id === associadoId);
-
-    if (index < 0) return undefined;
-
-    lista[index].matriculas = lista[index].matriculas.map((m) =>
-      m.id === matriculaId ? { ...m, observacao } : m
-    );
 
     this.salvarStorage(lista);
 
