@@ -44,18 +44,25 @@ export default function InstrutoresPage() {
       </div>
 
       {mostrarForm && (
-        <InstrutorForm
-          valoresIniciais={instrutorEditando ?? undefined}
-          onSubmit={async (dados) => {
-            if (instrutorEditando) {
-              await editar(instrutorEditando.id, dados);
-            } else {
-              await criar(dados);
-            }
-            setMostrarForm(false);
-            setInstrutorEditando(null);
-          }}
-        />
+        <div
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "flex-start", justifyContent: "center", paddingTop: "6vh", zIndex: 1000, overflowY: "auto" }}
+          onClick={() => { setMostrarForm(false); setInstrutorEditando(null); }}
+        >
+          <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 560 }}>
+            <InstrutorForm
+              valoresIniciais={instrutorEditando ?? undefined}
+              onSubmit={async (dados) => {
+                if (instrutorEditando) {
+                  await editar(instrutorEditando.id, dados);
+                } else {
+                  await criar(dados);
+                }
+                setMostrarForm(false);
+                setInstrutorEditando(null);
+              }}
+            />
+          </div>
+        </div>
       )}
 
       <div
