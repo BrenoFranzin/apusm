@@ -2,6 +2,7 @@
 // APUSM SaaS — Módulo Turmas
 // Arquivo: TurmasPage.tsx
 // Gerenciamento de Salas movido para Configurações
+// Somente visualização (excluir fica em Modalidades)
 // ======================================================
 
 import { useEffect, useState } from "react";
@@ -25,12 +26,14 @@ const DIA_LABEL: Record<string, string> = {
 };
 
 export default function TurmasPage() {
-  const { turmas, criar, excluir, erro } = useTurmas();
+  const { turmas, criar, erro } = useTurmas();
   const { modalidades } = useModalidades();
   const { instrutores } = useInstrutores();
   const { salas } = useSalas();
 
   const [agora, setAgora] = useState<{ dia: string; hhmm: string } | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
+  const [avisadas, setAvisadas] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     async function buscarHoraInternet() {
@@ -47,6 +50,8 @@ export default function TurmasPage() {
       }
     }
     buscarHoraInternet();
+    const intervalo = setInterval(buscarHoraInternet, 60000);
+    return () => clearInterval(intervalo);
   }, []);
 
   function proximoHorario(horario: string) {
@@ -62,6 +67,34 @@ export default function TurmasPage() {
     return agora.hhmm >= horario && agora.hhmm < proximoHorario(horario);
   }
 
+  function minutosAte(dia: string, horario: string) {
+    if (!agora || agora.dia !== dia) return null;
+    const [hAtual, mAtual] = agora.hhmm.split(":").map(Number);
+    const [hAlvo, mAlvo] = horario.split(":").map(Number);
+    return (hAlvo * 60 + mAlvo) - (hAtual * 60 + mAtual);
+  }
+
+  useEffect(() => {
+    if (!agora) return;
+    const proximas = turmas.filter((t) => {
+      const min = minutosAte(t.dia, t.horario);
+      return min !== null && min >= 0 && min <= 10;
+    });
+
+    const chaveMinuto = `${agora.dia}|${agora.hhmm}`;
+    if (proximas.length > 0 && !avisadas.has(chaveMinuto)) {
+      const nomes = proximas
+        .map((t) => modalidades.find((m) => m.id === t.modalidadeId)?.nome)
+        .filter(Boolean)
+        .join(" e ");
+      if (nomes) {
+        setToast(`Daqui 10 min começará a(s) modalidade(s) ${nomes}`);
+        setAvisadas((prev) => new Set(prev).add(chaveMinuto));
+        setTimeout(() => setToast(null), 15000);
+      }
+    }
+  }, [agora, turmas, modalidades, avisadas]);
+
   const [mostrarForm, setMostrarForm] = useState(false);
 
   const turmasPorDia = DIAS_ORDEM.map((dia) => ({
@@ -74,6 +107,28 @@ export default function TurmasPage() {
 
   return (
     <div className="space-y-6">
+      {toast && (
+        <div
+          style={{
+            position: "fixed",
+            top: 20,
+            right: 20,
+            background: "#1d4ed8",
+            color: "#000",
+            fontFamily: "Calibri, sans-serif",
+            padding: "14px 20px",
+            borderRadius: 10,
+            boxShadow: "0 4px 12px rgba(0,0,0,0.25)",
+            zIndex: 2000,
+            maxWidth: 360,
+            fontSize: 14,
+            fontWeight: 600,
+          }}
+        >
+          {toast}
+        </div>
+      )}
+
       <div className="flex justify-between items-start">
         <div>
           <h1 className="text-3xl font-bold" style={{ color: "var(--page-heading)" }}>Turmas</h1>
@@ -157,7 +212,6 @@ export default function TurmasPage() {
                   <th style={{ textAlign: "left", padding: "10px 8px", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--text-secondary)" }}>Modalidade</th>
                   <th style={{ textAlign: "left", padding: "10px 8px", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--text-secondary)" }}>Instrutor</th>
                   <th style={{ textAlign: "left", padding: "10px 8px", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--text-secondary)" }}>Sala</th>
-                  <th style={{ padding: "10px 8px", width: 60 }}></th>
                 </tr>
               </thead>
               <tbody>
@@ -177,6 +231,9 @@ export default function TurmasPage() {
                     >
                       <td style={{ padding: "12px 8px" }}>
                         <span style={{ fontWeight: 700, color: "var(--text-primary)" }}>{turma.horario}</span>
+                        {emAndamento && (
+                          <span style={{ marginLeft: 8, fontSize: 11, color: "var(--color-primary)", fontWeight: 700 }}>● Agora</span>
+                        )}
                       </td>
                       <td style={{ padding: "12px 8px" }}>
                         <span style={{ display: "flex", alignItems: "center", gap: 8, color: "var(--text-primary)" }}>
@@ -189,26 +246,6 @@ export default function TurmasPage() {
                       </td>
                       <td style={{ padding: "12px 8px", color: "var(--text-primary)" }}>
                         {turma.sala}
-                      </td>
-                      <td style={{ padding: "12px 8px", textAlign: "right" }}>
-                        <button
-                          onClick={() => {
-                            const confirmar = window.confirm(
-                              `Excluir esta turma (${DIA_LABEL[turma.dia]} ${turma.horario})? Essa ação não pode ser desfeita.`
-                            );
-                            if (confirmar) excluir(turma.id);
-                          }}
-                          style={{
-                            fontSize: 12,
-                            color: "#ffffff",
-                            border: "none",
-                            borderRadius: 6,
-                            padding: "5px 10px",
-                            background: "var(--color-danger)",
-                          }}
-                        >
-                          🗑️
-                        </button>
                       </td>
                     </tr>
                   );
