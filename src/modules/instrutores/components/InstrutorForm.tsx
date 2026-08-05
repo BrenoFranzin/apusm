@@ -123,9 +123,10 @@ export default function InstrutorForm({ valoresIniciais, onSubmit }: Props) {
                 padding: "4px 8px",
                 borderRadius: 6,
                 border: `1px solid ${marcada ? "var(--color-primary)" : "var(--border-default)"}`,
-                background: marcada ? "var(--color-primary-light)" : "transparent",
+                background: marcada ? "var(--color-primary)" : "transparent",
                 cursor: "pointer",
-                color: "var(--text-primary)",
+                color: marcada ? "var(--text-white)" : "var(--text-primary)",
+                fontWeight: marcada ? 600 : 400,
               }}
             >
               <input

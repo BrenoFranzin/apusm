@@ -131,10 +131,11 @@ export default function ModalidadeForm({ valoresIniciais, onSubmit }: Props) {
                 padding: "6px 10px",
                 borderRadius: 8,
                 border: `1px solid ${marcada ? "var(--color-primary)" : "var(--border-default)"}`,
-                background: marcada ? "var(--color-primary-light)" : "var(--background-primary)",
+                background: marcada ? "var(--color-primary)" : "var(--background-primary)",
                 cursor: "pointer",
                 fontSize: 13,
-                color: "var(--text-primary)",
+                color: marcada ? "var(--text-white)" : "var(--text-primary)",
+                fontWeight: marcada ? 600 : 400,
               }}
             >
               <input type="checkbox" checked={marcada} onChange={() => toggleSala(sala)} />

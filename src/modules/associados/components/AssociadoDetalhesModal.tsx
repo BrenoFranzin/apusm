@@ -38,6 +38,7 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
   const [nomeParaCadastrar, setNomeParaCadastrar] = useState("");
   const [telefoneParaCadastrar, setTelefoneParaCadastrar] = useState("");
   const [cadastrando, setCadastrando] = useState(false);
+  const [erroCadastro, setErroCadastro] = useState<string | null>(null);
   const [filasContagem, setFilasContagem] = useState<Record<string, number>>({});
 
   useEffect(() => {
@@ -62,6 +63,7 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
   async function handleBuscar(texto: string) {
     setBusca(texto);
     setNomeParaCadastrar("");
+    setErroCadastro(null);
     if (texto.trim().length < 2) {
       setResultados([]);
       return;
@@ -72,16 +74,26 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
     );
     setResultados(lista);
     if (lista.length === 0) {
-      setNomeParaCadastrar(texto);
+      setNomeParaCadastrar(texto.toUpperCase());
     }
   }
 
   async function handleCadastrarRapido() {
-    if (!nomeParaCadastrar.trim()) return;
+    const nome = nomeParaCadastrar.trim();
+    if (!nome) return;
+
+    // Exige nome + sobrenome (pelo menos duas palavras)
+    const partes = nome.split(/\s+/).filter(Boolean);
+    if (partes.length < 2) {
+      setErroCadastro("Informe nome e sobrenome pra cadastrar.");
+      return;
+    }
+
+    setErroCadastro(null);
     setCadastrando(true);
     try {
       const novo = await associadosService.criar({
-        nome: nomeParaCadastrar.trim(),
+        nome,
         telefone: telefoneParaCadastrar.trim(),
         status: "ATIVO",
       });
@@ -266,14 +278,14 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 <input
                   value={nomeParaCadastrar}
-                  onChange={(e) => setNomeParaCadastrar(e.target.value.toUpperCase())}
-                  placeholder="NOME COMPLETO"
+                  onChange={(e) => { setNomeParaCadastrar(e.target.value.toUpperCase()); setErroCadastro(null); }}
+                  placeholder="NOME E SOBRENOME"
                   style={{ textTransform: "uppercase", flex: "1 1 180px", padding: 8, borderRadius: 6, border: "1px solid var(--border-default)", background: "var(--background-primary)", color: "var(--text-primary)" }}
                 />
                 <input
                   value={telefoneParaCadastrar}
                   onChange={(e) => setTelefoneParaCadastrar(e.target.value)}
-                  placeholder="Telefone"
+                  placeholder="Telefone (opcional)"
                   style={{ flex: "1 1 140px", padding: 8, borderRadius: 6, border: "1px solid var(--border-default)", background: "var(--background-primary)", color: "var(--text-primary)" }}
                 />
                 <button
@@ -284,6 +296,9 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
                   {cadastrando ? "Cadastrando..." : "Cadastrar e continuar"}
                 </button>
               </div>
+              {erroCadastro && (
+                <p style={{ color: "var(--color-danger)", fontSize: 13, marginTop: 8 }}>{erroCadastro}</p>
+              )}
             </div>
           )}
 
@@ -294,7 +309,7 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
               <div style={{ gridColumn: "1 / -1" }}>
                 <p style={{ fontWeight: 700, fontSize: 18, margin: 0, color: "var(--text-primary)" }}>{selecionado.nome}</p>
                 <p style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 12 }}>
-                  {selecionado.telefone} — Status: {selecionado.status}
+                  {selecionado.telefone || "Sem telefone"} — Status: {selecionado.status}
                 </p>
 
                 <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", marginBottom: 8 }}>
@@ -387,7 +402,7 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
                 {aviso && <p style={{ fontSize: 13, color: "var(--color-primary)", marginTop: 8 }}>{aviso}</p>}
               </div>
 
-              <div>
+              <div style={{ border: "1px solid var(--border-default)", borderRadius: 8, padding: 12 }}>
                 <p style={{ fontWeight: 600, fontSize: 14, marginBottom: 8, color: "var(--text-primary)" }}>
                   Turmas matriculadas ({matriculasAtivas.length})
                 </p>
@@ -402,7 +417,7 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
                 ))}
               </div>
 
-              <div>
+              <div style={{ border: "1px solid var(--border-default)", borderRadius: 8, padding: 12 }}>
                 <p style={{ fontWeight: 600, fontSize: 14, marginBottom: 8, color: "var(--text-primary)" }}>
                   Listas de espera ({filas.length})
                 </p>
