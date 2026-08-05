@@ -41,6 +41,9 @@ export default function ModalidadeTurmasPage() {
   const [modalidade, setModalidade] = useState<Modalidade | null>(null);
   const [instrutores, setInstrutores] = useState<Instrutor[]>([]);
   const [filas, setFilas] = useState<EntradaListaEspera[]>([]);
+  const [selecionados, setSelecionados] = useState<Record<string, string[]>>({});
+  const [decisaoTurmaId, setDecisaoTurmaId] = useState<string | null>(null);
+  const [processandoDecisao, setProcessandoDecisao] = useState(false);
 
   useEffect(() => {
     async function carregar() {
@@ -99,6 +102,35 @@ export default function ModalidadeTurmasPage() {
     if (novo === null) return;
     await listaEsperaService.atualizarObservacao(entradaId, novo);
     await recarregarFilas();
+  }
+
+  function toggleSelecionado(turmaId: string, entradaId: string) {
+    setSelecionados((prev) => {
+      const atual = prev[turmaId] ?? [];
+      const novo = atual.includes(entradaId)
+        ? atual.filter((id) => id !== entradaId)
+        : [...atual, entradaId];
+      return { ...prev, [turmaId]: novo };
+    });
+  }
+
+  async function handleEscolherParaVaga(turmaId: string, entrada: EntradaListaEspera) {
+    setProcessandoDecisao(true);
+    try {
+      await associadosService.matricular(entrada.associadoId, {
+        turmaId: entrada.turmaId,
+        turmaNome: entrada.turmaNome,
+        modalidadeId: entrada.modalidadeId,
+        modalidadeNome: entrada.modalidadeNome,
+      });
+      await listaEsperaService.sairDaFila(entrada.id);
+      await recarregarAssociados();
+      await recarregarFilas();
+      setSelecionados((prev) => ({ ...prev, [turmaId]: [] }));
+      setDecisaoTurmaId(null);
+    } finally {
+      setProcessandoDecisao(false);
+    }
   }
 
   if (!modalidade) return null;
@@ -201,7 +233,7 @@ export default function ModalidadeTurmasPage() {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
               <div>
                 <p style={{ fontWeight: 600, fontSize: 13, marginBottom: 8 }}>
-                  Matriculados ({matriculados.length})
+                  Matriculados ({matriculados.length}/10 — {10 - matriculados.length} vaga(s) livre(s))
                 </p>
                 <table style={{ width: "100%", fontSize: 13, borderCollapse: "separate", borderSpacing: 0, borderRadius: 10, overflow: "hidden", border: "1px solid var(--border-default)" }}>
                   <thead>
@@ -256,6 +288,7 @@ export default function ModalidadeTurmasPage() {
                 <table style={{ width: "100%", fontSize: 13, borderCollapse: "collapse" }}>
                   <thead>
                     <tr style={{ textAlign: "left", color: "var(--text-secondary)", background: "var(--background-tertiary)" }}>
+                      <th style={{ padding: "4px 6px" }}></th>
                       <th style={{ padding: "4px 6px" }}>#</th>
                       <th style={{ padding: "4px 6px" }}>Nome</th>
                       <th style={{ padding: "4px 6px" }}>Obs.</th>
@@ -264,6 +297,13 @@ export default function ModalidadeTurmasPage() {
                   <tbody>
                     {filaDaTurma.map((entrada) => (
                       <tr key={entrada.id} style={{ borderTop: "1px solid var(--border-default)" }}>
+                        <td style={{ padding: "6px" }}>
+                          <input
+                            type="checkbox"
+                            checked={(selecionados[turma.id] ?? []).includes(entrada.id)}
+                            onChange={() => toggleSelecionado(turma.id, entrada.id)}
+                          />
+                        </td>
                         <td style={{ padding: "6px" }}>{entrada.posicao}º</td>
                         <td style={{ padding: "6px" }}>{entrada.associadoNome}</td>
                         <td style={{ padding: "6px" }}>
@@ -288,13 +328,50 @@ export default function ModalidadeTurmasPage() {
                     ))}
                     {filaDaTurma.length === 0 && (
                       <tr>
-                        <td colSpan={3} style={{ padding: "6px", color: "#6b7280" }}>
+                        <td colSpan={4} style={{ padding: "6px", color: "#6b7280" }}>
                           Ninguém na fila.
                         </td>
                       </tr>
                     )}
                   </tbody>
                 </table>
+
+                {(selecionados[turma.id] ?? []).length >= 1 && (10 - matriculados.length) > 0 && (
+                  <button
+                    onClick={() => setDecisaoTurmaId(turma.id)}
+                    style={{ marginTop: 8, fontSize: 12, fontWeight: 600, border: "none", borderRadius: 6, padding: "6px 12px", background: "var(--color-primary)", color: "#fff", cursor: "pointer" }}
+                  >
+                    Liberar vaga para selecionado(s)
+                  </button>
+                )}
+
+                {decisaoTurmaId === turma.id && (
+                  <div style={{ marginTop: 10, border: "1px solid var(--color-primary)", borderRadius: 8, padding: 12, background: "var(--background-tertiary)" }}>
+                    <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, color: "var(--text-primary)" }}>
+                      Colocar quem na vaga?
+                    </p>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
+                      {filaDaTurma
+                        .filter((e) => (selecionados[turma.id] ?? []).includes(e.id))
+                        .map((e) => (
+                          <button
+                            key={e.id}
+                            disabled={processandoDecisao}
+                            onClick={() => handleEscolherParaVaga(turma.id, e)}
+                            style={{ fontSize: 12, border: "1px solid var(--color-primary)", borderRadius: 6, padding: "6px 12px", background: "var(--background-primary)", color: "var(--color-primary)", cursor: "pointer" }}
+                          >
+                            {e.associadoNome}
+                          </button>
+                        ))}
+                    </div>
+                    <button
+                      onClick={() => setDecisaoTurmaId(null)}
+                      style={{ fontSize: 12, border: "1px solid var(--border-default)", borderRadius: 6, padding: "6px 12px", background: "transparent", color: "var(--text-secondary)", cursor: "pointer" }}
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
