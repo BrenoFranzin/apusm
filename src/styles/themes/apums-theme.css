@@ -223,6 +223,8 @@ AGENDA - GRADE SEMANAL
 
 .agenda-grid-wrapper {
   overflow-x: auto;
+  overflow-y: auto;
+  max-height: 75vh;
   border-radius: var(--radius-lg);
 }
 
@@ -234,8 +236,8 @@ AGENDA - GRADE SEMANAL
 }
 
 .agenda-head-cell {
-  background: var(--background-tertiary);
-  color: var(--text-secondary);
+  background: var(--color-primary);
+  color: #fff;
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
@@ -243,6 +245,9 @@ AGENDA - GRADE SEMANAL
   padding: var(--space-3);
   border-radius: var(--radius-sm);
   text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 5;
 }
 
 .agenda-time-cell {
