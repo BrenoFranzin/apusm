@@ -7,7 +7,6 @@
 import { useEffect, useState } from "react";
 import { associadosService } from "../services/associados.service";
 import { buscaAproximada } from "@/utils/textoBusca";
-import { listaEsperaService } from "@/modules/lista-espera/services/listaEspera.service";
 import { turmasService } from "@/modules/turmas/services/turmas.service";
 import { modalidadesService } from "@/modules/modalidades/services/modalidades.service";
 import type { Associado } from "../types/associado.types";
