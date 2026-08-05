@@ -215,7 +215,7 @@ class AssociadosService {
       lista[index].historico.push({
         id: crypto.randomUUID(),
         data: new Date().toISOString(),
-        descricao: `Entrou na lista de espera de ${dadosMatricula.modalidadeNome} (posição ${entrada.posicao})`,
+        descricao: `Entrou na lista de espera de ${dadosMatricula.modalidadeNome} (${dadosMatricula.turmaNome}), posição ${entrada.posicao}`,
       });
       this.salvarStorage(lista);
 

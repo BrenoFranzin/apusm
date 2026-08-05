@@ -318,7 +318,7 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
                                     {DIA_LABEL[t.dia]} — {t.horario}
                                     {(filasContagem[t.id] ?? 0) > 0 && (
                                       <span style={{ fontSize: 11, color: "var(--color-warning)", marginLeft: 4 }}>
-                                        ({filasContagem[t.id]} na fila)
+                                        ({filasContagem[t.id]} na fila de espera)
                                       </span>
                                     )}
                                   </span>
