@@ -5,21 +5,23 @@ import {
   Navigate
 } from "react-router-dom"
 
-import RelatorioMatriculasPage from "@/modules/relatorios/pages/RelatorioMatriculasPage"
-import RelatorioPresencaSemanalPage from "@/modules/relatorios/pages/RelatorioPresencaSemanalPage"
-import ConfiguracoesPage from "@/modules/configuracoes/pages/ConfiguracoesPage"
+import { lazy, Suspense } from "react"
 import MainLayout from "@/components/layout/MainLayout"
-import ConsultaAssociadoPage from "@/modules/relatorios/pages/ConsultaAssociadoPage"
 import { AssociadosRoutes } from "@/modules/associados/routes/associados.routes"
-import DashboardPage from "@/modules/dashboard/pages/DashboardPage"
-import ModalidadesPage from "@/modules/modalidades/pages/ModalidadesPage"
-import InstrutoresPage from "@/modules/instrutores/pages/InstrutoresPage"
-import TurmasPage from "@/modules/turmas/pages/TurmasPage"
-import AgendaPage from "@/modules/agenda/pages/AgendaPage"
-import PlantaoPage from "@/modules/plantao/pages/PlantaoPage"
-import ListasEsperaPage from "@/modules/lista-espera/pages/ListasEsperaPage"
-import ModalidadeTurmasPage from "@/modules/lista-espera/pages/ModalidadeTurmasPage"
-import AssociadoSituacaoPage from "@/modules/associados/pages/AssociadoSituacaoPage"
+
+const RelatorioMatriculasPage = lazy(() => import("@/modules/relatorios/pages/RelatorioMatriculasPage"))
+const RelatorioPresencaSemanalPage = lazy(() => import("@/modules/relatorios/pages/RelatorioPresencaSemanalPage"))
+const ConfiguracoesPage = lazy(() => import("@/modules/configuracoes/pages/ConfiguracoesPage"))
+const ConsultaAssociadoPage = lazy(() => import("@/modules/relatorios/pages/ConsultaAssociadoPage"))
+const DashboardPage = lazy(() => import("@/modules/dashboard/pages/DashboardPage"))
+const ModalidadesPage = lazy(() => import("@/modules/modalidades/pages/ModalidadesPage"))
+const InstrutoresPage = lazy(() => import("@/modules/instrutores/pages/InstrutoresPage"))
+const TurmasPage = lazy(() => import("@/modules/turmas/pages/TurmasPage"))
+const AgendaPage = lazy(() => import("@/modules/agenda/pages/AgendaPage"))
+const PlantaoPage = lazy(() => import("@/modules/plantao/pages/PlantaoPage"))
+const ListasEsperaPage = lazy(() => import("@/modules/lista-espera/pages/ListasEsperaPage"))
+const ModalidadeTurmasPage = lazy(() => import("@/modules/lista-espera/pages/ModalidadeTurmasPage"))
+const AssociadoSituacaoPage = lazy(() => import("@/modules/associados/pages/AssociadoSituacaoPage"))
 
 
 
