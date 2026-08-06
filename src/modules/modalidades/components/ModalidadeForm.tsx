@@ -38,13 +38,14 @@ export default function ModalidadeForm({ valoresIniciais, onSubmit }: Props) {
     formState: { errors },
   } = useForm<ModalidadeFormData>({
     resolver: zodResolver(modalidadeSchema) as any,
-    defaultValues: {
-      nome: "",
-      icone: "🧘",
-      cor: CORES_PALETA[0],
-      salas: [],
-      ...valoresIniciais,
-    },
+      defaultValues: {
+        nome: "",
+        icone: "🧘",
+        cor: CORES_PALETA[0],
+        salas: [],
+        descricao: "",
+        ...valoresIniciais,
+      },
   });
 
   // Se as salas cadastradas carregarem depois (async) e o form ainda não tiver
@@ -287,6 +288,30 @@ export default function ModalidadeForm({ valoresIniciais, onSubmit }: Props) {
           </div>
         </div>
       )}
+
+<label style={{ fontSize: 12, color: "var(--text-secondary)" }}>
+        Descrição (público-alvo, faixa etária, observações)
+      </label>
+      <textarea
+        placeholder="Ex.: Segunda até 4 anos, terça de 4 a 6 anos..."
+        {...register("descricao")}
+        rows={3}
+        style={{
+          width: "100%",
+          margin: "6px 0 12px",
+          padding: 8,
+          background: "var(--background-primary)",
+          color: "var(--text-primary)",
+          border: "1px solid var(--border-default)",
+          borderRadius: 6,
+          boxSizing: "border-box",
+          resize: "vertical",
+          fontFamily: "inherit",
+          fontSize: 13,
+        }}
+      />
+
+
 
       <button
         type="submit"
