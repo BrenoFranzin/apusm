@@ -352,12 +352,6 @@ class PdfService {
     const linhaSeparadora = [{ content: "NOVOS ASSOCIADOS", colSpan: 5, styles: { fontStyle: "bold", fillColor: [230, 230, 230], halign: "center" } }];
     const linhasEmBranco = Array.from({ length: 10 }, () => ["", "", "", "", ""]);
 
-    const linhaSeparadora = [{ content: "NOVOS ASSOCIADOS", colSpan: 5, styles: { fontStyle: "bold", fillColor: [230, 230, 230], halign: "center" } }];
-    const linhasEmBranco = Array.from({ length: 10 }, () => ["", "", "", "", ""]);
-
-    const linhaSeparadora = [{ content: "NOVOS ASSOCIADOS", colSpan: 5, styles: { fontStyle: "bold", fillColor: [230, 230, 230], halign: "center" } }];
-    const linhasEmBranco = Array.from({ length: 10 }, () => ["", "", "", "", ""]);
-
     autoTable(doc, {
       startY: 27,
       head: [["Dia", "Horário", "Modalidade", "Instrutor", "Sala"]],
