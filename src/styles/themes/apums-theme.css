@@ -222,8 +222,6 @@ AGENDA - GRADE SEMANAL
 */
 
 .agenda-grid-wrapper {
-  overflow-x: auto;
-  overflow-y: visible;
   border-radius: var(--radius-lg);
 }
 
