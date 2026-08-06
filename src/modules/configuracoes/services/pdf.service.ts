@@ -17,10 +17,6 @@ const NOME_DIA: Record<string, string> = {
   sab: "Sábado",
 };
 
-const DIA_PARA_WEEKDAY: Record<string, number> = {
-  dom: 0, seg: 1, ter: 2, qua: 3, qui: 4, sex: 5, sab: 6,
-};
-
 const MESES = [
   "Janeiro","Fevereiro","Março","Abril","Maio","Junho",
   "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro",
@@ -427,10 +423,13 @@ class PdfService {
     ]);
 
     const turma = turmas.find((t: any) => t.id === turmaId);
-    if (!turma) throw new Error("Turma nÃ£o encontrada");
+    if (!turma) throw new Error("Turma não encontrada");
 
     const modalidade = modalidades.find((m: any) => m.id === turma.modalidadeId);
     const instrutor = instrutores.find((i: any) => i.id === turma.instrutorId);
+
+    const nomeModalidade = modalidade?.nome ?? "-";
+    const infantil = nomeModalidade.toLowerCase().includes("infantil");
 
     const matriculados = associados
       .filter((a: any) => a.matriculas.some((m: any) => m.turmaId === turmaId && m.status !== "CANCELADA"))
@@ -439,7 +438,7 @@ class PdfService {
     const datas = gerarDatasDoMes(turma.dia, mes, ano);
 
     const limiteVagas = turma.limiteVagas ?? 10;
-    const limiteNovos = turma.limiteNovosAlunos ?? 9;
+    const limiteNovos = infantil ? Math.min(turma.limiteNovosAlunos ?? 4, 4) : (turma.limiteNovosAlunos ?? 9);
 
     const linhasMatriculados: string[] = [...matriculados];
     while (linhasMatriculados.length < limiteVagas) linhasMatriculados.push("");
@@ -453,54 +452,73 @@ class PdfService {
 
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
-    doc.text(`MODALIDADE: ${(modalidade?.nome ?? "-").toUpperCase()}`, 14, 14);
+    doc.text(`MODALIDADE: ${nomeModalidade.toUpperCase()}`, 14, 14);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.text(`PROFESSOR(A): ${instrutor?.nome ?? "-"}`, 14, 20);
 
     const nomeDiaCurto: Record<string, string> = {
-      dom: "DOM", seg: "SEG", ter: "TER", qua: "QUA", qui: "QUI", sex: "SEX", sab: "SÃB",
+      dom: "DOM", seg: "SEG", ter: "TER", qua: "QUA", qui: "QUI", sex: "SEX", sab: "SÁB",
     };
     doc.setFont("helvetica", "bold");
     doc.setFontSize(12);
-    doc.text(`MÃŠS: ${MESES[mes].toUpperCase()}/${ano}`, 280, 14, { align: "right" });
+    doc.text(`MÊS: ${MESES[mes].toUpperCase()}/${ano}`, 280, 14, { align: "right" });
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
-    doc.text(`DIA/HORÃRIO: ${nomeDiaCurto[turma.dia] ?? turma.dia} ${turma.horario}`, 280, 20, { align: "right" });
+    doc.text(`DIA/HORÁRIO: ${nomeDiaCurto[turma.dia] ?? turma.dia} ${turma.horario}`, 280, 20, { align: "right" });
+
+    const colunaAluno = infantil ? "Nome do Aluno (Criança)" : "Nome do Aluno";
+    const cabecalhoPrincipal = infantil
+      ? ["Nº", colunaAluno, ...datas, "Responsável"]
+      : ["Nº", colunaAluno, ...datas];
+
+    const columnStylesPrincipal: any = { 0: { cellWidth: 12 }, 1: { cellWidth: infantil ? 65 : 90, halign: "left" } };
+    if (infantil) {
+      columnStylesPrincipal[cabecalhoPrincipal.length - 1] = { cellWidth: 45, halign: "left" };
+    }
 
     autoTable(doc, {
-      head: [["NÂº", "Nome do Aluno", ...datas]],
-      body: linhasMatriculados.map((nome, i) => [String(i + 1).padStart(2, "0"), nome, ...datas.map(() => "")]),
+      head: [cabecalhoPrincipal],
+      body: linhasMatriculados.map((nome, i) =>
+        infantil
+          ? [String(i + 1).padStart(2, "0"), nome, ...datas.map(() => ""), ""]
+          : [String(i + 1).padStart(2, "0"), nome, ...datas.map(() => "")]
+      ),
       startY: 26,
       theme: "grid",
       styles: { fontSize, cellPadding, halign: "center", valign: "middle", lineWidth: 0.3, lineColor: [0, 0, 0] },
       headStyles: { fillColor: [20, 83, 45], textColor: [255, 255, 255], fontStyle: "bold" },
-      columnStyles: { 0: { cellWidth: 12 }, 1: { cellWidth: 90, halign: "left" } },
+      columnStyles: columnStylesPrincipal,
       margin: { left: 14, right: 14 },
     });
 
     const finalY1 = (doc as any).lastAutoTable.finalY as number;
+    const larguraTotal = infantil ? 269 : 269;
 
     doc.setFillColor(230, 230, 230);
-    doc.rect(14, finalY1, 269, 6, "F");
+    doc.rect(14, finalY1, larguraTotal, 6, "F");
     doc.setFont("helvetica", "bold");
     doc.setFontSize(fontSize);
     doc.setTextColor(0);
-    doc.text("NOVOS ALUNOS", 148.5, finalY1 + 4.2, { align: "center" });
+    doc.text("NOVOS ALUNOS", 14 + larguraTotal / 2, finalY1 + 4.2, { align: "center" });
+
+    const columnStylesNovos: any = infantil
+      ? { 0: { cellWidth: 65, halign: "left" }, [datas.length + 1]: { cellWidth: 45, halign: "left" } }
+      : { 0: { cellWidth: 102, halign: "left" } };
 
     autoTable(doc, {
-      head: [["Nome do Aluno", ...datas]],
-      body: Array.from({ length: limiteNovos }, () => ["", ...datas.map(() => "")]),
+      body: Array.from({ length: limiteNovos }, () =>
+        infantil ? ["", ...datas.map(() => ""), ""] : ["", ...datas.map(() => "")]
+      ),
       startY: finalY1 + 6,
       theme: "grid",
       styles: { fontSize, cellPadding, halign: "center", valign: "middle", lineWidth: 0.3, lineColor: [0, 0, 0] },
-      headStyles: { fillColor: [20, 83, 45], textColor: [255, 255, 255], fontStyle: "bold" },
-      columnStyles: { 0: { cellWidth: 102, halign: "left" } },
+      columnStyles: columnStylesNovos,
       margin: { left: 14, right: 14 },
       pageBreak: "avoid",
     });
 
-    const nomeArquivo = `presenca-${(modalidade?.nome ?? "turma").toLowerCase().replace(/\s+/g, "-")}-${turma.dia}-${turma.horario.replace(":", "")}-${MESES[mes].toLowerCase()}-${ano}.pdf`;
+    const nomeArquivo = `Lista de turmas - ${nomeModalidade} - ${MESES[mes]} ${ano}.pdf`;
     baixarEregistrar(doc, nomeArquivo, "presenca");
   }
 
