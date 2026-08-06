@@ -349,10 +349,19 @@ class PdfService {
         ];
       });
 
+    const linhaSeparadora = [{ content: "NOVOS ASSOCIADOS", colSpan: 5, styles: { fontStyle: "bold", fillColor: [230, 230, 230], halign: "center" } }];
+    const linhasEmBranco = Array.from({ length: 10 }, () => ["", "", "", "", ""]);
+
+    const linhaSeparadora = [{ content: "NOVOS ASSOCIADOS", colSpan: 5, styles: { fontStyle: "bold", fillColor: [230, 230, 230], halign: "center" } }];
+    const linhasEmBranco = Array.from({ length: 10 }, () => ["", "", "", "", ""]);
+
+    const linhaSeparadora = [{ content: "NOVOS ASSOCIADOS", colSpan: 5, styles: { fontStyle: "bold", fillColor: [230, 230, 230], halign: "center" } }];
+    const linhasEmBranco = Array.from({ length: 10 }, () => ["", "", "", "", ""]);
+
     autoTable(doc, {
       startY: 27,
       head: [["Dia", "Horário", "Modalidade", "Instrutor", "Sala"]],
-      body: linhas,
+      body: [...linhas, linhaSeparadora as any, ...linhasEmBranco],
       styles: { fontSize: 9 },
       headStyles: { fillColor: [20, 83, 45] },
     });
@@ -489,11 +498,4 @@ class PdfService {
     return bruto ? JSON.parse(bruto) : [];
   }
 
-  apagarDoHistorico(id: string): void {
-    const lista = this.listarHistorico().filter((r) => r.id !== id);
-    localStorage.setItem(HISTORICO_KEY, JSON.stringify(lista));
-  }
-}
-
-export const pdfService = new PdfService();
-export default pdfService;
+  apagarDoHistorico(
