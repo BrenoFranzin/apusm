@@ -40,6 +40,7 @@ export default function TurmaForm({ modalidades, instrutores, salas, onSubmit }:
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<TurmaFormData>({
     resolver: zodResolver(turmaSchema) as any,
@@ -53,6 +54,8 @@ export default function TurmaForm({ modalidades, instrutores, salas, onSubmit }:
       limiteNovosAlunos: 9,
     },
   });
+
+  const modalidadeSelecionada = modalidades.find((m) => m.id === watch("modalidadeId"));
 
   return (
     <form
@@ -75,6 +78,11 @@ export default function TurmaForm({ modalidades, instrutores, salas, onSubmit }:
         ))}
       </select>
       <p style={{ color: "var(--color-danger)", fontSize: 12, margin: "-8px 0 8px" }}>{errors.modalidadeId?.message}</p>
+      {modalidadeSelecionada?.descricao && (
+        <p style={{ fontSize: 12, color: "var(--color-primary)", margin: "-6px 0 12px", fontStyle: "italic" }}>
+          ℹ️ {modalidadeSelecionada.descricao}
+        </p>
+      )}
 
       <label style={{ fontSize: 12, color: "var(--text-secondary)" }}>Instrutor</label>
       <select {...register("instrutorId")} style={selectStyle}>
