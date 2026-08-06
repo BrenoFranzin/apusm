@@ -20,9 +20,10 @@ const DIA_LABEL: Record<string, string> = {
 };
 
 const SEMANAS = [1, 2, 3, 4, 5];
+const ORDEM_DIA = ["seg", "ter", "qua", "qui", "sex", "sab"];
 
 export default function RelatorioPresencaSemanalPage() {
-  const anoAtual = new Date().getFullYear();
+  const [ano, setAno] = useState(new Date().getFullYear());
   const [mes, setMes] = useState(new Date().getMonth());
   const [registros, setRegistros] = useState<RegistroPresencaSemanal[]>([]);
   const [salvando, setSalvando] = useState<string | null>(null);
@@ -32,19 +33,22 @@ export default function RelatorioPresencaSemanalPage() {
   const { instrutores } = useInstrutores();
 
   async function carregar() {
-    const lista = await presencaSemanalService.listarPorMes(anoAtual, mes);
+    const lista = await presencaSemanalService.listarPorMes(ano, mes);
     setRegistros(lista);
   }
 
   useEffect(() => {
     carregar();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mes]);
+  }, [mes, ano]);
 
   const turmasPorModalidade = useMemo(() => {
     return modalidades.map((mod) => ({
       modalidade: mod,
-      turmas: turmas.filter((t) => t.modalidadeId === mod.id),
+      turmas: turmas
+        .filter((t) => t.modalidadeId === mod.id)
+        .slice()
+        .sort((a, b) => ORDEM_DIA.indexOf(a.dia) - ORDEM_DIA.indexOf(b.dia) || a.horario.localeCompare(b.horario)),
     })).filter((g) => g.turmas.length > 0);
   }, [modalidades, turmas]);
 
@@ -57,7 +61,7 @@ export default function RelatorioPresencaSemanalPage() {
     const totalAlunos = Number(valor) || 0;
     const chave = `${turmaId}-${semana}`;
     setSalvando(chave);
-    await presencaSemanalService.salvar({ turmaId, ano: anoAtual, mes, semana, totalAlunos });
+    await presencaSemanalService.salvar({ turmaId, ano, mes, semana, totalAlunos });
     await carregar();
     setSalvando(null);
   }
