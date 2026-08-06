@@ -10,7 +10,6 @@ import { turmaSchema, type TurmaFormData } from "../schemas/turma.schema";
 import type { Modalidade } from "@/modules/modalidades/types/modalidade.types";
 import type { Instrutor } from "@/modules/instrutores/types/instrutor.types";
 
-
 const DIAS = [
   { valor: "seg", label: "Segunda" },
   { valor: "ter", label: "Terça" },
@@ -19,7 +18,6 @@ const DIAS = [
   { valor: "sex", label: "Sexta" },
   { valor: "sab", label: "Sábado" },
 ];
-
 
 interface Props {
   modalidades: Modalidade[];
@@ -38,15 +36,11 @@ const selectStyle: React.CSSProperties = {
   borderRadius: 6,
 };
 
-
-
 export default function TurmaForm({ modalidades, instrutores, salas, onSubmit }: Props) {
-
   const {
     register,
     handleSubmit,
     formState: { errors },
-  
   } = useForm<TurmaFormData>({
     resolver: zodResolver(turmaSchema) as any,
     defaultValues: {
@@ -107,10 +101,13 @@ export default function TurmaForm({ modalidades, instrutores, salas, onSubmit }:
           <option key={s.id} value={s.nome}>{s.nome}</option>
         ))}
       </select>
+
       <label style={{ fontSize: 12, color: "var(--text-secondary)" }}>Limite de vagas na turma</label>
       <input type="number" min={1} {...register("limiteVagas")} style={selectStyle} />
-      <label style={{ fontSize: 12, color: "var(--text-secondary)" }}>Linhas extras para "novos alunos" na folha de presenÃ§a</label>
+
+      <label style={{ fontSize: 12, color: "var(--text-secondary)" }}>Linhas extras para novos alunos na folha de presenca</label>
       <input type="number" min={0} {...register("limiteNovosAlunos")} style={{ ...selectStyle, margin: "4px 0 14px" }} />
+
       <button
         type="submit"
         style={{ width: "100%", background: "var(--color-primary)", color: "#fff", padding: 10, borderRadius: 8, border: "none" }}
