@@ -23,6 +23,7 @@ class ModalidadesService {
       cor: m?.cor ?? "#6b7280",
       salas: Array.isArray(m?.salas) ? m.salas : (m?.sala ? [m.sala] : []),
       instrutoresIds: Array.isArray(m?.instrutoresIds) ? m.instrutoresIds : [],
+      descricao: m?.descricao ?? undefined,
     };
   }
 
