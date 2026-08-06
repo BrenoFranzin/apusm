@@ -434,7 +434,7 @@ class PdfService {
     const instrutor = instrutores.find((i: any) => i.id === turma.instrutorId);
 
     const nomeModalidade = modalidade?.nome ?? "-";
-    const infantil = nomeModalidade.toLowerCase().includes("infantil");
+    const infantil = /infantil|musicaliza/i.test(nomeModalidade);
 
     const matriculados = associados
       .filter((a: any) => a.matriculas.some((m: any) => m.turmaId === turmaId && m.status !== "CANCELADA"))
