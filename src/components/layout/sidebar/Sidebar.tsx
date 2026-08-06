@@ -45,7 +45,8 @@ export function Sidebar() {
           <NavLink
             key={item.label}
             to={item.path}
-            end={item.path === "/" || item.path === "/relatorios"}
+            end={item.path === "/"}
+          
             style={({ isActive }) => ({
               display: "flex",
               alignItems: "center",
