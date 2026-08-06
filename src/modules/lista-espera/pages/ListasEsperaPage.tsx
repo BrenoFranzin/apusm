@@ -128,6 +128,11 @@ export default function ListasEsperaPage() {
                 <span style={{ fontSize: 12, fontWeight: 500, opacity: 0.85 }}>
                   {qtdFila} na fila de espera
                 </span>
+                {mod.descricao && (
+                  <span style={{ fontSize: 11, fontStyle: "italic", opacity: 0.8 }}>
+                    {mod.descricao}
+                  </span>
+                )}
               </button>
             );
           })}
