@@ -32,12 +32,22 @@ export default function ConfiguracoesPage() {
   const { turmas } = useTurmas();
   const { modalidades } = useModalidades();
   const [turmaSelecionadaId, setTurmaSelecionadaId] = useState("");
+  const [mostrarExportacaoMassa, setMostrarExportacaoMassa] = useState(false);
 
   async function handleExportarPresenca() {
     if (!turmaSelecionadaId) { avisar("Selecione uma turma."); return; }
     const agora = new Date();
     await pdfService.exportarFolhaPresenca(turmaSelecionadaId, agora.getMonth(), agora.getFullYear());
     avisar("Folha de presença exportada.");
+  }
+
+  async function handleExportarPresencaMassa(idsSelecionados: string[]) {
+    const agora = new Date();
+    for (const id of idsSelecionados) {
+      await pdfService.exportarFolhaPresenca(id, agora.getMonth(), agora.getFullYear());
+    }
+    setMostrarExportacaoMassa(false);
+    avisar(`${idsSelecionados.length} folha(s) de presença exportada(s).`);
   }
 
   useEffect(() => {
@@ -276,6 +286,7 @@ function handleSalvarDadosNoProjeto() {
           })}
         </select>
         <Btn onClick={handleExportarPresenca}>🖨️ Exportar folha de presença</Btn>
+        <Btn onClick={() => setMostrarExportacaoMassa(true)}>📤 Exportar presença em massa</Btn>
       </Section>
 
       <Section title="Dados de teste (sincronizado via Git)" desc="Salvar ou carregar dados de teste que ficam junto com o código do projeto">
@@ -334,6 +345,172 @@ function handleSalvarDadosNoProjeto() {
       )}
 
       {mostrarSalas && <SalasModal onFechar={() => setMostrarSalas(false)} />}
+
+      {mostrarExportacaoMassa && (
+        <ModalExportacaoMassa
+          turmas={turmas}
+          modalidades={modalidades}
+          onFechar={() => setMostrarExportacaoMassa(false)}
+          onConfirmar={handleExportarPresencaMassa}
+        />
+      )}
+    </div>
+  );
+}
+
+// ==========================
+// MODAL DE EXPORTAÇÃO EM MASSA
+// ==========================
+
+function ModalExportacaoMassa({
+  turmas,
+  modalidades,
+  onFechar,
+  onConfirmar,
+}: {
+  turmas: { id: string; dia: string; horario: string; modalidadeId: string }[];
+  modalidades: { id: string; nome: string }[];
+  onFechar: () => void;
+  onConfirmar: (idsSelecionados: string[]) => void;
+}) {
+  const [selecionadas, setSelecionadas] = useState<Set<string>>(new Set());
+  const [exportando, setExportando] = useState(false);
+
+  function alternar(id: string) {
+    setSelecionadas((atual) => {
+      const nova = new Set(atual);
+      if (nova.has(id)) nova.delete(id);
+      else nova.add(id);
+      return nova;
+    });
+  }
+
+  function marcarTodas() {
+    setSelecionadas(new Set(turmas.map((t) => t.id)));
+  }
+
+  function desmarcarTodas() {
+    setSelecionadas(new Set());
+  }
+
+  async function confirmar() {
+    if (selecionadas.size === 0) return;
+    setExportando(true);
+    await onConfirmar(Array.from(selecionadas));
+    setExportando(false);
+  }
+
+  return (
+    <div
+      onClick={onFechar}
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(15, 23, 42, 0.55)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: "var(--z-modal)" as unknown as number,
+        padding: 16,
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="apusm-card"
+        style={{
+          width: "100%",
+          maxWidth: 520,
+          maxHeight: "80vh",
+          display: "flex",
+          flexDirection: "column",
+          padding: "var(--space-6)",
+        }}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+          <h2 style={{ fontWeight: 600, fontSize: 17, margin: 0, color: "var(--text-primary)" }}>
+            Exportar presença em massa
+          </h2>
+          <button
+            onClick={onFechar}
+            style={{ fontSize: 20, lineHeight: 1, color: "var(--text-muted)", background: "none", border: "none" }}
+          >
+            ×
+          </button>
+        </div>
+
+        <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+          <button
+            onClick={marcarTodas}
+            style={{ fontSize: 12, border: "1px solid var(--border-default)", borderRadius: 6, padding: "5px 9px", background: "var(--background-primary)", color: "var(--text-primary)" }}
+          >
+            Marcar todas
+          </button>
+          <button
+            onClick={desmarcarTodas}
+            style={{ fontSize: 12, border: "1px solid var(--border-default)", borderRadius: 6, padding: "5px 9px", background: "var(--background-primary)", color: "var(--text-primary)" }}
+          >
+            Desmarcar todas
+          </button>
+        </div>
+
+        <div style={{ overflowY: "auto", display: "flex", flexDirection: "column", gap: 6, marginBottom: 16 }}>
+          {turmas.length === 0 ? (
+            <p style={{ color: "var(--text-muted)", fontSize: 14 }}>Nenhuma turma cadastrada.</p>
+          ) : (
+            turmas.map((t) => {
+              const mod = modalidades.find((m) => m.id === t.modalidadeId);
+              return (
+                <label
+                  key={t.id}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    fontSize: 13,
+                    color: "var(--text-primary)",
+                    border: "1px solid var(--border-default)",
+                    borderRadius: "var(--radius-md)",
+                    padding: "8px 10px",
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={selecionadas.has(t.id)}
+                    onChange={() => alternar(t.id)}
+                  />
+                  {mod?.nome ?? "-"} — {t.dia} {t.horario}
+                </label>
+              );
+            })
+          )}
+        </div>
+
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+          <button
+            onClick={onFechar}
+            style={{ fontSize: 13, border: "1px solid var(--border-default)", borderRadius: 6, padding: "8px 14px", background: "var(--background-primary)", color: "var(--text-primary)" }}
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={confirmar}
+            disabled={selecionadas.size === 0 || exportando}
+            style={{
+              fontSize: 13,
+              border: "none",
+              borderRadius: 6,
+              padding: "8px 14px",
+              background: "var(--color-primary)",
+              color: "#ffffff",
+              fontWeight: 600,
+              cursor: selecionadas.size === 0 || exportando ? "not-allowed" : "pointer",
+              opacity: selecionadas.size === 0 || exportando ? 0.5 : 1,
+            }}
+          >
+            {exportando ? "Exportando..." : `Exportar ${selecionadas.size} folha(s)`}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
