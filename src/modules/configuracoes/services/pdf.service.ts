@@ -462,6 +462,15 @@ class PdfService {
     doc.setFontSize(10);
     doc.text(`PROFESSOR(A): ${instrutor?.nome ?? "-"}`, 14, 20);
 
+    let linhaExtra = 0;
+    if (modalidade?.descricao) {
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "italic");
+      doc.text(`OBS: ${modalidade.descricao}`, 14, 25);
+      doc.setFont("helvetica", "normal");
+      linhaExtra = 4;
+    }
+
     const nomeDiaCurto: Record<string, string> = {
       dom: "DOM", seg: "SEG", ter: "TER", qua: "QUA", qui: "QUI", sex: "SEX", sab: "SÁB",
     };
@@ -489,7 +498,7 @@ class PdfService {
           ? [String(i + 1).padStart(2, "0"), nome, ...datas.map(() => ""), ""]
           : [String(i + 1).padStart(2, "0"), nome, ...datas.map(() => "")]
       ),
-      startY: 26,
+      startY: 26 + linhaExtra,
       theme: "grid",
       styles: { fontSize, cellPadding, halign: "center", valign: "middle", lineWidth: 0.3, lineColor: [0, 0, 0] },
       headStyles: { fillColor: [20, 83, 45], textColor: [255, 255, 255], fontStyle: "bold" },
