@@ -17,6 +17,11 @@ const NOME_DIA: Record<string, string> = {
   sab: "Sábado",
 };
 
+const DIA_PARA_WEEKDAY: Record<string, number> = {
+  dom: 0, seg: 1, ter: 2, qua: 3, qui: 4, sex: 5, sab: 6,
+};
+
+
 const MESES = [
   "Janeiro","Fevereiro","Março","Abril","Maio","Junho",
   "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro",
