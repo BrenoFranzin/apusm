@@ -33,7 +33,7 @@ return (
 
 <BrowserRouter>
 
-
+<Suspense fallback={null}>
 <Routes>
 
 <Route element={<MainLayout/>}>
@@ -92,6 +92,7 @@ element={<AgendaPage/>}
 
 
 </Routes>
+</Suspense>
 
 
 </BrowserRouter>
