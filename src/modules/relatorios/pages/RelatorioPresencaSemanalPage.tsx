@@ -124,7 +124,7 @@ export default function RelatorioPresencaSemanalPage() {
               {modalidade.icone} {modalidade.nome}
             </p>
             <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: "0 0 12px" }}>
-              {MESES[mes]}/{anoAtual}
+              {MESES[mes]}/{ano}
             </p>
 
             <table style={{ width: "100%", fontSize: 12, borderCollapse: "collapse" }}>
