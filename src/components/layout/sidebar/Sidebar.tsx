@@ -1,4 +1,5 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
+     import { useTransition } from "react";
 
 const menu = [
   { label: "Dashboard", path: "/", icon: "📊" },
@@ -15,6 +16,17 @@ const menu = [
 ];
 
 export function Sidebar() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [, startTransition] = useTransition();
+
+  const itemAtivo = menu.reduce<string | null>((melhor, item) => {
+    const bate = item.path === "/" ? location.pathname === "/" : location.pathname.startsWith(item.path);
+    if (!bate) return melhor;
+    if (melhor === null || item.path.length > melhor.length) return item.path;
+    return melhor;
+  }, null);
+
   return (
     <aside
       style={{
@@ -43,24 +55,27 @@ export function Sidebar() {
       <nav style={{ display: "flex", flexDirection: "column", gap: 4 }}>
         {menu.map((item) => (
           <NavLink
+          onClick={(e) => {
+  e.preventDefault();
+  startTransition(() => navigate(item.path));
+}}
             key={item.label}
             to={item.path}
             end={item.path === "/"}
-          
-            style={({ isActive }) => ({
+            style={{
               display: "flex",
               alignItems: "center",
               gap: 10,
               padding: "11px 14px",
               borderRadius: 10,
               fontSize: 14,
-              fontWeight: isActive ? 600 : 500,
+              fontWeight: itemAtivo === item.path ? 600 : 500,
               color: "#fff",
-              background: isActive ? "rgba(255,255,255,0.16)" : "transparent",
-              borderLeft: isActive ? "3px solid #fff" : "3px solid transparent",
+              background: itemAtivo === item.path ? "rgba(255,255,255,0.16)" : "transparent",
+              borderLeft: itemAtivo === item.path ? "3px solid #fff" : "3px solid transparent",
               transition: "background 0.15s ease, border-color 0.15s ease, padding-left 0.15s ease",
               textDecoration: "none",
-            })}
+            }}
             onMouseEnter={(e) => {
               if (!e.currentTarget.style.background.includes("0.16")) {
                 e.currentTarget.style.background = "rgba(255,255,255,0.08)";
