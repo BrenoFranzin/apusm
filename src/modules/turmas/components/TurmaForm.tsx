@@ -112,8 +112,6 @@ export default function TurmaForm({ modalidades, instrutores, salas, onSubmit }:
       <label style={{ fontSize: 12, color: "var(--text-secondary)" }}>Linhas extras para "novos alunos" na folha de presenÃ§a</label>
       <input type="number" min={0} {...register("limiteNovosAlunos")} style={{ ...selectStyle, margin: "4px 0 14px" }} />
       <button
-
-      <button
         type="submit"
         style={{ width: "100%", background: "var(--color-primary)", color: "#fff", padding: 10, borderRadius: 8, border: "none" }}
       >
