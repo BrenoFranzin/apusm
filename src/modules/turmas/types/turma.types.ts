@@ -21,8 +21,8 @@ export interface Turma {
   dia: DiaSemana;
   horario: string;
   sala: string;
-  limiteVagas: number;
-  limiteNovosAlunos: number;
+  limiteVagas?: number;
+  limiteNovosAlunos?: number;
 }
 
 export interface CriarTurmaDTO {
