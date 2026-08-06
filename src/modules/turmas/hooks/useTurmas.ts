@@ -10,6 +10,7 @@
   import type {
     Turma,
     CriarTurmaDTO,
+    AtualizarTurmaDTO,
   } from "../types/turma.types";
 
   export function useTurmas() {
@@ -47,6 +48,14 @@
       [carregar]
     );
 
+    const editar = useCallback(
+      async (id: string, dados: AtualizarTurmaDTO) => {
+        await turmasService.atualizar(id, dados);
+        await carregar();
+      },
+      [carregar]
+    );
+
     const excluir = useCallback(
       async (id: string) => {
         await turmasService.excluir(id);
@@ -60,6 +69,7 @@
       carregando,
       erro,
       criar,
+      editar,
       excluir,
     };
   }

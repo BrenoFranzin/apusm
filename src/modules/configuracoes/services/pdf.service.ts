@@ -427,7 +427,7 @@ class PdfService {
     ]);
 
     const turma = turmas.find((t: any) => t.id === turmaId);
-    if (!turma) throw new Error("Turma não encontrada");
+    if (!turma) throw new Error("Turma nÃ£o encontrada");
 
     const modalidade = modalidades.find((m: any) => m.id === turma.modalidadeId);
     const instrutor = instrutores.find((i: any) => i.id === turma.instrutorId);
@@ -438,45 +438,66 @@ class PdfService {
 
     const datas = gerarDatasDoMes(turma.dia, mes, ano);
 
-    const TOTAL_LINHAS = Math.max(15, matriculados.length);
-    const linhas: string[] = [...matriculados];
-    while (linhas.length < TOTAL_LINHAS) linhas.push("");
+    const limiteVagas = turma.limiteVagas ?? 10;
+    const limiteNovos = turma.limiteNovosAlunos ?? 9;
+
+    const linhasMatriculados: string[] = [...matriculados];
+    while (linhasMatriculados.length < limiteVagas) linhasMatriculados.push("");
+
+    const totalLinhas = linhasMatriculados.length + limiteNovos;
+    const compacto = totalLinhas > 22;
+    const fontSize = compacto ? 7.5 : 9;
+    const cellPadding = compacto ? 1.3 : 2;
 
     const doc = new jsPDF("landscape");
 
-    doc.setFontSize(13);
+    doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
-    doc.text(`MODALIDADE: ${(modalidade?.nome ?? "-").toUpperCase()}`, 14, 15);
-
-    doc.setFontSize(11);
+    doc.text(`MODALIDADE: ${(modalidade?.nome ?? "-").toUpperCase()}`, 14, 14);
     doc.setFont("helvetica", "normal");
-    doc.text(`PROFESSOR(A): ${instrutor?.nome ?? "_______________________"}`, 14, 22);
+    doc.setFontSize(10);
+    doc.text(`PROFESSOR(A): ${instrutor?.nome ?? "-"}`, 14, 20);
 
-    const nomeDiaExtenso: Record<string, string> = {
-      dom: "DOMINGOS", seg: "SEGUNDAS-FEIRAS", ter: "TERÇAS-FEIRAS",
-      qua: "QUARTAS-FEIRAS", qui: "QUINTAS-FEIRAS", sex: "SEXTAS-FEIRAS", sab: "SÁBADOS",
+    const nomeDiaCurto: Record<string, string> = {
+      dom: "DOM", seg: "SEG", ter: "TER", qua: "QUA", qui: "QUI", sex: "SEX", sab: "SÃB",
     };
-    doc.text(`DIA/HORÁRIO: ${nomeDiaExtenso[turma.dia] ?? turma.dia} ÀS ${turma.horario}`, 14, 28);
-    doc.text(`MÊS: ${MESES[mes].toUpperCase()}/${ano}`, 14, 34);
-
-    const head = [["Nº", "Nome do Aluno", ...datas]];
-    const body = linhas.map((nome, i) => [
-      String(i + 1).padStart(2, "0"),
-      nome,
-      ...datas.map(() => ""),
-    ]);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.text(`MÃŠS: ${MESES[mes].toUpperCase()}/${ano}`, 280, 14, { align: "right" });
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.text(`DIA/HORÃRIO: ${nomeDiaCurto[turma.dia] ?? turma.dia} ${turma.horario}`, 280, 20, { align: "right" });
 
     autoTable(doc, {
-      head,
-      body,
-      startY: 40,
+      head: [["NÂº", "Nome do Aluno", ...datas]],
+      body: linhasMatriculados.map((nome, i) => [String(i + 1).padStart(2, "0"), nome, ...datas.map(() => "")]),
+      startY: 26,
       theme: "grid",
-      styles: { fontSize: 9, cellPadding: 2, halign: "center", valign: "middle", lineWidth: 0.3, lineColor: [0, 0, 0] },
+      styles: { fontSize, cellPadding, halign: "center", valign: "middle", lineWidth: 0.3, lineColor: [0, 0, 0] },
       headStyles: { fillColor: [20, 83, 45], textColor: [255, 255, 255], fontStyle: "bold" },
-      columnStyles: {
-        0: { cellWidth: 12 },
-        1: { cellWidth: 60, halign: "left" },
-      },
+      columnStyles: { 0: { cellWidth: 12 }, 1: { cellWidth: 90, halign: "left" } },
+      margin: { left: 14, right: 14 },
+    });
+
+    const finalY1 = (doc as any).lastAutoTable.finalY as number;
+
+    doc.setFillColor(230, 230, 230);
+    doc.rect(14, finalY1, 269, 6, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(fontSize);
+    doc.setTextColor(0);
+    doc.text("NOVOS ALUNOS", 148.5, finalY1 + 4.2, { align: "center" });
+
+    autoTable(doc, {
+      head: [["Nome do Aluno", ...datas]],
+      body: Array.from({ length: limiteNovos }, () => ["", ...datas.map(() => "")]),
+      startY: finalY1 + 6,
+      theme: "grid",
+      styles: { fontSize, cellPadding, halign: "center", valign: "middle", lineWidth: 0.3, lineColor: [0, 0, 0] },
+      headStyles: { fillColor: [20, 83, 45], textColor: [255, 255, 255], fontStyle: "bold" },
+      columnStyles: { 0: { cellWidth: 102, halign: "left" } },
+      margin: { left: 14, right: 14 },
+      pageBreak: "avoid",
     });
 
     const nomeArquivo = `presenca-${(modalidade?.nome ?? "turma").toLowerCase().replace(/\s+/g, "-")}-${turma.dia}-${turma.horario.replace(":", "")}-${MESES[mes].toLowerCase()}-${ano}.pdf`;

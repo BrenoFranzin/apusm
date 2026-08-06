@@ -55,6 +55,8 @@ export default function TurmaForm({ modalidades, instrutores, salas, onSubmit }:
       dia: "seg",
       horario: "08:00",
       sala: "",
+      limiteVagas: 10,
+      limiteNovosAlunos: 9,
     },
   });
 
@@ -99,12 +101,17 @@ export default function TurmaForm({ modalidades, instrutores, salas, onSubmit }:
       <input type="time" {...register("horario")} style={selectStyle} />
 
       <label style={{ fontSize: 12, color: "var(--text-secondary)" }}>Sala</label>
-      <select {...register("sala")} style={{ ...selectStyle, margin: "4px 0 14px" }}>
+      <select {...register("sala")} style={selectStyle}>
         <option value="" disabled>Selecione a sala</option>
         {salas.map((s) => (
           <option key={s.id} value={s.nome}>{s.nome}</option>
         ))}
       </select>
+      <label style={{ fontSize: 12, color: "var(--text-secondary)" }}>Limite de vagas na turma</label>
+      <input type="number" min={1} {...register("limiteVagas")} style={selectStyle} />
+      <label style={{ fontSize: 12, color: "var(--text-secondary)" }}>Linhas extras para "novos alunos" na folha de presenÃ§a</label>
+      <input type="number" min={0} {...register("limiteNovosAlunos")} style={{ ...selectStyle, margin: "4px 0 14px" }} />
+      <button
 
       <button
         type="submit"

@@ -21,6 +21,8 @@ export interface Turma {
   dia: DiaSemana;
   horario: string;
   sala: string;
+  limiteVagas: number;
+  limiteNovosAlunos: number;
 }
 
 export interface CriarTurmaDTO {
@@ -29,6 +31,8 @@ export interface CriarTurmaDTO {
   dia: DiaSemana;
   horario: string;
   sala: string;
+  limiteVagas?: number;
+  limiteNovosAlunos?: number;
 }
 
 export type AtualizarTurmaDTO = Partial<CriarTurmaDTO>;

@@ -6,6 +6,7 @@
 
 import { limitesService } from "@/modules/limites/services/limites.service";
 import { listaEsperaService } from "@/modules/lista-espera/services/listaEspera.service";
+import { turmasService } from "@/modules/turmas/services/turmas.service";
 import { associadosMock } from "../data/associados.mock";
 
 import type {
@@ -184,8 +185,6 @@ class AssociadosService {
       modalidadeNome: string;
     }
   ): Promise<{ status: "MATRICULADO" | "LISTA_ESPERA"; associado?: Associado; posicaoFila?: number }> {
-    const LIMITE_VAGAS_TURMA = 10;
-
     const lista = this.carregarStorage();
     const index = lista.findIndex((a) => a.id === associadoId);
 
@@ -207,9 +206,11 @@ class AssociadosService {
       );
     }
 
+    const turma = await turmasService.buscarPorId(dadosMatricula.turmaId);
+    const limiteVagasTurma = turma?.limiteVagas ?? 10;
     const vagasOcupadas = await this.contarMatriculasPorTurma(dadosMatricula.turmaId);
 
-    if (vagasOcupadas >= LIMITE_VAGAS_TURMA) {
+    if (vagasOcupadas >= limiteVagasTurma) {
       const entrada = await listaEsperaService.entrarNaFila({
         associadoId: associado.id,
         associadoNome: associado.nome,

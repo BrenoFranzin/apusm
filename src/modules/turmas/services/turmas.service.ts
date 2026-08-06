@@ -23,6 +23,8 @@ class TurmasService {
       dia: t?.dia ?? "seg",
       horario: t?.horario ?? "08:00",
       sala: t?.sala ?? "-",
+      limiteVagas: t?.limiteVagas ?? 10,
+      limiteNovosAlunos: t?.limiteNovosAlunos ?? 9,
     };
   }
 
@@ -72,6 +74,8 @@ class TurmasService {
     const nova: Turma = {
       ...dados,
       id: crypto.randomUUID(),
+      limiteVagas: dados.limiteVagas ?? 10,
+      limiteNovosAlunos: dados.limiteNovosAlunos ?? 9,
     };
 
     lista.push(nova);
