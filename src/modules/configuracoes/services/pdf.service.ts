@@ -498,4 +498,11 @@ class PdfService {
     return bruto ? JSON.parse(bruto) : [];
   }
 
-  apagarDoHistorico(
+  apagarDoHistorico(id: string): void {
+    const lista = this.listarHistorico().filter((r) => r.id !== id);
+    localStorage.setItem(HISTORICO_KEY, JSON.stringify(lista));
+  }
+}
+
+export const pdfService = new PdfService();
+export default pdfService;
