@@ -54,14 +54,15 @@ export default function RelatorioPresencaSemanalPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mes, ano]);
 
-  const turmasPorModalidade = useMemo(() => {
-    return modalidades.map((mod) => ({
-      modalidade: mod,
-      turmas: turmas
-        .filter((t) => t.modalidadeId === mod.id)
-        .slice()
-        .sort((a, b) => ORDEM_DIA.indexOf(a.dia) - ORDEM_DIA.indexOf(b.dia) || a.horario.localeCompare(b.horario)),
-    })).filter((g) => g.turmas.length > 0);
+  const turmasComModalidade = useMemo(() => {
+    return turmas
+      .map((t) => ({ turma: t, modalidade: modalidades.find((m) => m.id === t.modalidadeId) }))
+      .filter((x) => x.modalidade)
+      .sort((a, b) =>
+        a.modalidade!.nome.localeCompare(b.modalidade!.nome) ||
+        ORDEM_DIA.indexOf(a.turma.dia) - ORDEM_DIA.indexOf(b.turma.dia) ||
+        a.turma.horario.localeCompare(b.turma.horario)
+      );
   }, [modalidades, turmas]);
 
   function valorAtual(turmaId: string, semana: number): number {
@@ -115,95 +116,75 @@ export default function RelatorioPresencaSemanalPage() {
         ))}
       </div>
 
-      {turmasPorModalidade.length === 0 && (
+      {turmasComModalidade.length === 0 && (
         <p style={{ color: "var(--text-secondary)", fontSize: 14 }}>
-          Nenhuma modalidade com turmas cadastradas.
+          Nenhuma turma cadastrada.
         </p>
       )}
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
-        {turmasPorModalidade.map(({ modalidade, turmas: turmasMod }) => (
+      <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+        {SEMANAS.map((semana) => (
           <div
-            key={modalidade.id}
+            key={semana}
             style={{
-              border: `2px solid ${modalidade.cor}`,
+              border: "2px solid var(--border-default)",
               borderRadius: 12,
               padding: 16,
               background: "var(--background-primary)",
             }}
           >
-            <p style={{ fontWeight: 700, fontSize: 15, margin: "0 0 4px", color: "var(--text-primary)" }}>
-              {modalidade.icone} {modalidade.nome}
+            <p style={{ fontWeight: 700, fontSize: 16, margin: "0 0 2px", color: "var(--text-primary)" }}>
+              Semana {semana}
             </p>
             <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: "0 0 12px" }}>
-              {MESES[mes]}/{ano}
+              {calcularFaixaSemana(ano, mes, semana)} de {MESES[mes]}/{ano}
             </p>
 
             <table style={{ width: "100%", fontSize: 12, borderCollapse: "collapse" }}>
               <thead>
-                <tr style={{ background: "var(--background-tertiary)", textAlign: "center" }}>
-                  <th style={{ padding: "6px 4px", textAlign: "left", color: "var(--text-secondary)" }}>Turma</th>
-                  {SEMANAS.map((s) => (
-                    <th
-                      key={s}
-                      style={{
-                        padding: "6px 4px",
-                        color: "var(--text-secondary)",
-                        borderLeft: "2px solid var(--border-default)",
-                      }}
-                    >
-                      S{s}
-                      <br />
-                      <span style={{ fontSize: 9, fontWeight: 400 }}>
-                        {calcularFaixaSemana(ano, mes, s)}
-                      </span>
-                    </th>
-                  ))}
+                <tr style={{ background: "var(--background-tertiary)", textAlign: "left" }}>
+                  <th style={{ padding: "6px 8px", color: "var(--text-secondary)" }}>Modalidade</th>
+                  <th style={{ padding: "6px 8px", color: "var(--text-secondary)" }}>Turma</th>
+                  <th style={{ padding: "6px 8px", color: "var(--text-secondary)" }}>Instrutor</th>
+                  <th style={{ padding: "6px 8px", textAlign: "center", color: "var(--text-secondary)" }}>Total alunos</th>
                 </tr>
               </thead>
               <tbody>
-                {turmasMod.map((turma) => (
-                  <tr key={turma.id} style={{ borderTop: "1px solid var(--border-default)" }}>
-                    <td style={{ padding: "6px 4px", color: "var(--text-primary)" }}>
-                      {DIA_LABEL[turma.dia]} {turma.horario}
-                      <br />
-                      <span style={{ fontSize: 10, color: "var(--text-secondary)" }}>
+                {turmasComModalidade.map(({ turma, modalidade }) => {
+                  const chave = `${turma.id}-${semana}`;
+                  return (
+                    <tr key={turma.id} style={{ borderTop: `2px solid ${modalidade!.cor}22` }}>
+                      <td style={{ padding: "6px 8px", color: "var(--text-primary)", fontWeight: 600 }}>
+                        <span style={{ color: modalidade!.cor }}>{modalidade!.icone}</span> {modalidade!.nome}
+                      </td>
+                      <td style={{ padding: "6px 8px", color: "var(--text-primary)" }}>
+                        {DIA_LABEL[turma.dia]} {turma.horario}
+                      </td>
+                      <td style={{ padding: "6px 8px", color: "var(--text-secondary)" }}>
                         {instrutorNome(turma.instrutorId)}
-                      </span>
-                    </td>
-                    {SEMANAS.map((semana) => {
-                      const chave = `${turma.id}-${semana}`;
-                      return (
-                        <td
-                          key={semana}
+                      </td>
+                      <td style={{ padding: "4px 8px", textAlign: "center" }}>
+                        <input
+                          type="number"
+                          min={0}
+                          defaultValue={valorAtual(turma.id, semana)}
+                          key={`${chave}-${valorAtual(turma.id, semana)}`}
+                          onBlur={(e) => handleAlterar(turma.id, semana, e.target.value)}
                           style={{
-                            padding: "4px",
+                            width: 50,
+                            padding: "4px 2px",
                             textAlign: "center",
-                            borderLeft: "2px solid var(--border-default)",
+                            border: "1px solid var(--border-default)",
+                            borderRadius: 4,
+                            background: salvando === chave ? "var(--color-primary-light)" : "var(--background-primary)",
+                            color: "var(--text-primary)",
+                            fontSize: 12,
                           }}
-                        >
-                          <input
-                            type="number"
-                            min={0}
-                            defaultValue={valorAtual(turma.id, semana)}
-                            key={`${chave}-${valorAtual(turma.id, semana)}`}
-                            onBlur={(e) => handleAlterar(turma.id, semana, e.target.value)}
-                            style={{
-                              width: 42,
-                              padding: "4px 2px",
-                              textAlign: "center",
-                              border: "1px solid var(--border-default)",
-                              borderRadius: 4,
-                              background: salvando === chave ? "var(--color-primary-light)" : "var(--background-primary)",
-                              color: "var(--text-primary)",
-                              fontSize: 12,
-                            }}
-                          />
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
+                        />
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
