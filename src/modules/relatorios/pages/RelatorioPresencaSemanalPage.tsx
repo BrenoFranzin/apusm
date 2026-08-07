@@ -19,9 +19,16 @@ const DIA_LABEL: Record<string, string> = {
   seg: "Seg", ter: "Ter", qua: "Qua", qui: "Qui", sex: "Sex", sab: "Sáb",
 };
 
-const SEMANAS = [1, 2, 3, 4, 5];
+function calcularQtdSemanas(ano: number, mes: number): number {
+  const primeiroDia = new Date(ano, mes, 1);
+  const ultimoDia = new Date(ano, mes + 1, 0);
+  const inicioSemana1 = new Date(primeiroDia);
+  inicioSemana1.setDate(1 - primeiroDia.getDay());
+  const diffDias = Math.floor((ultimoDia.getTime() - inicioSemana1.getTime()) / 86400000);
+  return Math.floor(diffDias / 7) + 1;
+}
 const ORDEM_DIA = ["seg", "ter", "qua", "qui", "sex", "sab"];
-const ORDINAL = ["1ª", "2ª", "3ª", "4ª", "5ª"];
+const ORDINAL = ["1ª", "2ª", "3ª", "4ª", "5ª", "6ª"];
 
 function calcularFaixaSemana(ano: number, mes: number, semana: number): { inicio: Date; fim: Date; label: string } {
   const primeiroDia = new Date(ano, mes, 1);
@@ -172,6 +179,8 @@ export default function RelatorioPresencaSemanalPage() {
   const [registros, setRegistros] = useState<RegistroPresencaSemanal[]>([]);
   const [salvando, setSalvando] = useState<string | null>(null);
   const [semanaAberta, setSemanaAberta] = useState<number | null>(null);
+  const qtdSemanas = useMemo(() => calcularQtdSemanas(ano, mes), [ano, mes]);
+  const semanas = useMemo(() => Array.from({ length: qtdSemanas }, (_, i) => i + 1), [qtdSemanas]);
 
   const { turmas } = useTurmas();
   const { modalidades } = useModalidades();
