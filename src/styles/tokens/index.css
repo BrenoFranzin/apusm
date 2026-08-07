@@ -44,12 +44,9 @@
   =====================================
   */
 
-  --background-primary: #FFFFFF;
-
-  --background-secondary: #F8FAFC;
-
-  --background-tertiary: #F1F5F9;
-
+  --background-primary: #F2F2F3;
+  --background-secondary: #E9EBEE;
+  --background-tertiary: #E1E4E8;
   --background-dark: #0F172A;
 
 
@@ -78,9 +75,8 @@
   =====================================
   */
 
-  --border-default: #E2E8F0;
-
-  --border-light: #F1F5F9;
+  --border-default: #CBD5E1;
+  --border-light: #E2E8F0;
 
   --border-focus: var(--color-primary);
 
