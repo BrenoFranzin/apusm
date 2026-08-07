@@ -91,6 +91,8 @@ function SemanaModal({
   onFechar,
   statusManual,
   onDefinirStatus,
+  turmasNaoPreenchidas,
+  statusManualDaTurma,
 }: {
   semana: number;
   ano: number;
@@ -102,7 +104,9 @@ function SemanaModal({
   instrutorNome: (id: string) => string;
   onFechar: () => void;
   statusManual?: StatusSemana;
-  onDefinirStatus: (semana: number, status: StatusSemana | null) => void;
+  onDefinirStatus: (semana: number, status: StatusSemana | null, turmaId?: string) => void;
+  turmasNaoPreenchidas: { turma: any; modalidade: any }[];
+  statusManualDaTurma: (turmaId: string) => StatusSemana | undefined;
 }) {
   const { inicio, fim } = calcularFaixaSemana(ano, mes, semana);
   const fmtCompleto = (d: Date) => `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
@@ -175,8 +179,8 @@ function SemanaModal({
               fontWeight: 600,
               padding: "6px 12px",
               borderRadius: 8,
-              border: `1px solid ${statusManual === "ferias" ? "#64748b" : "var(--border-default)"}`,
-              background: statusManual === "ferias" ? "#64748b" : "var(--background-primary)",
+              border: `1px solid ${statusManual === "ferias" ? "#0ea5e9" : "var(--border-default)"}`,
+              background: statusManual === "ferias" ? "#0ea5e9" : "var(--background-primary)",
               color: statusManual === "ferias" ? "#ffffff" : "var(--text-primary)",
               cursor: "pointer",
             }}
@@ -184,6 +188,70 @@ function SemanaModal({
             {statusManual === "ferias" ? "✓ Férias" : "Marcar como Férias"}
           </button>
         </div>
+
+        {turmasNaoPreenchidas.length > 0 && (
+          <div
+            style={{
+              border: "1px solid #f59e0b",
+              background: "#f59e0b1a",
+              borderRadius: 8,
+              padding: "10px 12px",
+              marginBottom: 16,
+            }}
+          >
+            <p style={{ fontSize: 12, fontWeight: 700, color: "#f59e0b", margin: "0 0 6px" }}>
+              ⚠ {turmasNaoPreenchidas.length} turma(s) sem presença preenchida nesta semana passada
+            </p>
+            {turmasNaoPreenchidas.map(({ turma, modalidade }) => (
+              <div
+                key={turma.id}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  padding: "4px 0",
+                  fontSize: 12,
+                }}
+              >
+                <span style={{ color: "var(--text-primary)" }}>
+                  <span style={{ color: modalidade!.cor }}>{modalidade!.icone}</span> {modalidade!.nome} — {DIA_LABEL[turma.dia]} {turma.horario}
+                </span>
+                <span style={{ display: "flex", gap: 6 }}>
+                  <button
+                    onClick={() => onDefinirStatus(semana, statusManualDaTurma(turma.id) === "cancelada" ? null : "cancelada", turma.id)}
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 600,
+                      padding: "3px 8px",
+                      borderRadius: 6,
+                      border: `1px solid ${statusManualDaTurma(turma.id) === "cancelada" ? "#64748b" : "var(--border-default)"}`,
+                      background: statusManualDaTurma(turma.id) === "cancelada" ? "#64748b" : "var(--background-primary)",
+                      color: statusManualDaTurma(turma.id) === "cancelada" ? "#ffffff" : "var(--text-primary)",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {statusManualDaTurma(turma.id) === "cancelada" ? "✓ Cancelada" : "Cancelada"}
+                  </button>
+                  <button
+                    onClick={() => onDefinirStatus(semana, statusManualDaTurma(turma.id) === "ferias" ? null : "ferias", turma.id)}
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 600,
+                      padding: "3px 8px",
+                      borderRadius: 6,
+                      border: `1px solid ${statusManualDaTurma(turma.id) === "ferias" ? "#0ea5e9" : "var(--border-default)"}`,
+                      background: statusManualDaTurma(turma.id) === "ferias" ? "#0ea5e9" : "var(--background-primary)",
+                      color: statusManualDaTurma(turma.id) === "ferias" ? "#ffffff" : "var(--text-primary)",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {statusManualDaTurma(turma.id) === "ferias" ? "✓ Férias" : "Férias"}
+                  </button>
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
 
         {turmasComModalidade.length === 0 ? (
           <p style={{ color: "var(--text-muted)", fontSize: 14 }}>Nenhuma turma cadastrada.</p>
@@ -265,13 +333,33 @@ export default function RelatorioPresencaSemanalPage() {
     setStatusSemanas(status);
   }
 
-  async function handleDefinirStatus(semana: number, status: StatusSemana | null) {
-    await presencaSemanalService.salvarStatus(ano, mes, semana, status);
+  async function handleDefinirStatus(semana: number, status: StatusSemana | null, turmaId?: string) {
+    await presencaSemanalService.salvarStatus(ano, mes, semana, status, turmaId);
     await carregar();
   }
 
   function statusManualDaSemana(semana: number): StatusSemana | undefined {
-    return statusSemanas.find((s) => s.semana === semana)?.status;
+    return statusSemanas.find((s) => s.semana === semana && !s.turmaId)?.status;
+  }
+
+  function statusManualDaTurma(semana: number, turmaId: string): StatusSemana | undefined {
+    return statusSemanas.find((s) => s.semana === semana && s.turmaId === turmaId)?.status;
+  }
+
+  function isSemanaPassada(semana: number): boolean {
+    const { fim } = calcularFaixaSemana(ano, mes, semana);
+    const hoje = new Date();
+    const hojeSemHora = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+    return fim < hojeSemHora;
+  }
+
+  function turmasNaoPreenchidas(semana: number) {
+    if (!isSemanaPassada(semana)) return [];
+    return turmasComModalidade.filter(
+      ({ turma }) =>
+        !registros.some((r) => r.turmaId === turma.id && r.semana === semana) &&
+        !statusManualDaTurma(semana, turma.id)
+    );
   }
 
   useEffect(() => {
@@ -350,7 +438,8 @@ export default function RelatorioPresencaSemanalPage() {
           const corBorda =
             status === "atual" ? "#eab308"
             : status === "completa" ? "#22c55e"
-            : status === "cancelada" || status === "ferias" ? "#64748b"
+            : status === "cancelada" ? "#64748b"
+            : status === "ferias" ? "#0ea5e9"
             : "#ef4444";
           return (
             <button
@@ -391,6 +480,8 @@ export default function RelatorioPresencaSemanalPage() {
           onFechar={() => setSemanaAberta(null)}
           statusManual={statusManualDaSemana(semanaAberta)}
           onDefinirStatus={handleDefinirStatus}
+          turmasNaoPreenchidas={turmasNaoPreenchidas(semanaAberta)}
+          statusManualDaTurma={(turmaId) => statusManualDaTurma(semanaAberta, turmaId)}
         />
       )}
     </div>

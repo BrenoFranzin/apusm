@@ -23,4 +23,5 @@ export interface StatusSemanalRegistro {
   mes: number;
   semana: number;
   status: StatusSemana;
+  turmaId?: string;
 }

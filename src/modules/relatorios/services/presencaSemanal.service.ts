@@ -71,12 +71,12 @@ private carregarStatusStorage(): StatusSemanalRegistro[] {
     return this.carregarStatusStorage().filter((r) => r.ano === ano && r.mes === mes);
   }
 
-  async salvarStatus(ano: number, mes: number, semana: number, status: StatusSemana | null): Promise<void> {
+  async salvarStatus(ano: number, mes: number, semana: number, status: StatusSemana | null, turmaId?: string): Promise<void> {
     const lista = this.carregarStatusStorage().filter(
-      (r) => !(r.ano === ano && r.mes === mes && r.semana === semana)
+      (r) => !(r.ano === ano && r.mes === mes && r.semana === semana && r.turmaId === turmaId)
     );
     if (status) {
-      lista.push({ id: crypto.randomUUID(), ano, mes, semana, status });
+      lista.push({ id: crypto.randomUUID(), ano, mes, semana, status, turmaId });
     }
     this.salvarStatusStorage(lista);
   }
