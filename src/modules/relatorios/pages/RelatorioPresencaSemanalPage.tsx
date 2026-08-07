@@ -245,9 +245,12 @@ function SemanaModal({
     return r?.totalAlunos ?? 0;
   }
 
-  const modalidadesUnicasSemana = Array.from(new Set(turmasComModalidade.map(({ modalidade }) => modalidade!.nome)));
-  const circuloPorModalidadeSemana: Record<string, string> = {};
-  modalidadesUnicasSemana.forEach((m, i) => { circuloPorModalidadeSemana[m] = CIRCULOS_MODALIDADE[i % CIRCULOS_MODALIDADE.length]; });
+  const gruposPorModalidade = turmasComModalidade.reduce((acc, item) => {
+    const nome = item.modalidade!.nome;
+    if (!acc[nome]) acc[nome] = [];
+    acc[nome].push(item);
+    return acc;
+  }, {} as Record<string, { turma: any; modalidade: any }[]>);
 
   return (
     <div
@@ -291,54 +294,65 @@ function SemanaModal({
         {turmasComModalidade.length === 0 ? (
           <p style={{ color: "var(--text-muted)", fontSize: 14 }}>Nenhuma turma cadastrada.</p>
         ) : (
-          <table style={{ width: "100%", fontSize: 12, borderCollapse: "collapse" }}>
-            <thead>
-              <tr style={{ background: "var(--background-tertiary)", textAlign: "left", borderBottom: "2px solid var(--border-default)" }}>
-                <th style={{ padding: "10px", color: "var(--text-primary)", fontWeight: 800, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.4 }}>Modalidade</th>
-                <th style={{ padding: "10px", color: "var(--text-primary)", fontWeight: 800, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.4 }}>Turma</th>
-                <th style={{ padding: "10px", color: "var(--text-primary)", fontWeight: 800, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.4 }}>Instrutor</th>
-                <th style={{ padding: "10px", textAlign: "center", color: "var(--text-primary)", fontWeight: 800, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.4 }}>Total alunos</th>
-                <th style={{ padding: "10px", textAlign: "center", color: "var(--text-primary)", fontWeight: 800, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.4 }}>Obs</th>
-              </tr>
-            </thead>
-            <tbody>
-              {turmasComModalidade.map(({ turma, modalidade }) => {
-                const chave = `${turma.id}-${semana}`;
-                return (
-                  <tr key={turma.id} style={{ borderTop: `3px solid ${modalidade!.cor}`, borderLeft: `4px solid ${modalidade!.cor}`, background: "var(--background-primary)" }}>
-                    <td style={{ padding: "8px 10px", color: "var(--text-primary)", fontWeight: 700 }}>
-                      {circuloPorModalidadeSemana[modalidade!.nome]} <span style={{ color: modalidade!.cor }}>{modalidade!.icone}</span> {modalidade!.nome}
-                    </td>
-                    <td style={{ padding: "8px 10px", color: "var(--text-primary)" }}>{DIA_LABEL[turma.dia]} {turma.horario}</td>
-                    <td style={{ padding: "8px 10px", color: "var(--text-secondary)" }}>{instrutorNome(turma.instrutorId)}</td>
-                    <td style={{ padding: "6px 10px", textAlign: "center" }}>
-                      <input
-                        type="number"
-                        min={0}
-                        defaultValue={valorAtual(turma.id)}
-                        key={`${chave}-${valorAtual(turma.id)}`}
-                        onBlur={(e) => onAlterar(turma.id, semana, e.target.value)}
-                        style={{
-                          width: 65, padding: "6px 3px", textAlign: "center",
-                          border: `1px solid ${valorAtual(turma.id) === 0 ? "#dc2626" : "var(--border-default)"}`, borderRadius: 5,
-                          background: salvando === chave ? "var(--color-primary-light)" : "var(--background-primary)",
-                          color: "var(--text-primary)", fontSize: 15, fontWeight: 700,
-                        }}
-                      />
-                    </td>
-                    <td style={{ padding: "6px 10px", textAlign: "center" }}>
-                      <StatusPicker
-                        tamanho="pequeno"
-                        statusAtual={registroDaTurma(turma.id)?.status}
-                        motivoAtual={registroDaTurma(turma.id)?.motivo}
-                        onSalvar={(status, motivo) => onDefinirStatus(semana, status, turma.id, motivo)}
-                      />
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          Object.entries(gruposPorModalidade).map(([nomeModalidade, itens]) => {
+            const corMod = itens[0].modalidade!.cor;
+            const icone = itens[0].modalidade!.icone;
+            return (
+              <details
+                key={nomeModalidade}
+                open
+                style={{ border: `2px solid ${corMod}`, borderRadius: 14, marginBottom: 12, overflow: "hidden", background: "var(--background-primary)" }}
+              >
+                <summary style={{ cursor: "pointer", listStyle: "none", padding: "10px 14px", background: `${corMod}14`, fontWeight: 800, fontSize: 14, color: "var(--text-primary)" }}>
+                  <span style={{ color: corMod }}>{icone}</span> {nomeModalidade}
+                </summary>
+                <table style={{ width: "100%", fontSize: 12, borderCollapse: "collapse" }}>
+                  <thead>
+                    <tr style={{ background: "var(--background-tertiary)", textAlign: "left" }}>
+                      <th style={{ padding: "8px 10px", fontWeight: 800, fontSize: 11, textTransform: "uppercase", color: "var(--text-primary)" }}>Turma</th>
+                      <th style={{ padding: "8px 10px", fontWeight: 800, fontSize: 11, textTransform: "uppercase", color: "var(--text-primary)" }}>Instrutor</th>
+                      <th style={{ padding: "8px 10px", textAlign: "center", fontWeight: 800, fontSize: 11, textTransform: "uppercase", color: "var(--text-primary)" }}>Total alunos</th>
+                      <th style={{ padding: "8px 10px", textAlign: "center", fontWeight: 800, fontSize: 11, textTransform: "uppercase", color: "var(--text-primary)" }}>Obs</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {itens.map(({ turma }) => {
+                      const chave = `${turma.id}-${semana}`;
+                      return (
+                        <tr key={turma.id} style={{ borderTop: "1px solid var(--border-default)" }}>
+                          <td style={{ padding: "8px 10px", color: "var(--text-primary)" }}>{DIA_LABEL[turma.dia]} {turma.horario}</td>
+                          <td style={{ padding: "8px 10px", color: "var(--text-secondary)" }}>{instrutorNome(turma.instrutorId)}</td>
+                          <td style={{ padding: "6px 10px", textAlign: "center" }}>
+                            <input
+                              type="number"
+                              min={0}
+                              defaultValue={valorAtual(turma.id)}
+                              key={`${chave}-${valorAtual(turma.id)}`}
+                              onBlur={(e) => onAlterar(turma.id, semana, e.target.value)}
+                              style={{
+                                width: 65, padding: "6px 3px", textAlign: "center",
+                                border: `1px solid ${valorAtual(turma.id) === 0 ? "#dc2626" : "var(--border-default)"}`, borderRadius: 5,
+                                background: salvando === chave ? "var(--color-primary-light)" : "var(--background-primary)",
+                                color: "var(--text-primary)", fontSize: 15, fontWeight: 700,
+                              }}
+                            />
+                          </td>
+                          <td style={{ padding: "6px 10px", textAlign: "center" }}>
+                            <StatusPicker
+                              tamanho="pequeno"
+                              statusAtual={registroDaTurma(turma.id)?.status}
+                              motivoAtual={registroDaTurma(turma.id)?.motivo}
+                              onSalvar={(status, motivo) => onDefinirStatus(semana, status, turma.id, motivo)}
+                            />
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </details>
+            );
+          })
         )}
       </div>
     </div>
