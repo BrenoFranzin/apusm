@@ -39,10 +39,6 @@ export function ModalidadeCard({ modalidade, onEditar, onExcluir }: Props) {
         {modalidade.nome}
       </p>
       <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: "4px 0 8px" }}>
-        🚪 {Array.isArray(modalidade.salas) ? modalidade.salas.join(", ") : (modalidade as any).sala ?? "-"}
-      </p>
-      
-      <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: "4px 0 8px" }}>
         🚪 {Array.isArray(modalidade.salas) ? Array.from(new Set(modalidade.salas)).join(", ") : (modalidade as any).sala ?? "-"}
       </p>
       {modalidade.descricao && (
