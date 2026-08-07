@@ -453,40 +453,63 @@ function TerceirizadosModal({
         linhas.push({ modalidade: modalidade!.nome, turma: `${DIA_LABEL[turma.dia]} ${turma.horario}`, semana, situacao, motivo });
       }
     }
+    linhas.sort((a, b) => a.semana - b.semana);
     return { inst, linhas };
   }).filter((g) => g.linhas.length > 0);
+
+  // separa por instrutor + modalidade, cada combinação é uma "folha"
+  const folhas = grupos.flatMap(({ inst, linhas }) => {
+    const modalidadesDoInst = Array.from(new Set(linhas.map((l) => l.modalidade)));
+    return modalidadesDoInst.map((modNome) => ({
+      inst,
+      modalidade: modNome,
+      linhas: linhas.filter((l) => l.modalidade === modNome),
+    }));
+  });
 
   function exportarPdf() {
     const janela = window.open("", "_blank");
     if (!janela) return;
-    const secoes = grupos.map(({ inst, linhas }) => `
-      <div style="border:2px solid ${inst.cor}; border-radius:14px; padding:14px 16px; margin-bottom:16px; page-break-inside: avoid;">
-        <h3 style="margin:0 0 10px; color:${inst.cor}; font-size:15px;">${inst.nome} — ${linhas.length} aulas no total</h3>
-        <table style="width:100%; border-collapse:collapse; font-size:11px;">
-          <thead>
-            <tr style="background:#f1f5f9; text-align:left;">
-              <th style="padding:6px 8px;">Modalidade</th><th style="padding:6px 8px;">Turma</th>
-              <th style="padding:6px 8px;">Semana</th><th style="padding:6px 8px;">Situação</th><th style="padding:6px 8px;">Motivo</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${linhas.map((l) => `
-              <tr style="border-top:1px solid #e2e8f0;">
-                <td style="padding:5px 8px;">${l.modalidade}</td>
-                <td style="padding:5px 8px;">${l.turma}</td>
-                <td style="padding:5px 8px;">${ORDINAL[l.semana - 1]}</td>
-                <td style="padding:5px 8px; font-weight:700; color:${corSituacao(l.situacao)};">${l.situacao}</td>
-                <td style="padding:5px 8px; color:#475569;">${l.motivo || "—"}</td>
-              </tr>`).join("")}
-          </tbody>
-        </table>
-      </div>`).join("");
+    const paginas = folhas.map(({ inst, modalidade, linhas }) => {
+      const feitas = linhas.filter((l) => l.situacao === "Feita").length;
+      const naoFeitas = linhas.length - feitas;
+      return `
+      <section style="page-break-after: always; padding: 12px 0;">
+        <div style="border:2px solid ${inst.cor}; border-radius:14px; padding:16px 18px;">
+          <h2 style="margin:0 0 4px; color:${inst.cor}; font-size:18px;">${inst.nome}</h2>
+          <p style="margin:0 0 14px; font-size:13px; color:#475569;">Modalidade: ${modalidade}</p>
+          <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;">
+            <span style="font-size:12px; font-weight:700; padding:4px 10px; border-radius:999px; background:#f1f5f9;">${linhas.length} aulas no total (no mês)</span>
+            <span style="font-size:12px; font-weight:700; padding:4px 10px; border-radius:999px; background:#dcfce7; color:#16a34a;">${feitas} realizadas</span>
+            <span style="font-size:12px; font-weight:700; padding:4px 10px; border-radius:999px; background:#fee2e2; color:#dc2626;">${naoFeitas} não realizadas</span>
+          </div>
+          <table style="width:100%; border-collapse:collapse; font-size:12px;">
+            <thead>
+              <tr style="background:#f1f5f9; text-align:left;">
+                <th style="padding:7px 8px;">Semana</th><th style="padding:7px 8px;">Turma</th>
+                <th style="padding:7px 8px;">Situação</th><th style="padding:7px 8px;">Motivo</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${linhas.map((l) => `
+                <tr style="border-top:1px solid #e2e8f0;">
+                  <td style="padding:6px 8px;">${ORDINAL[l.semana - 1]} semana</td>
+                  <td style="padding:6px 8px;">${l.turma}</td>
+                  <td style="padding:6px 8px; font-weight:700; color:${corSituacao(l.situacao)};">${l.situacao}</td>
+                  <td style="padding:6px 8px; color:#475569;">${l.motivo || "—"}</td>
+                </tr>`).join("")}
+            </tbody>
+          </table>
+        </div>
+      </section>`;
+    }).join("");
     janela.document.write(`
-      <html><head><meta charset="utf-8" /><title>Terceirizados - ${MESES[mes]}/${ano}</title></head>
-      <body style="font-family: Arial, sans-serif; padding: 24px; color:#0f172a;">
-        <h1 style="font-size:20px; margin:0 0 4px;">Aulas dos Terceirizados — ${MESES[mes]}/${ano}</h1>
-        <p style="font-size:12px; color:#64748b; margin:0 0 20px;">Relatório para a tesouraria — feitas, canceladas e não preenchidas</p>
-        ${secoes || "<p>Nenhuma turma vinculada a terceirizados neste mês.</p>"}
+      <html><head><meta charset="utf-8" /><title>Terceirizados - ${MESES[mes]}/${ano}</title>
+      <style>@page { size: A4 portrait; margin: 16mm; } section:last-child { page-break-after: auto; }</style>
+      </head>
+      <body style="font-family: Arial, sans-serif; color:#0f172a;">
+        <h1 style="font-size:20px; margin:0 0 16px;">Aulas dos Terceirizados — ${MESES[mes]}/${ano}</h1>
+        ${paginas || "<p>Nenhuma turma vinculada a terceirizados neste mês.</p>"}
       </body></html>`);
     janela.document.close();
     janela.focus();
@@ -495,7 +518,7 @@ function TerceirizadosModal({
 
   return (
     <div onClick={onFechar} style={{ position: "fixed", inset: 0, background: "rgba(15, 23, 42, 0.55)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: "var(--z-modal)" as unknown as number, padding: 16 }}>
-      <div onClick={(e) => e.stopPropagation()} className="apusm-card" style={{ width: "100%", maxWidth: 1305, maxHeight: "85vh", overflowY: "auto", padding: "var(--space-6)", position: "relative" }}>
+      <div onClick={(e) => e.stopPropagation()} className="apusm-card" style={{ width: "100%", maxWidth: 1305, maxHeight: "85vh", overflowY: "auto", padding: "var(--space-6)", position: "relative", borderRadius: 20 }}>
         <button onClick={onFechar} style={{ position: "absolute", top: 14, right: 18, fontSize: 22, lineHeight: 1, color: "var(--text-muted)", background: "none", border: "none", cursor: "pointer" }}>×</button>
         <div style={{ textAlign: "center", marginBottom: 4 }}>
           <h2 style={{ fontWeight: 700, fontSize: 19, margin: 0, color: "var(--text-primary)" }}>Aulas dos Terceirizados — {MESES[mes]}/{ano}</h2>
@@ -605,22 +628,18 @@ export default function RelatorioPresencaSemanalPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold" style={{ color: "var(--page-heading)" }}>Presença Semanal por Modalidade — {MESES[mes]}/{ano}</h1>
+        <h1 className="text-2xl font-bold" style={{ color: "var(--page-heading)", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          Presença Semanal por Modalidade — {MESES[mes]}/{ano}
+          <span style={{ display: "inline-flex", gap: 4, alignItems: "center" }}>
+            <button onClick={() => setAno((a) => a - 1)} style={{ padding: "2px 8px", fontSize: 14, borderRadius: 6, border: "1px solid var(--border-default)", background: "var(--background-primary)", color: "var(--text-primary)", cursor: "pointer" }}>◀</button>
+            <button onClick={() => setAno((a) => a + 1)} style={{ padding: "2px 8px", fontSize: 14, borderRadius: 6, border: "1px solid var(--border-default)", background: "var(--background-primary)", color: "var(--text-primary)", cursor: "pointer" }}>▶</button>
+          </span>
+        </h1>
         <p style={{ color: "var(--page-subheading)" }}>Registro manual do total de alunos por turma, semana a semana</p>
       </div>
 
       {/* Abas de mês + botão de terceirizados */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "space-between", alignItems: "center" }}>
-        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-          <button onClick={() => setAno((a) => a - 1)} style={{ padding: "6px 10px", borderRadius: 6, border: "1px solid var(--border-default)", background: "var(--background-primary)", color: "var(--text-primary)", cursor: "pointer" }}>◀</button>
-          <span style={{ fontWeight: 800, fontSize: 14, color: "var(--text-primary)", minWidth: 44, textAlign: "center" }}>{ano}</span>
-          <button onClick={() => setAno((a) => a + 1)} style={{ padding: "6px 10px", borderRadius: 6, border: "1px solid var(--border-default)", background: "var(--background-primary)", color: "var(--text-primary)", cursor: "pointer" }}>▶</button>
-        </div>
-        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-          <button onClick={() => setAno((a) => a - 1)} style={{ padding: "6px 10px", borderRadius: 6, border: "1px solid var(--border-default)", background: "var(--background-primary)", color: "var(--text-primary)", cursor: "pointer" }}>◀</button>
-          <span style={{ fontWeight: 800, fontSize: 14, color: "var(--text-primary)", minWidth: 44, textAlign: "center" }}>{ano}</span>
-          <button onClick={() => setAno((a) => a + 1)} style={{ padding: "6px 10px", borderRadius: 6, border: "1px solid var(--border-default)", background: "var(--background-primary)", color: "var(--text-primary)", cursor: "pointer" }}>▶</button>
-        </div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
           {MESES.map((nome, i) => (
             <button
@@ -637,22 +656,24 @@ export default function RelatorioPresencaSemanalPage() {
             </button>
           ))}
         </div>
-        <button
-          onClick={() => setTerceirizadosAberto(true)}
-          style={{
-            fontSize: 13, fontWeight: 700, padding: "9px 16px", borderRadius: 8,
-            border: `1px solid ${COR_AMARELO_QUEIMADO}`, background: COR_AMARELO_QUEIMADO,
-            color: "#ffffff", cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap",
-          }}
-        >
-          👥 Aulas dos Terceirizados
-        </button>
-        <div style={{ display: "flex", gap: 10, fontSize: 11, color: "var(--text-secondary)", flexWrap: "wrap" }}>
-          <span>🟩 Atual/Completa</span>
-          <span>⬜ Pendente</span>
-          <span>🟥 Cancelada</span>
-          <span>🟦 Férias</span>
-          <span>🟪 Evento</span>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }}>
+          <button
+            onClick={() => setTerceirizadosAberto(true)}
+            style={{
+              fontSize: 13, fontWeight: 700, padding: "9px 16px", borderRadius: 8,
+              border: `1px solid ${COR_AMARELO_QUEIMADO}`, background: COR_AMARELO_QUEIMADO,
+              color: "#ffffff", cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap",
+            }}
+          >
+            👥 Aulas dos Terceirizados
+          </button>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 2, fontSize: 11, color: "var(--text-secondary)" }}>
+            <span>🟩 Atual/Completa</span>
+            <span>⬜ Pendente</span>
+            <span>🟥 Cancelada</span>
+            <span>🟦 Férias</span>
+            <span>🟪 Evento</span>
+          </div>
         </div>
       </div>
 
