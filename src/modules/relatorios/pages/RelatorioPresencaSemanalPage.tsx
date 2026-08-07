@@ -49,6 +49,29 @@ function calcularFaixaSemana(ano: number, mes: number, semana: number): { inicio
   return { inicio, fim, label: `${fmt(inicio)} a ${fmt(fim)}` };
 }
 
+function statusSemana(
+  ano: number,
+  mes: number,
+  semana: number,
+  turmasComModalidade: { turma: any; modalidade: any }[],
+  registros: RegistroPresencaSemanal[]
+): "atual" | "completa" | "pendente" {
+  const { inicio, fim } = calcularFaixaSemana(ano, mes, semana);
+  const hoje = new Date();
+  const hojeSemHora = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+
+  if (hojeSemHora >= inicio && hojeSemHora <= fim) return "atual";
+
+  const todasPreenchidas =
+    turmasComModalidade.length > 0 &&
+    turmasComModalidade.every(({ turma }) =>
+      registros.some((r) => r.turmaId === turma.id && r.semana === semana)
+    );
+
+  return todasPreenchidas ? "completa" : "pendente";
+}
+
+
 // ------------------------------------------------------
 // Modal de uma semana
 // ------------------------------------------------------
@@ -270,6 +293,9 @@ export default function RelatorioPresencaSemanalPage() {
       <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
         {semanas.map((semana) => {
           const { label } = calcularFaixaSemana(ano, mes, semana);
+          const status = statusSemana(ano, mes, semana, turmasComModalidade, registros);
+          const corBorda =
+            status === "atual" ? "#eab308" : status === "completa" ? "#22c55e" : "#ef4444";
           return (
             <button
               key={semana}
@@ -278,7 +304,7 @@ export default function RelatorioPresencaSemanalPage() {
               style={{
                 padding: "14px 18px",
                 borderRadius: 12,
-                border: "2px solid var(--border-default)",
+                border: `2px solid ${corBorda}`,
                 background: "var(--background-primary)",
                 cursor: "pointer",
                 textAlign: "left",
