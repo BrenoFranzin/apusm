@@ -22,6 +22,18 @@ const DIA_LABEL: Record<string, string> = {
 const SEMANAS = [1, 2, 3, 4, 5];
 const ORDEM_DIA = ["seg", "ter", "qua", "qui", "sex", "sab"];
 
+function calcularFaixaSemana(ano: number, mes: number, semana: number): string {
+  const primeiroDia = new Date(ano, mes, 1);
+  const inicioSemana1 = new Date(primeiroDia);
+  inicioSemana1.setDate(1 - primeiroDia.getDay());
+  const inicio = new Date(inicioSemana1);
+  inicio.setDate(inicio.getDate() + (semana - 1) * 7);
+  const fim = new Date(inicio);
+  fim.setDate(fim.getDate() + 6);
+  const fmt = (d: Date) => String(d.getDate()).padStart(2, "0");
+  return `${fmt(inicio)}-${fmt(fim)}`;
+}
+
 export default function RelatorioPresencaSemanalPage() {
   const [ano, setAno] = useState(new Date().getFullYear());
   const [mes, setMes] = useState(new Date().getMonth());
@@ -132,7 +144,20 @@ export default function RelatorioPresencaSemanalPage() {
                 <tr style={{ background: "var(--background-tertiary)", textAlign: "center" }}>
                   <th style={{ padding: "6px 4px", textAlign: "left", color: "var(--text-secondary)" }}>Turma</th>
                   {SEMANAS.map((s) => (
-                    <th key={s} style={{ padding: "6px 4px", color: "var(--text-secondary)" }}>S{s}</th>
+                    <th
+                      key={s}
+                      style={{
+                        padding: "6px 4px",
+                        color: "var(--text-secondary)",
+                        borderLeft: "2px solid var(--border-default)",
+                      }}
+                    >
+                      S{s}
+                      <br />
+                      <span style={{ fontSize: 9, fontWeight: 400 }}>
+                        {calcularFaixaSemana(ano, mes, s)}
+                      </span>
+                    </th>
                   ))}
                 </tr>
               </thead>
@@ -149,7 +174,14 @@ export default function RelatorioPresencaSemanalPage() {
                     {SEMANAS.map((semana) => {
                       const chave = `${turma.id}-${semana}`;
                       return (
-                        <td key={semana} style={{ padding: "4px", textAlign: "center" }}>
+                        <td
+                          key={semana}
+                          style={{
+                            padding: "4px",
+                            textAlign: "center",
+                            borderLeft: "2px solid var(--border-default)",
+                          }}
+                        >
                           <input
                             type="number"
                             min={0}
