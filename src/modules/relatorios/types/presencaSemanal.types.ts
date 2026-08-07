@@ -15,7 +15,7 @@ export interface RegistroPresencaSemanal {
 
 export type SalvarPresencaSemanalDTO = Omit<RegistroPresencaSemanal, "id">;
 
-export type StatusSemana = "cancelada" | "ferias";
+export type StatusSemana = "cancelada" | "ferias" | "evento";
 
 export interface StatusSemanalRegistro {
   id: string;
@@ -24,4 +24,5 @@ export interface StatusSemanalRegistro {
   semana: number;
   status: StatusSemana;
   turmaId?: string;
+  motivo?: string;
 }
