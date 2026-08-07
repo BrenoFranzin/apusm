@@ -1,11 +1,13 @@
+
+
 // ======================================================
 // APUSM SaaS — Módulo Relatórios
 // Arquivo: presencaSemanal.service.ts
 // ======================================================
 
-import type { RegistroPresencaSemanal, SalvarPresencaSemanalDTO } from "../types/presencaSemanal.types";
-
+import type { RegistroPresencaSemanal, SalvarPresencaSemanalDTO, StatusSemana, StatusSemanalRegistro } from "../types/presencaSemanal.types";
 const STORAGE_KEY = "apusm:presencaSemanal";
+const STATUS_STORAGE_KEY = "apusm:presencaSemanal:status";
 
 class PresencaSemanalService {
   private normalizar(r: any): RegistroPresencaSemanal {
@@ -54,7 +56,30 @@ class PresencaSemanalService {
     this.salvarStorage(lista);
     return novo;
   }
-}
+private carregarStatusStorage(): StatusSemanalRegistro[] {
+    const dados = localStorage.getItem(STATUS_STORAGE_KEY);
+    if (!dados) return [];
+    const bruto = JSON.parse(dados);
+    return Array.isArray(bruto) ? bruto : [];
+  }
 
+  private salvarStatusStorage(lista: StatusSemanalRegistro[]) {
+    localStorage.setItem(STATUS_STORAGE_KEY, JSON.stringify(lista));
+  }
+
+  async listarStatusPorMes(ano: number, mes: number): Promise<StatusSemanalRegistro[]> {
+    return this.carregarStatusStorage().filter((r) => r.ano === ano && r.mes === mes);
+  }
+
+  async salvarStatus(ano: number, mes: number, semana: number, status: StatusSemana | null): Promise<void> {
+    const lista = this.carregarStatusStorage().filter(
+      (r) => !(r.ano === ano && r.mes === mes && r.semana === semana)
+    );
+    if (status) {
+      lista.push({ id: crypto.randomUUID(), ano, mes, semana, status });
+    }
+    this.salvarStatusStorage(lista);
+  }
+}
 export const presencaSemanalService = new PresencaSemanalService();
 export default presencaSemanalService;

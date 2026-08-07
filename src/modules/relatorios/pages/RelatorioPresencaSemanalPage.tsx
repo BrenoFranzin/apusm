@@ -8,7 +8,7 @@ import { useTurmas } from "@/modules/turmas/hooks/useTurmas";
 import { useModalidades } from "@/modules/modalidades/hooks/useModalidades";
 import { useInstrutores } from "@/modules/instrutores/hooks/useInstrutores";
 import { presencaSemanalService } from "../services/presencaSemanal.service";
-import type { RegistroPresencaSemanal } from "../types/presencaSemanal.types";
+import type { RegistroPresencaSemanal, StatusSemana, StatusSemanalRegistro } from "../types/presencaSemanal.types";
 
 const MESES = [
   "Janeiro","Fevereiro","Março","Abril","Maio","Junho",
@@ -54,8 +54,12 @@ function statusSemana(
   mes: number,
   semana: number,
   turmasComModalidade: { turma: any; modalidade: any }[],
-  registros: RegistroPresencaSemanal[]
-): "atual" | "completa" | "pendente" {
+  registros: RegistroPresencaSemanal[],
+  statusManual?: StatusSemana
+): "atual" | "completa" | "pendente" | "cancelada" | "ferias" {
+  if (statusManual === "cancelada") return "cancelada";
+  if (statusManual === "ferias") return "ferias";
+
   const { inicio, fim } = calcularFaixaSemana(ano, mes, semana);
   const hoje = new Date();
   const hojeSemHora = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
@@ -85,6 +89,8 @@ function SemanaModal({
   onAlterar,
   instrutorNome,
   onFechar,
+  statusManual,
+  onDefinirStatus,
 }: {
   semana: number;
   ano: number;
@@ -95,6 +101,8 @@ function SemanaModal({
   onAlterar: (turmaId: string, semana: number, valor: string) => void;
   instrutorNome: (id: string) => string;
   onFechar: () => void;
+  statusManual?: StatusSemana;
+  onDefinirStatus: (semana: number, status: StatusSemana | null) => void;
 }) {
   const { inicio, fim } = calcularFaixaSemana(ano, mes, semana);
   const fmtCompleto = (d: Date) => `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
@@ -140,9 +148,42 @@ function SemanaModal({
             ×
           </button>
         </div>
-        <p style={{ fontSize: 13, color: "var(--text-secondary)", margin: "0 0 16px" }}>
+        <p style={{ fontSize: 13, color: "var(--text-secondary)", margin: "0 0 12px" }}>
           {fmtCompleto(inicio)} até {fmtCompleto(fim)}
         </p>
+
+        <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+          <button
+            onClick={() => onDefinirStatus(semana, statusManual === "cancelada" ? null : "cancelada")}
+            style={{
+              fontSize: 12,
+              fontWeight: 600,
+              padding: "6px 12px",
+              borderRadius: 8,
+              border: `1px solid ${statusManual === "cancelada" ? "#64748b" : "var(--border-default)"}`,
+              background: statusManual === "cancelada" ? "#64748b" : "var(--background-primary)",
+              color: statusManual === "cancelada" ? "#ffffff" : "var(--text-primary)",
+              cursor: "pointer",
+            }}
+          >
+            {statusManual === "cancelada" ? "✓ Cancelada" : "Marcar como Cancelada"}
+          </button>
+          <button
+            onClick={() => onDefinirStatus(semana, statusManual === "ferias" ? null : "ferias")}
+            style={{
+              fontSize: 12,
+              fontWeight: 600,
+              padding: "6px 12px",
+              borderRadius: 8,
+              border: `1px solid ${statusManual === "ferias" ? "#64748b" : "var(--border-default)"}`,
+              background: statusManual === "ferias" ? "#64748b" : "var(--background-primary)",
+              color: statusManual === "ferias" ? "#ffffff" : "var(--text-primary)",
+              cursor: "pointer",
+            }}
+          >
+            {statusManual === "ferias" ? "✓ Férias" : "Marcar como Férias"}
+          </button>
+        </div>
 
         {turmasComModalidade.length === 0 ? (
           <p style={{ color: "var(--text-muted)", fontSize: 14 }}>Nenhuma turma cadastrada.</p>
@@ -209,6 +250,7 @@ export default function RelatorioPresencaSemanalPage() {
   const [registros, setRegistros] = useState<RegistroPresencaSemanal[]>([]);
   const [salvando, setSalvando] = useState<string | null>(null);
   const [semanaAberta, setSemanaAberta] = useState<number | null>(null);
+  const [statusSemanas, setStatusSemanas] = useState<StatusSemanalRegistro[]>([]);
   const qtdSemanas = useMemo(() => calcularQtdSemanas(ano, mes), [ano, mes]);
   const semanas = useMemo(() => Array.from({ length: qtdSemanas }, (_, i) => i + 1), [qtdSemanas]);
 
@@ -219,6 +261,17 @@ export default function RelatorioPresencaSemanalPage() {
   async function carregar() {
     const lista = await presencaSemanalService.listarPorMes(ano, mes);
     setRegistros(lista);
+    const status = await presencaSemanalService.listarStatusPorMes(ano, mes);
+    setStatusSemanas(status);
+  }
+
+  async function handleDefinirStatus(semana: number, status: StatusSemana | null) {
+    await presencaSemanalService.salvarStatus(ano, mes, semana, status);
+    await carregar();
+  }
+
+  function statusManualDaSemana(semana: number): StatusSemana | undefined {
+    return statusSemanas.find((s) => s.semana === semana)?.status;
   }
 
   useEffect(() => {
@@ -293,9 +346,12 @@ export default function RelatorioPresencaSemanalPage() {
       <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
         {semanas.map((semana) => {
           const { label } = calcularFaixaSemana(ano, mes, semana);
-          const status = statusSemana(ano, mes, semana, turmasComModalidade, registros);
+          const status = statusSemana(ano, mes, semana, turmasComModalidade, registros, statusManualDaSemana(semana));
           const corBorda =
-            status === "atual" ? "#eab308" : status === "completa" ? "#22c55e" : "#ef4444";
+            status === "atual" ? "#eab308"
+            : status === "completa" ? "#22c55e"
+            : status === "cancelada" || status === "ferias" ? "#64748b"
+            : "#ef4444";
           return (
             <button
               key={semana}
@@ -333,6 +389,8 @@ export default function RelatorioPresencaSemanalPage() {
           onAlterar={handleAlterar}
           instrutorNome={instrutorNome}
           onFechar={() => setSemanaAberta(null)}
+          statusManual={statusManualDaSemana(semanaAberta)}
+          onDefinirStatus={handleDefinirStatus}
         />
       )}
     </div>

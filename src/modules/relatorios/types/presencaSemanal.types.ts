@@ -14,3 +14,13 @@ export interface RegistroPresencaSemanal {
 }
 
 export type SalvarPresencaSemanalDTO = Omit<RegistroPresencaSemanal, "id">;
+
+export type StatusSemana = "cancelada" | "ferias";
+
+export interface StatusSemanalRegistro {
+  id: string;
+  ano: number;
+  mes: number;
+  semana: number;
+  status: StatusSemana;
+}
