@@ -2,83 +2,41 @@
 // APUSM SaaS — Módulo Instrutores
 // Arquivo: instrutores.service.ts
 // ======================================================
-
-import { instrutoresMock } from "../data/instrutores.mock";
-
+import { supabase } from "@/lib/supabaseClient";
 import type {
   Instrutor,
   CriarInstrutorDTO,
   AtualizarInstrutorDTO,
 } from "../types/instrutor.types";
 
-const STORAGE_KEY = "apusm:instrutores";
-
 class InstrutoresService {
-
-  private normalizar(i: any): Instrutor {
-    return {
-      id: i?.id ?? crypto.randomUUID(),
-      nome: i?.nome ?? "Sem nome",
-      cor: i?.cor ?? "#6b7280",
-      especialidades: Array.isArray(i?.especialidades) ? i.especialidades : [],
-      terceirizado: i?.terceirizado ?? false,
-    };
-  }
-
-  private carregarStorage(): Instrutor[] {
-    const dados = localStorage.getItem(STORAGE_KEY);
-    if (!dados) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(instrutoresMock));
-      return instrutoresMock;
-    }
-    const bruto = JSON.parse(dados);
-    return (Array.isArray(bruto) ? bruto : []).map((i) => this.normalizar(i));
-  }
-
-  private salvarStorage(lista: Instrutor[]) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(lista));
-  }
-
   async listar(): Promise<Instrutor[]> {
-    return this.carregarStorage();
+    const { data, error } = await supabase.from("instrutores").select("*").order("nome");
+    if (error) { console.error(error); return []; }
+    return data as Instrutor[];
   }
 
   async buscarPorId(id: string): Promise<Instrutor | undefined> {
-    return this.carregarStorage().find((i) => i.id === id);
+    const { data, error } = await supabase.from("instrutores").select("*").eq("id", id).single();
+    if (error) return undefined;
+    return data as Instrutor;
   }
 
-  async criar(dados: CriarInstrutorDTO): Promise<Instrutor> {
-    const lista = this.carregarStorage();
-
-    const novo: Instrutor = {
-      ...dados,
-      id: crypto.randomUUID(),
-    };
-
-    lista.push(novo);
-    this.salvarStorage(lista);
-
-    return novo;
+  async criar(dados: CriarInstrutorDTO): Promise<Instrutor | undefined> {
+    const { data, error } = await supabase.from("instrutores").insert(dados).select().single();
+    if (error) { console.error(error); return undefined; }
+    return data as Instrutor;
   }
 
-  async atualizar(
-    id: string,
-    dados: AtualizarInstrutorDTO
-  ): Promise<Instrutor | undefined> {
-    const lista = this.carregarStorage();
-    const index = lista.findIndex((i) => i.id === id);
-
-    if (index < 0) return undefined;
-
-    lista[index] = { ...lista[index], ...dados };
-    this.salvarStorage(lista);
-
-    return lista[index];
+  async atualizar(id: string, dados: AtualizarInstrutorDTO): Promise<Instrutor | undefined> {
+    const { data, error } = await supabase.from("instrutores").update(dados).eq("id", id).select().single();
+    if (error) { console.error(error); return undefined; }
+    return data as Instrutor;
   }
 
   async excluir(id: string): Promise<void> {
-    const lista = this.carregarStorage().filter((i) => i.id !== id);
-    this.salvarStorage(lista);
+    const { error } = await supabase.from("instrutores").delete().eq("id", id);
+    if (error) console.error(error);
   }
 }
 
