@@ -21,7 +21,7 @@ class ModalidadesService {
       nome: m?.nome ?? "Sem nome",
       icone: m?.icone ?? "🏷️",
       cor: m?.cor ?? "#6b7280",
-      salas: Array.isArray(m?.salas) ? m.salas : (m?.sala ? [m.sala] : []),
+      salas: Array.from(new Set(Array.isArray(m?.salas) ? m.salas : (m?.sala ? [m.sala] : []))),
       instrutoresIds: Array.isArray(m?.instrutoresIds) ? m.instrutoresIds : [],
       descricao: m?.descricao ?? undefined,
     };
