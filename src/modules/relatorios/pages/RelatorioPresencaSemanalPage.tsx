@@ -32,12 +32,19 @@ const ORDINAL = ["1ª", "2ª", "3ª", "4ª", "5ª", "6ª"];
 
 function calcularFaixaSemana(ano: number, mes: number, semana: number): { inicio: Date; fim: Date; label: string } {
   const primeiroDia = new Date(ano, mes, 1);
+  const ultimoDia = new Date(ano, mes + 1, 0);
   const inicioSemana1 = new Date(primeiroDia);
   inicioSemana1.setDate(1 - primeiroDia.getDay());
-  const inicio = new Date(inicioSemana1);
-  inicio.setDate(inicio.getDate() + (semana - 1) * 7);
-  const fim = new Date(inicio);
-  fim.setDate(fim.getDate() + 6);
+
+  const inicioBruto = new Date(inicioSemana1);
+  inicioBruto.setDate(inicioBruto.getDate() + (semana - 1) * 7);
+  const fimBruto = new Date(inicioBruto);
+  fimBruto.setDate(fimBruto.getDate() + 6);
+
+  // corta a faixa para nao ultrapassar os limites do mes
+  const inicio = inicioBruto < primeiroDia ? primeiroDia : inicioBruto;
+  const fim = fimBruto > ultimoDia ? ultimoDia : fimBruto;
+
   const fmt = (d: Date) => String(d.getDate()).padStart(2, "0");
   return { inicio, fim, label: `${fmt(inicio)} a ${fmt(fim)}` };
 }
