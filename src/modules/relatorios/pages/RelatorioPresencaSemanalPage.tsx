@@ -245,6 +245,10 @@ function SemanaModal({
     return r?.totalAlunos ?? 0;
   }
 
+  const modalidadesUnicasSemana = Array.from(new Set(turmasComModalidade.map(({ modalidade }) => modalidade!.nome)));
+  const circuloPorModalidadeSemana: Record<string, string> = {};
+  modalidadesUnicasSemana.forEach((m, i) => { circuloPorModalidadeSemana[m] = CIRCULOS_MODALIDADE[i % CIRCULOS_MODALIDADE.length]; });
+
   return (
     <div
       onClick={onFechar}
@@ -303,7 +307,7 @@ function SemanaModal({
                 return (
                   <tr key={turma.id} style={{ borderTop: `3px solid ${modalidade!.cor}`, borderLeft: `4px solid ${modalidade!.cor}`, background: "var(--background-primary)" }}>
                     <td style={{ padding: "8px 10px", color: "var(--text-primary)", fontWeight: 700 }}>
-                      <span style={{ color: modalidade!.cor }}>{modalidade!.icone}</span> {modalidade!.nome}
+                      {circuloPorModalidadeSemana[modalidade!.nome]} <span style={{ color: modalidade!.cor }}>{modalidade!.icone}</span> {modalidade!.nome}
                     </td>
                     <td style={{ padding: "8px 10px", color: "var(--text-primary)" }}>{DIA_LABEL[turma.dia]} {turma.horario}</td>
                     <td style={{ padding: "8px 10px", color: "var(--text-secondary)" }}>{instrutorNome(turma.instrutorId)}</td>
