@@ -21,8 +21,9 @@ const DIA_LABEL: Record<string, string> = {
 
 const SEMANAS = [1, 2, 3, 4, 5];
 const ORDEM_DIA = ["seg", "ter", "qua", "qui", "sex", "sab"];
+const ORDINAL = ["1ª", "2ª", "3ª", "4ª", "5ª"];
 
-function calcularFaixaSemana(ano: number, mes: number, semana: number): string {
+function calcularFaixaSemana(ano: number, mes: number, semana: number): { inicio: Date; fim: Date; label: string } {
   const primeiroDia = new Date(ano, mes, 1);
   const inicioSemana1 = new Date(primeiroDia);
   inicioSemana1.setDate(1 - primeiroDia.getDay());
@@ -31,14 +32,146 @@ function calcularFaixaSemana(ano: number, mes: number, semana: number): string {
   const fim = new Date(inicio);
   fim.setDate(fim.getDate() + 6);
   const fmt = (d: Date) => String(d.getDate()).padStart(2, "0");
-  return `${fmt(inicio)}-${fmt(fim)}`;
+  return { inicio, fim, label: `${fmt(inicio)} a ${fmt(fim)}` };
 }
 
+// ------------------------------------------------------
+// Modal de uma semana
+// ------------------------------------------------------
+function SemanaModal({
+  semana,
+  ano,
+  mes,
+  turmasComModalidade,
+  registros,
+  salvando,
+  onAlterar,
+  instrutorNome,
+  onFechar,
+}: {
+  semana: number;
+  ano: number;
+  mes: number;
+  turmasComModalidade: { turma: any; modalidade: any }[];
+  registros: RegistroPresencaSemanal[];
+  salvando: string | null;
+  onAlterar: (turmaId: string, semana: number, valor: string) => void;
+  instrutorNome: (id: string) => string;
+  onFechar: () => void;
+}) {
+  const { inicio, fim } = calcularFaixaSemana(ano, mes, semana);
+  const fmtCompleto = (d: Date) => `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
+
+  function valorAtual(turmaId: string): number {
+    const r = registros.find((r) => r.turmaId === turmaId && r.semana === semana);
+    return r?.totalAlunos ?? 0;
+  }
+
+  return (
+    <div
+      onClick={onFechar}
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(15, 23, 42, 0.55)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: "var(--z-modal)" as unknown as number,
+        padding: 16,
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="apusm-card"
+        style={{
+          width: "100%",
+          maxWidth: 720,
+          maxHeight: "85vh",
+          overflowY: "auto",
+          padding: "var(--space-6)",
+        }}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+          <h2 style={{ fontWeight: 700, fontSize: 18, margin: 0, color: "var(--text-primary)" }}>
+            {ORDINAL[semana - 1]} Semana — {MESES[mes]}/{ano}
+          </h2>
+          <button
+            onClick={onFechar}
+            style={{ fontSize: 20, lineHeight: 1, color: "var(--text-muted)", background: "none", border: "none" }}
+          >
+            ×
+          </button>
+        </div>
+        <p style={{ fontSize: 13, color: "var(--text-secondary)", margin: "0 0 16px" }}>
+          {fmtCompleto(inicio)} até {fmtCompleto(fim)}
+        </p>
+
+        {turmasComModalidade.length === 0 ? (
+          <p style={{ color: "var(--text-muted)", fontSize: 14 }}>Nenhuma turma cadastrada.</p>
+        ) : (
+          <table style={{ width: "100%", fontSize: 12, borderCollapse: "collapse" }}>
+            <thead>
+              <tr style={{ background: "var(--background-tertiary)", textAlign: "left" }}>
+                <th style={{ padding: "6px 8px", color: "var(--text-secondary)" }}>Modalidade</th>
+                <th style={{ padding: "6px 8px", color: "var(--text-secondary)" }}>Turma</th>
+                <th style={{ padding: "6px 8px", color: "var(--text-secondary)" }}>Instrutor</th>
+                <th style={{ padding: "6px 8px", textAlign: "center", color: "var(--text-secondary)" }}>Total alunos</th>
+              </tr>
+            </thead>
+            <tbody>
+              {turmasComModalidade.map(({ turma, modalidade }) => {
+                const chave = `${turma.id}-${semana}`;
+                return (
+                  <tr key={turma.id} style={{ borderTop: `2px solid ${modalidade!.cor}22` }}>
+                    <td style={{ padding: "6px 8px", color: "var(--text-primary)", fontWeight: 600 }}>
+                      <span style={{ color: modalidade!.cor }}>{modalidade!.icone}</span> {modalidade!.nome}
+                    </td>
+                    <td style={{ padding: "6px 8px", color: "var(--text-primary)" }}>
+                      {DIA_LABEL[turma.dia]} {turma.horario}
+                    </td>
+                    <td style={{ padding: "6px 8px", color: "var(--text-secondary)" }}>
+                      {instrutorNome(turma.instrutorId)}
+                    </td>
+                    <td style={{ padding: "4px 8px", textAlign: "center" }}>
+                      <input
+                        type="number"
+                        min={0}
+                        defaultValue={valorAtual(turma.id)}
+                        key={`${chave}-${valorAtual(turma.id)}`}
+                        onBlur={(e) => onAlterar(turma.id, semana, e.target.value)}
+                        style={{
+                          width: 50,
+                          padding: "4px 2px",
+                          textAlign: "center",
+                          border: "1px solid var(--border-default)",
+                          borderRadius: 4,
+                          background: salvando === chave ? "var(--color-primary-light)" : "var(--background-primary)",
+                          color: "var(--text-primary)",
+                          fontSize: 12,
+                        }}
+                      />
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ------------------------------------------------------
+// PÃ¡gina principal
+// ------------------------------------------------------
 export default function RelatorioPresencaSemanalPage() {
   const [ano, setAno] = useState(new Date().getFullYear());
   const [mes, setMes] = useState(new Date().getMonth());
   const [registros, setRegistros] = useState<RegistroPresencaSemanal[]>([]);
   const [salvando, setSalvando] = useState<string | null>(null);
+  const [semanaAberta, setSemanaAberta] = useState<number | null>(null);
 
   const { turmas } = useTurmas();
   const { modalidades } = useModalidades();
@@ -65,11 +198,6 @@ export default function RelatorioPresencaSemanalPage() {
       );
   }, [modalidades, turmas]);
 
-  function valorAtual(turmaId: string, semana: number): number {
-    const r = registros.find((r) => r.turmaId === turmaId && r.semana === semana);
-    return r?.totalAlunos ?? 0;
-  }
-
   async function handleAlterar(turmaId: string, semana: number, valor: string) {
     const totalAlunos = Number(valor) || 0;
     const chave = `${turmaId}-${semana}`;
@@ -94,7 +222,7 @@ export default function RelatorioPresencaSemanalPage() {
         </p>
       </div>
 
-      {/* Abas de mês */}
+      {/* Abas de mÃªs */}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
         {MESES.map((nome, i) => (
           <button
@@ -122,74 +250,49 @@ export default function RelatorioPresencaSemanalPage() {
         </p>
       )}
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-        {SEMANAS.map((semana) => (
-          <div
-            key={semana}
-            style={{
-              border: "2px solid var(--border-default)",
-              borderRadius: 12,
-              padding: 16,
-              background: "var(--background-primary)",
-            }}
-          >
-            <p style={{ fontWeight: 700, fontSize: 16, margin: "0 0 2px", color: "var(--text-primary)" }}>
-              Semana {semana}
-            </p>
-            <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: "0 0 12px" }}>
-              {calcularFaixaSemana(ano, mes, semana)} de {MESES[mes]}/{ano}
-            </p>
-
-            <table style={{ width: "100%", fontSize: 12, borderCollapse: "collapse" }}>
-              <thead>
-                <tr style={{ background: "var(--background-tertiary)", textAlign: "left" }}>
-                  <th style={{ padding: "6px 8px", color: "var(--text-secondary)" }}>Modalidade</th>
-                  <th style={{ padding: "6px 8px", color: "var(--text-secondary)" }}>Turma</th>
-                  <th style={{ padding: "6px 8px", color: "var(--text-secondary)" }}>Instrutor</th>
-                  <th style={{ padding: "6px 8px", textAlign: "center", color: "var(--text-secondary)" }}>Total alunos</th>
-                </tr>
-              </thead>
-              <tbody>
-                {turmasComModalidade.map(({ turma, modalidade }) => {
-                  const chave = `${turma.id}-${semana}`;
-                  return (
-                    <tr key={turma.id} style={{ borderTop: `2px solid ${modalidade!.cor}22` }}>
-                      <td style={{ padding: "6px 8px", color: "var(--text-primary)", fontWeight: 600 }}>
-                        <span style={{ color: modalidade!.cor }}>{modalidade!.icone}</span> {modalidade!.nome}
-                      </td>
-                      <td style={{ padding: "6px 8px", color: "var(--text-primary)" }}>
-                        {DIA_LABEL[turma.dia]} {turma.horario}
-                      </td>
-                      <td style={{ padding: "6px 8px", color: "var(--text-secondary)" }}>
-                        {instrutorNome(turma.instrutorId)}
-                      </td>
-                      <td style={{ padding: "4px 8px", textAlign: "center" }}>
-                        <input
-                          type="number"
-                          min={0}
-                          defaultValue={valorAtual(turma.id, semana)}
-                          key={`${chave}-${valorAtual(turma.id, semana)}`}
-                          onBlur={(e) => handleAlterar(turma.id, semana, e.target.value)}
-                          style={{
-                            width: 50,
-                            padding: "4px 2px",
-                            textAlign: "center",
-                            border: "1px solid var(--border-default)",
-                            borderRadius: 4,
-                            background: salvando === chave ? "var(--color-primary-light)" : "var(--background-primary)",
-                            color: "var(--text-primary)",
-                            fontSize: 12,
-                          }}
-                        />
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        ))}
+      {/* Botões de semana */}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+        {SEMANAS.map((semana) => {
+          const { label } = calcularFaixaSemana(ano, mes, semana);
+          return (
+            <button
+              key={semana}
+              onClick={() => setSemanaAberta(semana)}
+              className="apusm-card"
+              style={{
+                padding: "14px 18px",
+                borderRadius: 12,
+                border: "2px solid var(--border-default)",
+                background: "var(--background-primary)",
+                cursor: "pointer",
+                textAlign: "left",
+                minWidth: 160,
+              }}
+            >
+              <p style={{ fontWeight: 700, fontSize: 15, margin: "0 0 2px", color: "var(--text-primary)" }}>
+                {ORDINAL[semana - 1]} SEMANA
+              </p>
+              <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: 0 }}>
+                {label}
+              </p>
+            </button>
+          );
+        })}
       </div>
+
+      {semanaAberta !== null && (
+        <SemanaModal
+          semana={semanaAberta}
+          ano={ano}
+          mes={mes}
+          turmasComModalidade={turmasComModalidade}
+          registros={registros}
+          salvando={salvando}
+          onAlterar={handleAlterar}
+          instrutorNome={instrutorNome}
+          onFechar={() => setSemanaAberta(null)}
+        />
+      )}
     </div>
   );
 }
