@@ -63,7 +63,7 @@ function statusSemana(
   turmasComModalidade: { turma: any; modalidade: any }[],
   registros: RegistroPresencaSemanal[],
   statusManual?: StatusSemana
-): "atual" | "completa" | "pendente" | StatusSemana {
+): "atual" | "completa" | "pendente" | "futura" | StatusSemana {
   if (statusManual) return statusManual;
 
   const { inicio, fim } = calcularFaixaSemana(ano, mes, semana);
@@ -71,6 +71,7 @@ function statusSemana(
   const hojeSemHora = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
 
   if (hojeSemHora >= inicio && hojeSemHora <= fim) return "atual";
+  if (hojeSemHora < inicio) return "futura";
 
   const todasPreenchidas =
     turmasComModalidade.length > 0 &&
@@ -282,29 +283,6 @@ function SemanaModal({
           />
         </div>
 
-        {turmasNaoPreenchidas.length > 0 && (
-          <div style={{ border: "1px solid #f59e0b", background: "#f59e0b1a", borderRadius: 8, padding: "10px 12px", marginBottom: 16 }}>
-            <p style={{ fontSize: 12, fontWeight: 700, color: "#f59e0b", margin: "0 0 6px" }}>
-              ⚠ {turmasNaoPreenchidas.length} turma(s) sem presença preenchida nesta semana passada — selecione a situação de cada uma
-            </p>
-            {turmasNaoPreenchidas.map(({ turma, modalidade }) => {
-              const reg = registroDaTurma(turma.id);
-              return (
-                <div key={turma.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "4px 0", fontSize: 12, gap: 8, flexWrap: "wrap" }}>
-                  <span style={{ color: "var(--text-primary)" }}>
-                    <span style={{ color: modalidade!.cor }}>{modalidade!.icone}</span> {modalidade!.nome} — {DIA_LABEL[turma.dia]} {turma.horario}
-                  </span>
-                  <StatusPicker
-                    tamanho="pequeno"
-                    statusAtual={reg?.status}
-                    motivoAtual={reg?.motivo}
-                    onSalvar={(status, motivo) => onDefinirStatus(semana, status, turma.id, motivo)}
-                  />
-                </div>
-              );
-            })}
-          </div>
-        )}
 
         {turmasComModalidade.length === 0 ? (
           <p style={{ color: "var(--text-muted)", fontSize: 14 }}>Nenhuma turma cadastrada.</p>
@@ -316,6 +294,7 @@ function SemanaModal({
                 <th style={{ padding: "10px", color: "var(--text-primary)", fontWeight: 800, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.4 }}>Turma</th>
                 <th style={{ padding: "10px", color: "var(--text-primary)", fontWeight: 800, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.4 }}>Instrutor</th>
                 <th style={{ padding: "10px", textAlign: "center", color: "var(--text-primary)", fontWeight: 800, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.4 }}>Total alunos</th>
+                <th style={{ padding: "10px", textAlign: "center", color: "var(--text-primary)", fontWeight: 800, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.4 }}>Obs</th>
               </tr>
             </thead>
             <tbody>
@@ -336,11 +315,19 @@ function SemanaModal({
                         key={`${chave}-${valorAtual(turma.id)}`}
                         onBlur={(e) => onAlterar(turma.id, semana, e.target.value)}
                         style={{
-                          width: 50, padding: "4px 2px", textAlign: "center",
-                          border: "1px solid var(--border-default)", borderRadius: 4,
+                          width: 65, padding: "6px 3px", textAlign: "center",
+                          border: `1px solid ${valorAtual(turma.id) === 0 ? "#dc2626" : "var(--border-default)"}`, borderRadius: 5,
                           background: salvando === chave ? "var(--color-primary-light)" : "var(--background-primary)",
-                          color: "var(--text-primary)", fontSize: 12,
+                          color: "var(--text-primary)", fontSize: 15, fontWeight: 700,
                         }}
+                      />
+                    </td>
+                    <td style={{ padding: "6px 10px", textAlign: "center" }}>
+                      <StatusPicker
+                        tamanho="pequeno"
+                        statusAtual={registroDaTurma(turma.id)?.status}
+                        motivoAtual={registroDaTurma(turma.id)?.motivo}
+                        onSalvar={(status, motivo) => onDefinirStatus(semana, status, turma.id, motivo)}
                       />
                     </td>
                   </tr>
@@ -368,15 +355,17 @@ function corSituacao(situacao: string): string {
   return "var(--text-primary)";
 }
 
+const CIRCULOS_MODALIDADE = ["🔵", "🟢", "🟣", "🟠", "🟡", "🔴"];
+
 function CardInstrutor({ inst, linhas }: { inst: any; linhas: LinhaTerceirizado[] }) {
   const feitas = linhas.filter((l) => l.situacao === "Feita").length;
   const canceladas = linhas.filter((l) => l.situacao === "Cancelada").length;
   const naoPreenchidas = linhas.filter((l) => l.situacao === "Não preenchida").length;
   const outras = linhas.length - feitas - canceladas - naoPreenchidas;
-  
-  <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 999, background: "rgba(255,255,255,0.15)", color: "var(--text-primary)" }}>
-  {linhas.length} no total
-</span>
+
+  const modalidadesUnicas = Array.from(new Set(linhas.map((l) => l.modalidade)));
+  const circuloPorModalidade: Record<string, string> = {};
+  modalidadesUnicas.forEach((m, i) => { circuloPorModalidade[m] = CIRCULOS_MODALIDADE[i % CIRCULOS_MODALIDADE.length]; });
 
   return (
     <details
@@ -412,7 +401,7 @@ function CardInstrutor({ inst, linhas }: { inst: any; linhas: LinhaTerceirizado[
         <tbody>
           {linhas.map((l, idx) => (
             <tr key={idx} style={{ borderTop: "1px solid var(--border-default)" }}>
-              <td style={{ padding: "6px 10px", color: "var(--text-primary)" }}>{l.modalidade}</td>
+              <td style={{ padding: "6px 10px", color: "var(--text-primary)" }}>{circuloPorModalidade[l.modalidade]} {l.modalidade}</td>
               <td style={{ padding: "6px 10px", color: "var(--text-secondary)" }}>{l.turma}</td>
               <td style={{ padding: "6px 10px", color: "var(--text-secondary)" }}>{ORDINAL[l.semana - 1]}</td>
               <td style={{ padding: "6px 10px", fontWeight: 700, color: corSituacao(l.situacao) }}>{l.situacao}</td>
@@ -667,14 +656,16 @@ export default function RelatorioPresencaSemanalPage() {
           >
             👥 Aulas dos Terceirizados
           </button>
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 2, fontSize: 11, color: "var(--text-secondary)" }}>
-            <span>🟩 Atual/Completa</span>
-            <span>⬜ Pendente</span>
-            <span>🟥 Cancelada</span>
-            <span>🟦 Férias</span>
-            <span>🟪 Evento</span>
-          </div>
         </div>
+      </div>
+
+      <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, fontSize: 11, color: "var(--text-secondary)", flexWrap: "wrap" }}>
+        <span>🔵 Futura</span>
+        <span>🟢 Atual/Completa</span>
+        <span>🔴 Pendente (semana passada)</span>
+        <span>🟥 Cancelada</span>
+        <span>🟦 Férias</span>
+        <span>🟪 Evento</span>
       </div>
 
       {turmasComModalidade.length === 0 && (
@@ -689,7 +680,8 @@ export default function RelatorioPresencaSemanalPage() {
           const corBorda =
     status === "atual" ? "#22c55e"
   : status === "completa" ? "#22c55e"
-  : status === "pendente" ? "#94a3b8"
+  : status === "futura" ? "#3b82f6"
+  : status === "pendente" ? "#dc2626"
   : STATUS_CONFIG[status as StatusSemana].cor;
           return (
             <button
