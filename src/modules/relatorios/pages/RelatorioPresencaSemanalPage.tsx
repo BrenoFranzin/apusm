@@ -261,7 +261,7 @@ export default function RelatorioPresencaSemanalPage() {
 
       {/* Botões de semana */}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-        {SEMANAS.map((semana) => {
+        {semanas.map((semana) => {
           const { label } = calcularFaixaSemana(ano, mes, semana);
           return (
             <button
