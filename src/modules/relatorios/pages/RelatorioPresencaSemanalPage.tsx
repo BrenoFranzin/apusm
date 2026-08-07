@@ -347,11 +347,11 @@ function SemanaModal({
 type LinhaTerceirizado = { modalidade: string; turma: string; semana: number; situacao: string; motivo: string };
 
 function corSituacao(situacao: string): string {
-  if (situacao === "Feita") return "#16a34a";
-  if (situacao === "Não preenchida") return "#dc2626";
-  if (situacao === "Cancelada") return "#64748b";
-  if (situacao === "Férias") return "#0ea5e9";
-  if (situacao === "Evento") return "#a855f7";
+  if (situacao === "Feita") return "#4ade80";
+  if (situacao === "Não preenchida") return "#f87171";
+  if (situacao === "Cancelada") return "#94a3b8";
+  if (situacao === "Férias") return "#38bdf8";
+  if (situacao === "Evento") return "#c084fc";
   return "var(--text-primary)";
 }
 
@@ -379,7 +379,7 @@ function CardInstrutor({ inst, linhas }: { inst: any; linhas: LinhaTerceirizado[
           background: `${inst.cor}14`,
         }}
       >
-        <span style={{ fontWeight: 800, fontSize: 14, color: inst.cor }}>● {inst.nome}</span>
+        <span style={{ fontWeight: 800, fontSize: 14, color: "var(--text-primary)" }}><span style={{ color: inst.cor }}>●</span> {inst.nome}</span>
         <span style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
           <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 999, background: "rgba(22,163,74,0.35)", color: "#4ade80" }}>{feitas} feitas</span>
           <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 999, background: "rgba(100,116,139,0.35)", color: "#cbd5e1" }}>{canceladas} canceladas</span>
