@@ -44,7 +44,7 @@ export function buscaAproximada(termo: string, alvo: string): boolean {
   const palavrasAlvo = alvoNorm.split(" ");
   return palavrasAlvo.some((palavra) => {
     if (Math.abs(palavra.length - termoNorm.length) > 2) return false;
-    const tolerancia = palavra.length <= 5 ? 1 : 2;
+    const tolerancia = palavra.length <= 5 ? 0 : palavra.length <= 8 ? 1 : 2;
     return distanciaEdicao(termoNorm, palavra) <= tolerancia;
   });
 }
