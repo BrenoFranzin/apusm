@@ -2,97 +2,75 @@
 // APUSM SaaS — Módulo Modalidades
 // Arquivo: modalidades.service.ts
 // ======================================================
-
-import { modalidadesMock } from "../data/modalidades.mock";
-
+import { supabase } from "@/lib/supabaseClient";
 import type {
   Modalidade,
   CriarModalidadeDTO,
   AtualizarModalidadeDTO,
 } from "../types/modalidade.types";
 
-const STORAGE_KEY = "apusm:modalidades";
+function toModalidade(row: any): Modalidade {
+  return {
+    id: row.id,
+    nome: row.nome,
+    icone: row.icone,
+    cor: row.cor,
+    salas: row.salas ?? [],
+    instrutoresIds: row.instrutores_ids ?? [],
+    descricao: row.descricao ?? undefined,
+  };
+}
 
 class ModalidadesService {
-
-  private normalizar(m: any): Modalidade {
-    return {
-      id: m?.id ?? crypto.randomUUID(),
-      nome: m?.nome ?? "Sem nome",
-      icone: m?.icone ?? "🏷️",
-      cor: m?.cor ?? "#6b7280",
-      salas: Array.from(new Set(Array.isArray(m?.salas) ? m.salas : (m?.sala ? [m.sala] : []))),
-      instrutoresIds: Array.isArray(m?.instrutoresIds) ? m.instrutoresIds : [],
-      descricao: m?.descricao ?? undefined,
-    };
-  }
-
-  private carregarStorage(): Modalidade[] {
-    const dados = localStorage.getItem(STORAGE_KEY);
-
-    if (!dados) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(modalidadesMock));
-      return modalidadesMock;
-    }
-
-    const bruto = JSON.parse(dados);
-    return (Array.isArray(bruto) ? bruto : []).map((m) => this.normalizar(m));
-  }
-
-  private salvarStorage(lista: Modalidade[]) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(lista));
-  }
-
   async listar(): Promise<Modalidade[]> {
-    return this.carregarStorage();
+    const { data, error } = await supabase.from("modalidades").select("*").order("nome");
+    if (error) { console.error(error); return []; }
+    return (data ?? []).map(toModalidade);
   }
 
   async buscarPorId(id: string): Promise<Modalidade | undefined> {
-    return this.carregarStorage().find((m) => m.id === id);
+    const { data, error } = await supabase.from("modalidades").select("*").eq("id", id).single();
+    if (error) return undefined;
+    return toModalidade(data);
   }
 
-  async criar(dados: CriarModalidadeDTO): Promise<Modalidade> {
-    const lista = this.carregarStorage();
-
-    const nova: Modalidade = {
-      ...dados,
-      id: crypto.randomUUID(),
-      instrutoresIds: [],
-    };
-
-    lista.push(nova);
-    this.salvarStorage(lista);
-
-    return nova;
+  async criar(dados: CriarModalidadeDTO): Promise<Modalidade | undefined> {
+    const { data, error } = await supabase
+      .from("modalidades")
+      .insert({
+        nome: dados.nome,
+        icone: dados.icone,
+        cor: dados.cor,
+        salas: dados.salas,
+        descricao: dados.descricao,
+      })
+      .select()
+      .single();
+    if (error) { console.error(error); return undefined; }
+    return toModalidade(data);
   }
 
-  async atualizar(
-    id: string,
-    dados: AtualizarModalidadeDTO
-  ): Promise<Modalidade | undefined> {
-    const lista = this.carregarStorage();
-    const index = lista.findIndex((m) => m.id === id);
+  async atualizar(id: string, dados: AtualizarModalidadeDTO): Promise<Modalidade | undefined> {
+    const payload: any = {};
+    if (dados.nome !== undefined) payload.nome = dados.nome;
+    if (dados.icone !== undefined) payload.icone = dados.icone;
+    if (dados.cor !== undefined) payload.cor = dados.cor;
+    if (dados.salas !== undefined) payload.salas = dados.salas;
+    if (dados.descricao !== undefined) payload.descricao = dados.descricao;
 
-    if (index < 0) return undefined;
-
-    lista[index] = { ...lista[index], ...dados };
-    this.salvarStorage(lista);
-
-    return lista[index];
+    const { data, error } = await supabase.from("modalidades").update(payload).eq("id", id).select().single();
+    if (error) { console.error(error); return undefined; }
+    return toModalidade(data);
   }
 
   async excluir(id: string): Promise<void> {
-    const lista = this.carregarStorage().filter((m) => m.id !== id);
-    this.salvarStorage(lista);
+    const { error } = await supabase.from("modalidades").delete().eq("id", id);
+    if (error) console.error(error);
   }
 
   async vincularInstrutores(id: string, instrutoresIds: string[]): Promise<void> {
-    const lista = this.carregarStorage();
-    const modalidade = lista.find((m) => m.id === id);
-    if (!modalidade) return;
-
-    modalidade.instrutoresIds = instrutoresIds;
-    this.salvarStorage(lista);
+    const { error } = await supabase.from("modalidades").update({ instrutores_ids: instrutoresIds }).eq("id", id);
+    if (error) console.error(error);
   }
 }
 

@@ -2,63 +2,45 @@
 // APUSM SaaS — Módulo Turmas
 // Arquivo: turmas.service.ts
 // ======================================================
-
-import { turmasMock } from "../data/turmas.mock";
-
+import { supabase } from "@/lib/supabaseClient";
 import type {
   Turma,
   CriarTurmaDTO,
   AtualizarTurmaDTO,
 } from "../types/turma.types";
 
-const STORAGE_KEY = "apusm:turmas";
+function toTurma(row: any): Turma {
+  return {
+    id: row.id,
+    modalidadeId: row.modalidade_id,
+    instrutorId: row.instrutor_id,
+    dia: row.dia,
+    horario: row.horario,
+    sala: row.sala,
+    limiteVagas: row.limite_vagas,
+    limiteNovosAlunos: row.limite_novos_alunos,
+  };
+}
 
 class TurmasService {
-
-  private normalizar(t: any): Turma {
-    return {
-      id: t?.id ?? crypto.randomUUID(),
-      modalidadeId: t?.modalidadeId ?? "",
-      instrutorId: t?.instrutorId ?? "",
-      dia: t?.dia ?? "seg",
-      horario: t?.horario ?? "08:00",
-      sala: t?.sala ?? "-",
-      limiteVagas: t?.limiteVagas ?? 10,
-      limiteNovosAlunos: t?.limiteNovosAlunos ?? 9,
-    };
-  }
-
-  private carregarStorage(): Turma[] {
-    const dados = localStorage.getItem(STORAGE_KEY);
-
-    if (!dados) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(turmasMock));
-      return turmasMock;
-    }
-
-    const bruto = JSON.parse(dados);
-    return (Array.isArray(bruto) ? bruto : []).map((t) => this.normalizar(t));
-  }
-
-  private salvarStorage(lista: Turma[]) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(lista));
-  }
-
   async listar(): Promise<Turma[]> {
-    return this.carregarStorage();
+    const { data, error } = await supabase.from("turmas").select("*");
+    if (error) { console.error(error); return []; }
+    return (data ?? []).map(toTurma);
   }
 
   async buscarPorId(id: string): Promise<Turma | undefined> {
-    return this.carregarStorage().find((t) => t.id === id);
+    const { data, error } = await supabase.from("turmas").select("*").eq("id", id).single();
+    if (error) return undefined;
+    return toTurma(data);
   }
 
   async criar(dados: CriarTurmaDTO): Promise<Turma> {
-    const lista = this.carregarStorage();
+    const lista = await this.listar();
 
     const conflitoInstrutor = lista.some(
       (t) => t.dia === dados.dia && t.horario === dados.horario && t.instrutorId === dados.instrutorId
     );
-
     if (conflitoInstrutor) {
       throw new Error("Este instrutor já tem uma turma nesse dia e horário.");
     }
@@ -66,34 +48,34 @@ class TurmasService {
     const conflitoSala = lista.some(
       (t) => t.dia === dados.dia && t.horario === dados.horario && t.sala === dados.sala
     );
-
     if (conflitoSala) {
       throw new Error(`A ${dados.sala} já está ocupada nesse dia e horário.`);
     }
 
-    const nova: Turma = {
-      ...dados,
-      id: crypto.randomUUID(),
-      limiteVagas: dados.limiteVagas ?? 10,
-      limiteNovosAlunos: dados.limiteNovosAlunos ?? 9,
-    };
+    const { data, error } = await supabase
+      .from("turmas")
+      .insert({
+        modalidade_id: dados.modalidadeId,
+        instrutor_id: dados.instrutorId,
+        dia: dados.dia,
+        horario: dados.horario,
+        sala: dados.sala,
+        limite_vagas: dados.limiteVagas ?? 10,
+        limite_novos_alunos: dados.limiteNovosAlunos ?? 9,
+      })
+      .select()
+      .single();
 
-    lista.push(nova);
-    this.salvarStorage(lista);
-
-    return nova;
+    if (error) throw new Error(error.message);
+    return toTurma(data);
   }
 
-  async atualizar(
-    id: string,
-    dados: AtualizarTurmaDTO
-  ): Promise<Turma | undefined> {
-    const lista = this.carregarStorage();
-    const index = lista.findIndex((t) => t.id === id);
+  async atualizar(id: string, dados: AtualizarTurmaDTO): Promise<Turma | undefined> {
+    const lista = await this.listar();
+    const atual = lista.find((t) => t.id === id);
+    if (!atual) return undefined;
 
-    if (index < 0) return undefined;
-
-    const atualizada = { ...lista[index], ...dados };
+    const atualizada = { ...atual, ...dados };
 
     const conflitoInstrutor = lista.some(
       (t) =>
@@ -102,7 +84,6 @@ class TurmasService {
         t.horario === atualizada.horario &&
         t.instrutorId === atualizada.instrutorId
     );
-
     if (conflitoInstrutor) {
       throw new Error("Este instrutor já tem uma turma nesse dia e horário.");
     }
@@ -114,20 +95,27 @@ class TurmasService {
         t.horario === atualizada.horario &&
         t.sala === atualizada.sala
     );
-
     if (conflitoSala) {
       throw new Error(`A ${atualizada.sala} já está ocupada nesse dia e horário.`);
     }
 
-    lista[index] = atualizada;
-    this.salvarStorage(lista);
+    const payload: any = {};
+    if (dados.modalidadeId !== undefined) payload.modalidade_id = dados.modalidadeId;
+    if (dados.instrutorId !== undefined) payload.instrutor_id = dados.instrutorId;
+    if (dados.dia !== undefined) payload.dia = dados.dia;
+    if (dados.horario !== undefined) payload.horario = dados.horario;
+    if (dados.sala !== undefined) payload.sala = dados.sala;
+    if (dados.limiteVagas !== undefined) payload.limite_vagas = dados.limiteVagas;
+    if (dados.limiteNovosAlunos !== undefined) payload.limite_novos_alunos = dados.limiteNovosAlunos;
 
-    return lista[index];
+    const { data, error } = await supabase.from("turmas").update(payload).eq("id", id).select().single();
+    if (error) { console.error(error); return undefined; }
+    return toTurma(data);
   }
 
   async excluir(id: string): Promise<void> {
-    const lista = this.carregarStorage().filter((t) => t.id !== id);
-    this.salvarStorage(lista);
+    const { error } = await supabase.from("turmas").delete().eq("id", id);
+    if (error) console.error(error);
   }
 }
 

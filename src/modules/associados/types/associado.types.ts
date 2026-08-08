@@ -1,7 +1,6 @@
 // ======================================================
 // APUSM SaaS — Módulo Associados
 // Arquivo: associado.types.ts
-// Modelo simplificado: nome + telefone. Resto é vínculo.
 // ======================================================
 
 export const StatusAssociado = {
@@ -22,7 +21,6 @@ export interface Associado {
 
   matriculas: MatriculaAssociado[];
   frequencias: FrequenciaAssociado[];
-  pagamentos: PagamentoAssociado[];
   historico: HistoricoAssociado[];
 }
 
@@ -41,14 +39,6 @@ export interface FrequenciaAssociado {
   id: string;
   data: string;
   presente: boolean;
-}
-
-export interface PagamentoAssociado {
-  id: string;
-  competencia: string;
-  valor: number;
-  vencimento: string;
-  pago: boolean;
 }
 
 export interface HistoricoAssociado {

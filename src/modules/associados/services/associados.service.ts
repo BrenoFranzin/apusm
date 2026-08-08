@@ -4,18 +4,16 @@
 // Arquivo: associados.service.ts
 // ======================================================
 
-import { limitesService } from "@/modules/limites/services/limites.service";
 import { listaEsperaService } from "@/modules/lista-espera/services/listaEspera.service";
+import { limitesService } from "@/modules/limites/services/limites.service";
 import { turmasService } from "@/modules/turmas/services/turmas.service";
-import { associadosMock } from "../data/associados.mock";
+import { supabase } from "@/lib/supabaseClient";
 
 import type {
   Associado,
   CriarAssociadoDTO,
   AtualizarAssociadoDTO,
 } from "../types/associado.types";
-
-const STORAGE_KEY = "apusm:associados";
 
 function capitalizarNome(nome: string): string {
   const minusculas = ["de", "da", "do", "das", "dos", "e"];
@@ -32,142 +30,86 @@ function capitalizarNome(nome: string): string {
     .join(" ");
 }
 
+function toAssociado(row: any): Associado {
+  return {
+    id: row.id,
+    nome: row.nome,
+    telefone: row.telefone ?? "",
+    status: row.status,
+    dataCadastro: row.data_cadastro,
+    matriculas: row.matriculas ?? [],
+    frequencias: row.frequencias ?? [],
+    historico: row.historico ?? [],
+  };
+}
+
 class AssociadosService {
-  // ==========================
-  // LOCAL STORAGE
-  // ==========================
-
-  private normalizar(a: any): Associado {
-    return {
-      id: a?.id ?? crypto.randomUUID(),
-      nome: capitalizarNome(a?.nome ?? "Sem nome"),
-      telefone: a?.telefone ?? "",
-      status: a?.status ?? "ATIVO",
-      dataCadastro: a?.dataCadastro ?? new Date().toISOString().substring(0, 10),
-      matriculas: Array.isArray(a?.matriculas) ? a.matriculas : [],
-      frequencias: Array.isArray(a?.frequencias) ? a.frequencias : [],
-      pagamentos: Array.isArray(a?.pagamentos) ? a.pagamentos : [],
-      historico: Array.isArray(a?.historico) ? a.historico : [],
-    };
-  }
-
-  private carregarStorage(): Associado[] {
-    const dados = localStorage.getItem(STORAGE_KEY);
-
-    if (!dados) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(associadosMock));
-      return associadosMock;
-    }
-
-    const bruto = JSON.parse(dados);
-    return (Array.isArray(bruto) ? bruto : []).map((a) => this.normalizar(a));
-  }
-
-  private salvarStorage(lista: Associado[]) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(lista));
-  }
-
-  // ==========================
-  // LISTAR
-  // ==========================
-
   async listar(): Promise<Associado[]> {
-    return this.carregarStorage();
+    const { data, error } = await supabase.from("associados").select("*").order("nome");
+    if (error) { console.error(error); return []; }
+    return (data ?? []).map(toAssociado);
   }
-
-  // ==========================
-  // BUSCAR
-  // ==========================
 
   async buscarPorId(id: string): Promise<Associado | undefined> {
-    const lista = this.carregarStorage();
-    return lista.find((a) => a.id === id);
+    const { data, error } = await supabase.from("associados").select("*").eq("id", id).single();
+    if (error) return undefined;
+    return toAssociado(data);
   }
 
-  // ==========================
-  // CRIAR
-  // ==========================
-
   async criar(dados: CriarAssociadoDTO): Promise<Associado> {
-    const lista = this.carregarStorage();
-
     const nomeFormatado = capitalizarNome(dados.nome);
-    const nomeNormalizado = nomeFormatado.toLowerCase();
-    const jaExiste = lista.some(
-      (a) => a.nome.trim().toLowerCase() === nomeNormalizado
-    );
 
+    const { data: existentes } = await supabase.from("associados").select("nome");
+    const jaExiste = (existentes ?? []).some(
+      (a: any) => a.nome.trim().toLowerCase() === nomeFormatado.toLowerCase()
+    );
     if (jaExiste) {
       throw new Error(`Já existe um associado cadastrado com o nome "${dados.nome.trim()}".`);
     }
 
-    const novo: Associado = {
-      ...dados,
-      nome: nomeFormatado,
-      id: crypto.randomUUID(),
-      dataCadastro: new Date().toISOString().substring(0, 10),
-      historico: [
-        {
-          id: crypto.randomUUID(),
-          data: new Date().toISOString(),
-          descricao: "Cadastro criado",
-        },
-      ],
-      matriculas: [],
-      frequencias: [],
-      pagamentos: [],
-    };
+    const { data, error } = await supabase
+      .from("associados")
+      .insert({
+        nome: nomeFormatado,
+        telefone: dados.telefone ?? "",
+        status: dados.status,
+        historico: [{ id: crypto.randomUUID(), data: new Date().toISOString(), descricao: "Cadastro criado" }],
+        matriculas: [],
+        frequencias: [],
+      })
+      .select()
+      .single();
 
-    lista.push(novo);
-    this.salvarStorage(lista);
-
-    return novo;
+    if (error) throw new Error(error.message);
+    return toAssociado(data);
   }
-
-  // ==========================
-  // EDITAR
-  // ==========================
 
   async atualizar(id: string, dados: AtualizarAssociadoDTO): Promise<Associado | undefined> {
-    const lista = this.carregarStorage();
-    const index = lista.findIndex((a) => a.id === id);
+    const atual = await this.buscarPorId(id);
+    if (!atual) return undefined;
 
-    if (index < 0) return undefined;
+    const historico = [
+      ...atual.historico,
+      { id: crypto.randomUUID(), data: new Date().toISOString(), descricao: "Dados do cadastro atualizados" },
+    ];
 
-    lista[index] = {
-      ...lista[index],
-      ...dados,
-      nome: dados.nome ? capitalizarNome(dados.nome) : lista[index].nome,
-    };
+    const payload: any = { historico };
+    if (dados.nome !== undefined) payload.nome = capitalizarNome(dados.nome);
+    if (dados.telefone !== undefined) payload.telefone = dados.telefone;
+    if (dados.status !== undefined) payload.status = dados.status;
 
-    lista[index].historico.push({
-      id: crypto.randomUUID(),
-      data: new Date().toISOString(),
-      descricao: "Dados do cadastro atualizados",
-    });
-
-    this.salvarStorage(lista);
-
-    return lista[index];
+    const { data, error } = await supabase.from("associados").update(payload).eq("id", id).select().single();
+    if (error) { console.error(error); return undefined; }
+    return toAssociado(data);
   }
-
-  // ==========================
-  // EXCLUIR
-  // ==========================
 
   async excluir(id: string): Promise<void> {
-    const lista = this.carregarStorage();
-    const novaLista = lista.filter((a) => a.id !== id);
-    this.salvarStorage(novaLista);
+    const { error } = await supabase.from("associados").delete().eq("id", id);
+    if (error) console.error(error);
   }
 
-  // ==========================
-  // MATRICULAR EM TURMA (limite 10 vagas)
-  // ==========================
-
   async contarMatriculasPorTurma(turmaId: string): Promise<number> {
-    const lista = this.carregarStorage();
-
+    const lista = await this.listar();
     return lista.reduce((total, associado) => {
       const ativos = associado.matriculas.filter(
         (m) => m.turmaId === turmaId && m.status !== "CANCELADA"
@@ -178,24 +120,12 @@ class AssociadosService {
 
   async matricular(
     associadoId: string,
-    dadosMatricula: {
-      turmaId: string;
-      turmaNome: string;
-      modalidadeId: string;
-      modalidadeNome: string;
-    }
+    dadosMatricula: { turmaId: string; turmaNome: string; modalidadeId: string; modalidadeNome: string }
   ): Promise<{ status: "MATRICULADO" | "LISTA_ESPERA"; associado?: Associado; posicaoFila?: number }> {
-    const lista = this.carregarStorage();
-    const index = lista.findIndex((a) => a.id === associadoId);
-
-    if (index < 0) {
-      throw new Error("Associado não encontrado.");
-    }
-
-    const associado = lista[index];
+    const associado = await this.buscarPorId(associadoId);
+    if (!associado) throw new Error("Associado não encontrado.");
 
     const limiteModalidade = await limitesService.obterLimiteDaModalidade(dadosMatricula.modalidadeId);
-
     const turmasNaModalidade = associado.matriculas.filter(
       (m) => m.modalidadeId === dadosMatricula.modalidadeId && m.status !== "CANCELADA"
     ).length;
@@ -220,12 +150,15 @@ class AssociadosService {
         modalidadeNome: dadosMatricula.modalidadeNome,
       });
 
-      lista[index].historico.push({
-        id: crypto.randomUUID(),
-        data: new Date().toISOString(),
-        descricao: `Entrou na lista de espera de ${dadosMatricula.modalidadeNome} (${dadosMatricula.turmaNome}), posição ${entrada.posicao}`,
-      });
-      this.salvarStorage(lista);
+      const historico = [
+        ...associado.historico,
+        {
+          id: crypto.randomUUID(),
+          data: new Date().toISOString(),
+          descricao: `Entrou na lista de espera de ${dadosMatricula.modalidadeNome} (${dadosMatricula.turmaNome}), posição ${entrada.posicao}`,
+        },
+      ];
+      await supabase.from("associados").update({ historico }).eq("id", associadoId);
 
       return { status: "LISTA_ESPERA", posicaoFila: entrada.posicao };
     }
@@ -240,98 +173,83 @@ class AssociadosService {
       status: "ATIVA",
     };
 
-    lista[index].matriculas.push(novaMatricula);
-    lista[index].historico.push({
-      id: crypto.randomUUID(),
-      data: new Date().toISOString(),
-      descricao: `Matriculado em ${dadosMatricula.modalidadeNome} (${dadosMatricula.turmaNome})`,
-    });
-    this.salvarStorage(lista);
+    const matriculas = [...associado.matriculas, novaMatricula];
+    const historico = [
+      ...associado.historico,
+      { id: crypto.randomUUID(), data: new Date().toISOString(), descricao: `Matriculado em ${dadosMatricula.modalidadeNome} (${dadosMatricula.turmaNome})` },
+    ];
 
-    return { status: "MATRICULADO", associado: lista[index] };
+    const { data, error } = await supabase
+      .from("associados")
+      .update({ matriculas, historico })
+      .eq("id", associadoId)
+      .select()
+      .single();
+
+    if (error) throw new Error(error.message);
+    return { status: "MATRICULADO", associado: toAssociado(data) };
   }
 
   async cancelarMatricula(associadoId: string, matriculaId: string): Promise<Associado | undefined> {
-    const lista = this.carregarStorage();
-    const index = lista.findIndex((a) => a.id === associadoId);
+    const associado = await this.buscarPorId(associadoId);
+    if (!associado) return undefined;
 
-    if (index < 0) return undefined;
-
-    const matricula = lista[index].matriculas.find((m) => m.id === matriculaId);
-
-    lista[index].matriculas = lista[index].matriculas.map((m) =>
+    const matricula = associado.matriculas.find((m) => m.id === matriculaId);
+    const matriculas = associado.matriculas.map((m) =>
       m.id === matriculaId ? { ...m, status: "CANCELADA" } : m
     );
 
-    if (matricula) {
-      lista[index].historico.push({
-        id: crypto.randomUUID(),
-        data: new Date().toISOString(),
-        descricao: `Cancelou matrícula em ${matricula.modalidadeNome} (${matricula.turmaNome})`,
-      });
-    }
+    const historico = matricula
+      ? [...associado.historico, { id: crypto.randomUUID(), data: new Date().toISOString(), descricao: `Cancelou matrícula em ${matricula.modalidadeNome} (${matricula.turmaNome})` }]
+      : associado.historico;
 
-    this.salvarStorage(lista);
+    const { data, error } = await supabase
+      .from("associados")
+      .update({ matriculas, historico })
+      .eq("id", associadoId)
+      .select()
+      .single();
 
-    return lista[index];
+    if (error) { console.error(error); return undefined; }
+    return toAssociado(data);
   }
-
-  // ==========================
-  // OBSERVAÇÕES
-  // ==========================
 
   async atualizarObservacaoMatricula(
     associadoId: string,
     matriculaId: string,
     observacao: string
   ): Promise<Associado | undefined> {
-    const lista = this.carregarStorage();
-    const index = lista.findIndex((a) => a.id === associadoId);
+    const associado = await this.buscarPorId(associadoId);
+    if (!associado) return undefined;
 
-    if (index < 0) return undefined;
-
-    const matricula = lista[index].matriculas.find((m) => m.id === matriculaId);
-
-    lista[index].matriculas = lista[index].matriculas.map((m) =>
+    const matricula = associado.matriculas.find((m) => m.id === matriculaId);
+    const matriculas = associado.matriculas.map((m) =>
       m.id === matriculaId ? { ...m, observacao } : m
     );
 
-    if (matricula) {
-      lista[index].historico.push({
-        id: crypto.randomUUID(),
-        data: new Date().toISOString(),
-        descricao: `Observação atualizada em ${matricula.modalidadeNome} (${matricula.turmaNome}): "${observacao}"`,
-      });
-    }
+    const historico = matricula
+      ? [...associado.historico, { id: crypto.randomUUID(), data: new Date().toISOString(), descricao: `Observação atualizada em ${matricula.modalidadeNome} (${matricula.turmaNome}): "${observacao}"` }]
+      : associado.historico;
 
-    this.salvarStorage(lista);
+    const { data, error } = await supabase
+      .from("associados")
+      .update({ matriculas, historico })
+      .eq("id", associadoId)
+      .select()
+      .single();
 
-    return lista[index];
+    if (error) { console.error(error); return undefined; }
+    return toAssociado(data);
   }
-
-  // ==========================
-  // PESQUISAR
-  // ==========================
 
   async pesquisar(texto: string): Promise<Associado[]> {
-    const lista = this.carregarStorage();
+    const lista = await this.listar();
     const busca = texto.toLowerCase();
-
-    return lista.filter((a) => {
-      return (
-        a.nome.toLowerCase().includes(busca) ||
-        a.telefone.includes(busca)
-      );
-    });
+    return lista.filter((a) => a.nome.toLowerCase().includes(busca) || a.telefone.includes(busca));
   }
 
-  // ==========================
-  // ESTATÍSTICAS
-  // ==========================
-
   async dashboard() {
-    const lista = this.carregarStorage();
-
+    const lista = await this.listar();
     return {
       total: lista.length,
       ativos: lista.filter((a) => a.status === "ATIVO").length,
@@ -343,5 +261,4 @@ class AssociadosService {
 }
 
 export const associadosService = new AssociadosService();
-
 export default associadosService;
