@@ -278,7 +278,7 @@ export default function ModalidadeTurmasPage() {
       <tbody>
         {matriculados.map(({ associado, matricula }) => (
           <tr key={associado.id} style={{ borderTop: "1px solid var(--border-default)" }}>
-            <td style={{ padding: "8px", textTransform: "uppercase", fontWeight: 700 }}>{associado.nome}</td>
+            <td style={{ padding: "8px" }}>{associado.nome}</td>
             <td style={{ padding: "8px" }}>
               <button
                 onClick={() =>
@@ -367,7 +367,7 @@ export default function ModalidadeTurmasPage() {
               />
             </td>
             <td style={{ padding: "8px" }}>{entrada.posicao}º</td>
-            <td style={{ padding: "8px", textTransform: "uppercase", fontWeight: 700 }}>
+            <td style={{ padding: "8px" }}>
   {entrada.associadoNome}
   {(() => {
     const qtdFilas = filas.filter((f) => f.associadoId === entrada.associadoId).length;
