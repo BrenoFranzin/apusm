@@ -451,7 +451,48 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
           )}
         </div>
       </div>
+
+      {modalHistoricoAberto && (
+        <div
+          onClick={() => setModalHistoricoAberto(false)}
+          style={{
+            position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)",
+            display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2000,
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "var(--background-primary)", borderRadius: 12, padding: 20,
+              width: "90vw", maxWidth: 560, maxHeight: "75vh", overflowY: "auto",
+            }}
+          >
+            <p style={{ fontWeight: 700, fontSize: 16, marginBottom: 12, color: "var(--text-primary)" }}>
+              Histórico de modificações
+            </p>
+
+            {historicoOrdenado.length === 0 && (
+              <p style={{ fontSize: 13, color: "var(--text-secondary)" }}>Nenhuma modificação registrada.</p>
+            )}
+
+            {historicoOrdenado.map((h: any, i: number) => (
+              <div key={i} style={{ fontSize: 13, padding: "8px 0", borderTop: i > 0 ? "1px solid var(--border-light)" : "none", color: "var(--text-primary)" }}>
+                <p style={{ margin: 0, fontWeight: 500 }}>{h.descricao ?? h.acao ?? "Modificação"}</p>
+                <p style={{ margin: 0, fontSize: 12, color: "var(--text-secondary)" }}>
+                  {new Date(h.data).toLocaleString("pt-BR")}
+                </p>
+              </div>
+            ))}
+
+            <button
+              onClick={() => setModalHistoricoAberto(false)}
+              style={{ marginTop: 14, width: "100%", fontSize: 13, border: "1px solid var(--border-default)", borderRadius: 8, padding: "8px 12px", background: "transparent", color: "var(--text-secondary)", cursor: "pointer" }}
+            >
+              Fechar
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
-  
 }

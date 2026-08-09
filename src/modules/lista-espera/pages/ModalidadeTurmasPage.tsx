@@ -17,6 +17,7 @@ import { associadosService } from "@/modules/associados/services/associados.serv
 
 
 import type { Modalidade } from "@/modules/modalidades/types/modalidade.types";
+import type { Turma } from "@/modules/turmas/types/turma.types";
 import type { Instrutor } from "@/modules/instrutores/types/instrutor.types";
 import type { EntradaListaEspera } from "../types/listaEspera.types";
 
@@ -39,10 +40,14 @@ export default function ModalidadeTurmasPage() {
   const { todos: associados, carregar: recarregarAssociados } = useAssociados();
 
   const [modalidade, setModalidade] = useState<Modalidade | null>(null);
+const [todasModalidades, setTodasModalidades] = useState<Modalidade[]>([]);
   const [instrutores, setInstrutores] = useState<Instrutor[]>([]);
   const [filas, setFilas] = useState<EntradaListaEspera[]>([]);
   const [selecionados, setSelecionados] = useState<Record<string, string[]>>({});
+  const [associadoFilasAberto, setAssociadoFilasAberto] = useState<{ id: string; nome: string } | null>(null);
   const [decisaoTurmaId, setDecisaoTurmaId] = useState<string | null>(null);
+  const [outrasTurmasAberto, setOutrasTurmasAberto] = useState(false);
+  const [inserindoTurmaId, setInserindoTurmaId] = useState<string | null>(null);
   const [processandoDecisao, setProcessandoDecisao] = useState(false);
 
   useEffect(() => {
@@ -52,6 +57,7 @@ export default function ModalidadeTurmasPage() {
         instrutoresService.listar(),
       ]);
       setModalidade(mods.find((m) => m.id === modalidadeId) ?? null);
+setTodasModalidades(mods);
       setInstrutores(instrutoresData);
     }
     carregar();
@@ -113,6 +119,24 @@ export default function ModalidadeTurmasPage() {
       return { ...prev, [turmaId]: novo };
     });
   }
+
+  async function handleInserirOutraTurma(turma: Turma, modalidadeNome: string) {
+    if (!associadoFilasAberto) return;
+    setInserindoTurmaId(turma.id);
+    try {
+      await associadosService.matricular(associadoFilasAberto.id, {
+        turmaId: turma.id,
+        turmaNome: `${DIA_LABEL[turma.dia]} ${turma.horario}`,
+        modalidadeId: turma.modalidadeId,
+        modalidadeNome,
+      });
+      await recarregarAssociados();
+      await recarregarFilas();
+    } finally {
+      setInserindoTurmaId(null);
+    }
+  }
+
 
   async function handleEscolherParaVaga(turmaId: string, entrada: EntradaListaEspera) {
     setProcessandoDecisao(true);
@@ -312,6 +336,201 @@ export default function ModalidadeTurmasPage() {
         )}
       </tbody>
     </table>
+    {associadoFilasAberto && (
+        <div
+          onClick={() => setAssociadoFilasAberto(null)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 3000,
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "var(--background-primary)",
+              borderRadius: 12,
+              padding: 20,
+              minWidth: 320,
+              maxWidth: 840,
+              maxHeight: "80vh",
+              overflowY: "auto",
+              boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
+            }}
+          >
+            <p style={{ fontWeight: 700, fontSize: 16, marginBottom: 4, color: "var(--text-primary)" }}>
+              {associadoFilasAberto.nome}
+            </p>
+            <p style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 14 }}>
+              Está em fila de espera em:
+            </p>
+
+            {filas
+              .filter((f) => f.associadoId === associadoFilasAberto.id)
+              .sort((a, b) => a.modalidadeNome.localeCompare(b.modalidadeNome))
+              .map((f) => {
+                const mod = todasModalidades.find((m) => m.id === f.modalidadeId || m.nome === f.modalidadeNome);
+                const cor = mod?.cor || "#374151";
+                return (
+                  <div
+                    key={f.id}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      padding: "8px 10px",
+                      borderRadius: 8,
+                      marginBottom: 6,
+                      background: cor + "1a",
+                      border: `1px solid ${cor}`,
+                    }}
+                  >
+                    <span style={{ width: 10, height: 10, borderRadius: "50%", background: cor, flexShrink: 0 }} />
+                    <div>
+                      <p style={{ fontSize: 13, fontWeight: 600, margin: 0, color: "var(--text-primary)" }}>
+                        {mod?.icone ? `${mod.icone} ` : ""}{f.modalidadeNome}
+                      </p>
+                      <p style={{ fontSize: 12, margin: 0, color: "var(--text-secondary)" }}>
+                        {f.turmaNome} — {f.posicao}º na fila
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+
+            <button
+              onClick={() => setOutrasTurmasAberto((v) => !v)}
+              style={{
+                marginTop: 14,
+                width: "100%",
+                fontSize: 13,
+                fontWeight: 600,
+                border: "1px solid var(--color-primary)",
+                borderRadius: 8,
+                padding: "8px 12px",
+                background: "transparent",
+                color: "var(--color-primary)",
+                cursor: "pointer",
+              }}
+            >
+              {outrasTurmasAberto ? "▲ Ocultar outras turmas" : "+ Inserir em outras turmas"}
+            </button>
+
+            {outrasTurmasAberto && (() => {
+              const associadoAtual = associados.find((a) => a.id === associadoFilasAberto.id);
+              const matriculaTurmaIds = (associadoAtual?.matriculas ?? [])
+                .filter((m) => m.status !== "CANCELADA")
+                .map((m) => m.turmaId);
+              const filaTurmaIds = filas
+                .filter((f) => f.associadoId === associadoFilasAberto.id)
+                .map((f) => f.turmaId);
+
+              const outrasTurmas = turmas.filter(
+                (t) => !matriculaTurmaIds.includes(t.id) && !filaTurmaIds.includes(t.id)
+              );
+
+              if (outrasTurmas.length === 0) {
+                return (
+                  <p style={{ fontSize: 13, color: "var(--text-secondary)", marginTop: 10 }}>
+                    Já está inserido(a) em todas as turmas disponíveis.
+                  </p>
+                );
+              }
+
+              return (
+                <div style={{ marginTop: 10, border: "1px solid var(--border-default)", borderRadius: 8, maxHeight: 260, overflowY: "auto" }}>
+                  {outrasTurmas.map((t) => {
+                    const mod = todasModalidades.find((m) => m.id === t.modalidadeId);
+                    const qtdMatriculados = associados.filter((a) =>
+                      a.matriculas.some((m) => m.turmaId === t.id && m.status !== "CANCELADA")
+                    ).length;
+                    const vagas = t.limiteVagas ?? 10;
+                    const temVaga = qtdMatriculados < vagas;
+
+                    return (
+                      <div
+                        key={t.id}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          gap: 10,
+                          padding: "8px 10px",
+                          borderBottom: "1px solid var(--border-light)",
+                        }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+                          <span style={{ width: 10, height: 10, borderRadius: "50%", background: mod?.cor || "#374151", flexShrink: 0 }} />
+                          <div style={{ minWidth: 0 }}>
+                            <p style={{ fontSize: 13, fontWeight: 600, margin: 0, color: "var(--text-primary)" }}>
+                              {mod?.icone ? `${mod.icone} ` : ""}{mod?.nome ?? "Modalidade"}
+                            </p>
+                            <p style={{ fontSize: 12, margin: 0, color: "var(--text-secondary)" }}>
+                              {DIA_LABEL[t.dia]} — {t.horario} — {t.sala}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                          <span
+                            style={{
+                              fontSize: 11,
+                              fontWeight: 600,
+                              padding: "2px 8px",
+                              borderRadius: 999,
+                              color: temVaga ? "#166534" : "#9a3412",
+                              background: temVaga ? "#dcfce7" : "#ffedd5",
+                            }}
+                          >
+                            {temVaga ? "Vaga livre" : "Vai pra fila de espera"}
+                          </span>
+                          <button
+                            disabled={inserindoTurmaId === t.id}
+                            onClick={() => handleInserirOutraTurma(t, mod?.nome ?? "")}
+                            style={{
+                              fontSize: 12,
+                              fontWeight: 600,
+                              border: "none",
+                              borderRadius: 6,
+                              padding: "6px 10px",
+                              background: "var(--color-primary)",
+                              color: "#fff",
+                              cursor: inserindoTurmaId === t.id ? "not-allowed" : "pointer",
+                            }}
+                          >
+                            {inserindoTurmaId === t.id ? "..." : "Inserir"}
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+
+            <button
+              onClick={() => { setAssociadoFilasAberto(null); setOutrasTurmasAberto(false); }}
+              style={{
+                marginTop: 12,
+                width: "100%",
+                fontSize: 13,
+                border: "1px solid var(--border-default)",
+                borderRadius: 8,
+                padding: "8px 12px",
+                background: "transparent",
+                color: "var(--text-secondary)",
+                cursor: "pointer",
+              }}
+            >
+              Fechar
+            </button>
+          </div>
+        </div>
+      )}
   </div>
 
   <div
@@ -370,23 +589,26 @@ export default function ModalidadeTurmasPage() {
             <td style={{ padding: "8px" }}>
   {entrada.associadoNome}
   {(() => {
-    const qtdFilas = filas.filter((f) => f.associadoId === entrada.associadoId).length;
-    return qtdFilas > 1 ? (
-      <span
-        style={{
-          marginLeft: 6,
-          fontSize: 11,
-          fontWeight: 700,
-          color: "#166534",
-          background: "#dcfce7",
-          padding: "1px 6px",
-          borderRadius: 999,
-        }}
-      >
-        {qtdFilas} filas
-      </span>
-    ) : null;
-  })()}
+  const qtdFilas = filas.filter((f) => f.associadoId === entrada.associadoId).length;
+  return qtdFilas > 1 ? (
+    <button
+      onClick={() => setAssociadoFilasAberto({ id: entrada.associadoId, nome: entrada.associadoNome })}
+      style={{
+        marginLeft: 6,
+        fontSize: 11,
+        fontWeight: 700,
+        color: "#166534",
+        background: "#dcfce7",
+        padding: "1px 6px",
+        borderRadius: 999,
+        border: "none",
+        cursor: "pointer",
+      }}
+    >
+      {qtdFilas} filas
+    </button>
+  ) : null;
+})()}
 </td>
             <td style={{ padding: "8px" }}>
               <button
