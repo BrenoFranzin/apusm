@@ -2,58 +2,51 @@
 // APUSM SaaS — Módulo Plantão de Serviço
 // Arquivo: plantao.service.ts
 // ======================================================
-
-import { plantaoMock } from "../data/plantao.mock";
+import { supabase } from "@/lib/supabaseClient";
 import type { EntradaPlantao, DiaSemanaPlantao } from "../types/plantao.types";
 
-const STORAGE_KEY = "apusm:plantao";
-
 class PlantaoService {
-  private carregarStorage(): EntradaPlantao[] {
-    const dados = localStorage.getItem(STORAGE_KEY);
-    if (!dados) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(plantaoMock));
-      return plantaoMock;
-    }
-    return JSON.parse(dados);
-  }
-
-  private salvarStorage(lista: EntradaPlantao[]) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(lista));
-  }
-
   async listar(): Promise<EntradaPlantao[]> {
-    return this.carregarStorage();
+    const { data, error } = await supabase.from("plantao").select("*");
+    if (error) { console.error(error); return []; }
+    return data.map((d) => ({
+      id: d.id,
+      instrutorId: d.instrutor_id,
+      dia: d.dia,
+      horario: d.horario,
+    })) as EntradaPlantao[];
   }
 
   async adicionar(instrutorId: string, dia: DiaSemanaPlantao, horario: string): Promise<void> {
-    const lista = this.carregarStorage();
-
-    const jaExiste = lista.some(
-      (e) => e.instrutorId === instrutorId && e.dia === dia && e.horario === horario
-    );
-
-    if (jaExiste) return;
-
-    lista.push({ id: crypto.randomUUID(), instrutorId, dia, horario });
-    this.salvarStorage(lista);
+    const { error } = await supabase
+      .from("plantao")
+      .insert({ instrutor_id: instrutorId, dia, horario });
+    if (error) console.error(error);
   }
 
   async remover(instrutorId: string, dia: DiaSemanaPlantao, horario: string): Promise<void> {
-    const lista = this.carregarStorage().filter(
-      (e) => !(e.instrutorId === instrutorId && e.dia === dia && e.horario === horario)
-    );
-    this.salvarStorage(lista);
+    const { error } = await supabase
+      .from("plantao")
+      .delete()
+      .eq("instrutor_id", instrutorId)
+      .eq("dia", dia)
+      .eq("horario", horario);
+    if (error) console.error(error);
   }
 
   async definirEmMassa(instrutorId: string, entradas: { dia: DiaSemanaPlantao; horario: string }[]): Promise<void> {
-    const lista = this.carregarStorage().filter((e) => e.instrutorId !== instrutorId);
+    const { error: erroDelete } = await supabase
+      .from("plantao")
+      .delete()
+      .eq("instrutor_id", instrutorId);
+    if (erroDelete) { console.error(erroDelete); return; }
 
-    for (const entrada of entradas) {
-      lista.push({ id: crypto.randomUUID(), instrutorId, dia: entrada.dia, horario: entrada.horario });
-    }
+    if (entradas.length === 0) return;
 
-    this.salvarStorage(lista);
+    const { error: erroInsert } = await supabase
+      .from("plantao")
+      .insert(entradas.map((e) => ({ instrutor_id: instrutorId, dia: e.dia, horario: e.horario })));
+    if (erroInsert) console.error(erroInsert);
   }
 }
 

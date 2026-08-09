@@ -36,21 +36,15 @@ export default function TurmasPage() {
   const [avisadas, setAvisadas] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    async function buscarHoraInternet() {
-      try {
-        const resp = await fetch("https://worldtimeapi.org/api/timezone/America/Sao_Paulo");
-        const data = await resp.json();
-        const dt = new Date(data.datetime);
-        const diasSemana = ["dom", "seg", "ter", "qua", "qui", "sex", "sab"];
-        const dia = diasSemana[dt.getDay()];
-        const hhmm = `${String(dt.getHours()).padStart(2, "0")}:${String(dt.getMinutes()).padStart(2, "0")}`;
-        setAgora({ dia, hhmm });
-      } catch {
-        // Se a internet falhar, simplesmente nenhuma aula fica destacada
-      }
+    function atualizarHoraLocal() {
+      const dt = new Date();
+      const diasSemana = ["dom", "seg", "ter", "qua", "qui", "sex", "sab"];
+      const dia = diasSemana[dt.getDay()];
+      const hhmm = `${String(dt.getHours()).padStart(2, "0")}:${String(dt.getMinutes()).padStart(2, "0")}`;
+      setAgora({ dia, hhmm });
     }
-    buscarHoraInternet();
-    const intervalo = setInterval(buscarHoraInternet, 60000);
+    atualizarHoraLocal();
+    const intervalo = setInterval(atualizarHoraLocal, 30000);
     return () => clearInterval(intervalo);
   }, []);
 

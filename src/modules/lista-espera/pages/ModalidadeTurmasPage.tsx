@@ -173,7 +173,7 @@ export default function ModalidadeTurmasPage() {
       </div>
 
       {turmasDaModalidade.length === 0 && (
-        <p style={{ color: "#6b7280", fontSize: 14 }}>
+        <p style={{ color: "var(--text-secondary)", fontSize: 14 }}>
           Nenhuma turma cadastrada para {modalidade.nome}.
         </p>
       )}
@@ -207,173 +207,255 @@ export default function ModalidadeTurmasPage() {
             </p>
 
             <button
-  onClick={() => {
-    const agora = new Date();
-    pdfService.exportarFolhaPresenca(turma.id, agora.getMonth(), agora.getFullYear());
-  }}
-  style={{
-    fontSize: 12,
-    border: "1px solid var(--border-default)",
-    borderRadius: 6,
-    padding: "5px 10px",
-    background: "var(--background-primary)",
-    color: "var(--text-primary)",
-    cursor: "pointer",
-    marginBottom: 12,
-  }}
->
-  🖨️ Imprimir folha de presença
-</button>
+              onClick={() => {
+                const agora = new Date();
+                pdfService.exportarFolhaPresenca(turma.id, agora.getMonth(), agora.getFullYear());
+              }}
+              style={{
+                fontSize: 14,
+                fontWeight: 600,
+                border: "none",
+                borderRadius: 8,
+                padding: "10px 18px",
+                background: "var(--color-primary)",
+                color: "#fff",
+                cursor: "pointer",
+                marginBottom: 14,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+              }}
+            >
+              🖨️ Imprimir folha de presença
+            </button>
 
 
-            <p style={{ fontSize: 13, color: "#6b7280", margin: "0 0 12px" }}>
+            <p style={{ fontSize: 13, color: "var(--text-secondary)", margin: "0 0 12px" }}>
               Instrutor: {instrutorNome(turma.instrutorId)}
             </p>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-              <div>
-                <p style={{ fontWeight: 600, fontSize: 13, marginBottom: 8 }}>
-                  Matriculados ({matriculados.length}/10 — {10 - matriculados.length} vaga(s) livre(s))
-                </p>
-                <table style={{ width: "100%", fontSize: 13, borderCollapse: "separate", borderSpacing: 0, borderRadius: 10, overflow: "hidden", border: "1px solid var(--border-default)" }}>
-                  <thead>
-                    <tr style={{ textAlign: "left", color: "#6b7280" }}>
-                      <th style={{ padding: "4px 6px" }}>Nome</th>
-                      <th style={{ padding: "4px 6px" }}>Obs.</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {matriculados.map(({ associado, matricula }) => (
-                      <tr key={associado.id} style={{ borderTop: "1px solid var(--border-default)" }}>
-                        <td style={{ padding: "6px" }}>{associado.nome}</td>
-                        <td style={{ padding: "6px" }}>
-                          <button
-                            onClick={() =>
-                              handleEditarObservacaoMatricula(
-                                associado.id,
-                                matricula!.id,
-                                matricula!.observacao ?? ""
-                              )
-                            }
-                            style={{
-                              fontSize: 12,
-                              border: "1px solid var(--border-default)",
-                              borderRadius: 6,
-                              padding: "2px 8px",
-                              background: "transparent",
-                              cursor: "pointer",
-                            }}
-                            title={matricula!.observacao || "Adicionar observação"}
-                          >
-                            {matricula!.observacao ? "📝" : "+"}
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                    {matriculados.length === 0 && (
-                      <tr>
-                        <td colSpan={2} style={{ padding: "6px", color: "#6b7280" }}>
-                          Nenhum matriculado.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+  <div
+    style={{
+      background: "var(--background-secondary)",
+      border: "1px solid var(--border-default)",
+      borderRadius: 10,
+      padding: 14,
+    }}
+  >
+    <p
+      style={{
+        fontWeight: 600,
+        fontSize: 13,
+        marginBottom: 10,
+        color: "var(--text-primary)",
+        display: "flex",
+        alignItems: "center",
+        gap: 6,
+      }}
+    >
+      ✅ Matriculados
+      <span
+        style={{
+          fontSize: 11,
+          fontWeight: 500,
+          color: "var(--text-secondary)",
+          background: "var(--background-tertiary)",
+          padding: "2px 8px",
+          borderRadius: 999,
+        }}
+      >
+        {matriculados.length}/10 — {10 - matriculados.length} vaga(s)
+      </span>
+    </p>
+    <table style={{ width: "100%", fontSize: 13, borderCollapse: "separate", borderSpacing: 0, borderRadius: 10, overflow: "hidden", border: "1px solid var(--border-default)" }}>
+      <thead>
+        <tr style={{ textAlign: "left", color: "var(--text-secondary)", background: "var(--background-tertiary)" }}>
+          <th style={{ padding: "6px 8px" }}>Nome</th>
+          <th style={{ padding: "6px 8px" }}>Obs.</th>
+        </tr>
+      </thead>
+      <tbody>
+        {matriculados.map(({ associado, matricula }) => (
+          <tr key={associado.id} style={{ borderTop: "1px solid var(--border-default)" }}>
+            <td style={{ padding: "8px", textTransform: "uppercase", fontWeight: 700 }}>{associado.nome}</td>
+            <td style={{ padding: "8px" }}>
+              <button
+                onClick={() =>
+                  handleEditarObservacaoMatricula(
+                    associado.id,
+                    matricula!.id,
+                    matricula!.observacao ?? ""
+                  )
+                }
+                style={{
+                  fontSize: 12,
+                  border: "1px solid var(--border-default)",
+                  borderRadius: 6,
+                  padding: "2px 8px",
+                  background: "transparent",
+                  cursor: "pointer",
+                }}
+                title={matricula!.observacao || "Adicionar observação"}
+              >
+                {matricula!.observacao ? "📝" : "+"}
+              </button>
+            </td>
+          </tr>
+        ))}
+        {matriculados.length === 0 && (
+          <tr>
+            <td colSpan={2} style={{ padding: "10px 8px", color: "var(--text-secondary)", textAlign: "center" }}>
+              Nenhum matriculado.
+            </td>
+          </tr>
+        )}
+      </tbody>
+    </table>
+  </div>
 
-              <div>
-                <p style={{ fontWeight: 600, fontSize: 13, marginBottom: 8 }}>
-                  Lista de espera ({filaDaTurma.length})
-                </p>
-                <table style={{ width: "100%", fontSize: 13, borderCollapse: "collapse" }}>
-                  <thead>
-                    <tr style={{ textAlign: "left", color: "var(--text-secondary)", background: "var(--background-tertiary)" }}>
-                      <th style={{ padding: "4px 6px" }}></th>
-                      <th style={{ padding: "4px 6px" }}>#</th>
-                      <th style={{ padding: "4px 6px" }}>Nome</th>
-                      <th style={{ padding: "4px 6px" }}>Obs.</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filaDaTurma.map((entrada) => (
-                      <tr key={entrada.id} style={{ borderTop: "1px solid var(--border-default)" }}>
-                        <td style={{ padding: "6px" }}>
-                          <input
-                            type="checkbox"
-                            checked={(selecionados[turma.id] ?? []).includes(entrada.id)}
-                            onChange={() => toggleSelecionado(turma.id, entrada.id)}
-                          />
-                        </td>
-                        <td style={{ padding: "6px" }}>{entrada.posicao}º</td>
-                        <td style={{ padding: "6px" }}>{entrada.associadoNome}</td>
-                        <td style={{ padding: "6px" }}>
-                          <button
-                            onClick={() =>
-                              handleEditarObservacaoFila(entrada.id, entrada.observacao ?? "")
-                            }
-                            style={{
-                              fontSize: 12,
-                              border: "1px solid var(--border-default)",
-                              borderRadius: 6,
-                              padding: "2px 8px",
-                              background: "transparent",
-                              cursor: "pointer",
-                            }}
-                            title={entrada.observacao || "Adicionar observação"}
-                          >
-                            {entrada.observacao ? "📝" : "+"}
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                    {filaDaTurma.length === 0 && (
-                      <tr>
-                        <td colSpan={4} style={{ padding: "6px", color: "#6b7280" }}>
-                          Ninguém na fila.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+  <div
+    style={{
+      background: "var(--background-secondary)",
+      border: "1px solid var(--border-default)",
+      borderRadius: 10,
+      padding: 14,
+    }}
+  >
+    <p
+      style={{
+        fontWeight: 600,
+        fontSize: 13,
+        marginBottom: 10,
+        color: "var(--text-primary)",
+        display: "flex",
+        alignItems: "center",
+        gap: 6,
+      }}
+    >
+      ⏳ Lista de espera
+      <span
+        style={{
+          fontSize: 11,
+          fontWeight: 500,
+          color: "var(--text-secondary)",
+          background: "var(--background-tertiary)",
+          padding: "2px 8px",
+          borderRadius: 999,
+        }}
+      >
+        {filaDaTurma.length}
+      </span>
+    </p>
+    <table style={{ width: "100%", fontSize: 13, borderCollapse: "separate", borderSpacing: 0, borderRadius: 10, overflow: "hidden", border: "1px solid var(--border-default)" }}>
+      <thead>
+        <tr style={{ textAlign: "left", color: "var(--text-secondary)", background: "var(--background-tertiary)" }}>
+          <th style={{ padding: "6px 8px" }}></th>
+          <th style={{ padding: "6px 8px" }}>#</th>
+          <th style={{ padding: "6px 8px" }}>Nome</th>
+          <th style={{ padding: "6px 8px" }}>Obs.</th>
+        </tr>
+      </thead>
+      <tbody>
+        {filaDaTurma.map((entrada) => (
+          <tr key={entrada.id} style={{ borderTop: "1px solid var(--border-default)" }}>
+            <td style={{ padding: "8px" }}>
+              <input
+                type="checkbox"
+                checked={(selecionados[turma.id] ?? []).includes(entrada.id)}
+                onChange={() => toggleSelecionado(turma.id, entrada.id)}
+              />
+            </td>
+            <td style={{ padding: "8px" }}>{entrada.posicao}º</td>
+            <td style={{ padding: "8px", textTransform: "uppercase", fontWeight: 700 }}>
+  {entrada.associadoNome}
+  {(() => {
+    const qtdFilas = filas.filter((f) => f.associadoId === entrada.associadoId).length;
+    return qtdFilas > 1 ? (
+      <span
+        style={{
+          marginLeft: 6,
+          fontSize: 11,
+          fontWeight: 700,
+          color: "#166534",
+          background: "#dcfce7",
+          padding: "1px 6px",
+          borderRadius: 999,
+        }}
+      >
+        {qtdFilas} filas
+      </span>
+    ) : null;
+  })()}
+</td>
+            <td style={{ padding: "8px" }}>
+              <button
+                onClick={() =>
+                  handleEditarObservacaoFila(entrada.id, entrada.observacao ?? "")
+                }
+                style={{
+                  fontSize: 12,
+                  border: "1px solid var(--border-default)",
+                  borderRadius: 6,
+                  padding: "2px 8px",
+                  background: "transparent",
+                  cursor: "pointer",
+                }}
+                title={entrada.observacao || "Adicionar observação"}
+              >
+                {entrada.observacao ? "📝" : "+"}
+              </button>
+            </td>
+          </tr>
+        ))}
+        {filaDaTurma.length === 0 && (
+          <tr>
+            <td colSpan={4} style={{ padding: "10px 8px", color: "var(--text-secondary)", textAlign: "center" }}>
+              Ninguém na fila.
+            </td>
+          </tr>
+        )}
+      </tbody>
+    </table>
 
-                {(selecionados[turma.id] ?? []).length >= 1 && (10 - matriculados.length) > 0 && (
-                  <button
-                    onClick={() => setDecisaoTurmaId(turma.id)}
-                    style={{ marginTop: 8, fontSize: 12, fontWeight: 600, border: "none", borderRadius: 6, padding: "6px 12px", background: "var(--color-primary)", color: "#fff", cursor: "pointer" }}
-                  >
-                    Liberar vaga para selecionado(s)
-                  </button>
-                )}
+    {(selecionados[turma.id] ?? []).length >= 1 && (10 - matriculados.length) > 0 && (
+      <button
+        onClick={() => setDecisaoTurmaId(turma.id)}
+        style={{ marginTop: 10, fontSize: 12, fontWeight: 600, border: "none", borderRadius: 6, padding: "6px 12px", background: "var(--color-primary)", color: "#fff", cursor: "pointer" }}
+      >
+        Liberar vaga para selecionado(s)
+      </button>
+    )}
 
-                {decisaoTurmaId === turma.id && (
-                  <div style={{ marginTop: 10, border: "1px solid var(--color-primary)", borderRadius: 8, padding: 12, background: "var(--background-tertiary)" }}>
-                    <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, color: "var(--text-primary)" }}>
-                      Colocar quem na vaga?
-                    </p>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
-                      {filaDaTurma
-                        .filter((e) => (selecionados[turma.id] ?? []).includes(e.id))
-                        .map((e) => (
-                          <button
-                            key={e.id}
-                            disabled={processandoDecisao}
-                            onClick={() => handleEscolherParaVaga(turma.id, e)}
-                            style={{ fontSize: 12, border: "1px solid var(--color-primary)", borderRadius: 6, padding: "6px 12px", background: "var(--background-primary)", color: "var(--color-primary)", cursor: "pointer" }}
-                          >
-                            {e.associadoNome}
-                          </button>
-                        ))}
-                    </div>
-                    <button
-                      onClick={() => setDecisaoTurmaId(null)}
-                      style={{ fontSize: 12, border: "1px solid var(--border-default)", borderRadius: 6, padding: "6px 12px", background: "transparent", color: "var(--text-secondary)", cursor: "pointer" }}
-                    >
-                      Cancelar
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
+    {decisaoTurmaId === turma.id && (
+      <div style={{ marginTop: 10, border: "1px solid var(--color-primary)", borderRadius: 8, padding: 12, background: "var(--background-tertiary)" }}>
+        <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, color: "var(--text-primary)" }}>
+          Colocar quem na vaga?
+        </p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
+          {filaDaTurma
+            .filter((e) => (selecionados[turma.id] ?? []).includes(e.id))
+            .map((e) => (
+              <button
+                key={e.id}
+                disabled={processandoDecisao}
+                onClick={() => handleEscolherParaVaga(turma.id, e)}
+                style={{ fontSize: 12, border: "1px solid var(--color-primary)", borderRadius: 6, padding: "6px 12px", background: "var(--background-primary)", color: "var(--color-primary)", cursor: "pointer" }}
+              >
+                {e.associadoNome}
+              </button>
+            ))}
+        </div>
+        <button
+          onClick={() => setDecisaoTurmaId(null)}
+          style={{ fontSize: 12, border: "1px solid var(--border-default)", borderRadius: 6, padding: "6px 12px", background: "transparent", color: "var(--text-secondary)", cursor: "pointer" }}
+        >
+          Cancelar
+        </button>
+      </div>
+    )}
+  </div>
+</div>
           </div>
         );
       })}

@@ -77,8 +77,9 @@ function registrarHistorico(registro: RegistroExportacao) {
   localStorage.setItem(HISTORICO_KEY, JSON.stringify(limitada));
 }
 
-function baixarEregistrar(doc: jsPDF, nomeArquivo: string, tipo: RegistroExportacao["tipo"]) {
-  doc.save(nomeArquivo);
+function visualizarEregistrar(doc: jsPDF, nomeArquivo: string, tipo: RegistroExportacao["tipo"]) {
+  const blobUrl = doc.output("bloburl");
+  window.open(blobUrl as unknown as string, "_blank");
 
   try {
     const dataUri = doc.output("datauristring");
@@ -90,7 +91,7 @@ function baixarEregistrar(doc: jsPDF, nomeArquivo: string, tipo: RegistroExporta
       nomeArquivo,
     });
   } catch {
-    // Se falhar ao gerar o data URI (ex: PDF muito grande), o download já aconteceu, só não entra no histórico
+    // Se falhar ao gerar o data URI, a visualizaÃ§Ã£o jÃ¡ abriu, sÃ³ nÃ£o entra no histÃ³rico
   }
 }
 
@@ -175,7 +176,7 @@ class PdfService {
             (t) => t.instrutorId === e.instrutorId && t.dia === dia && t.horario === horario
           );
           return {
-            nome: instrutor?.nome ?? "-",
+            nome: instrutor?.nome.toUpperCase() ?? "-",
             cor: instrutor?.cor ?? "#888",
             emAula,
           };
@@ -345,7 +346,7 @@ class PdfService {
           NOME_DIA[turma.dia] ?? turma.dia,
           turma.horario,
           modalidade?.nome ?? "-",
-          instrutor?.nome ?? "-",
+          instrutor?.nome.toUpperCase() ?? "-",
           turma.sala,
         ];
       });
@@ -357,7 +358,7 @@ class PdfService {
       startY: 27,
       head: [["Dia", "Horário", "Modalidade", "Instrutor", "Sala"]],
       body: [...linhas, linhaSeparadora as any, ...linhasEmBranco],
-      styles: { fontSize: 9 },
+      styles: { fontSize: 9, fontStyle: "bold" },
       headStyles: { fillColor: [20, 83, 45] },
     });
 
@@ -398,7 +399,7 @@ class PdfService {
           NOME_DIA[turma.dia] ?? turma.dia,
           turma.horario,
           modalidade?.nome ?? "-",
-          instrutor?.nome ?? "-",
+          instrutor?.nome.toUpperCase() ?? "-",
         ];
       });
     });
@@ -407,7 +408,7 @@ class PdfService {
       startY: 27,
       head: [["Sala", "Dia", "Horário", "Modalidade", "Instrutor"]],
       body: linhas,
-      styles: { fontSize: 9 },
+      styles: { fontSize: 9, fontStyle: "bold" },
       headStyles: { fillColor: [20, 83, 45] },
     });
 
@@ -438,7 +439,7 @@ class PdfService {
 
     const matriculados = associados
       .filter((a: any) => a.matriculas.some((m: any) => m.turmaId === turmaId && m.status !== "CANCELADA"))
-      .map((a: any) => a.nome);
+      .map((a: any) => a.nome.toUpperCase());
 
     const datas = gerarDatasDoMes(turma.dia, mes, ano);
 
@@ -460,7 +461,7 @@ class PdfService {
     doc.text(`MODALIDADE: ${nomeModalidade.toUpperCase()}`, 14, 14);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
-    doc.text(`PROFESSOR(A): ${instrutor?.nome ?? "-"}`, 14, 20);
+    doc.text(`PROFESSOR(A): ${instrutor?.nome.toUpperCase() ?? "-"}`, 14, 20);
 
     let linhaExtra = 0;
     if (modalidade?.descricao) {
@@ -492,6 +493,7 @@ class PdfService {
     }
 
     autoTable(doc, {
+      
       head: [cabecalhoPrincipal],
       body: linhasMatriculados.map((nome, i) =>
         infantil
@@ -500,7 +502,7 @@ class PdfService {
       ),
       startY: 26 + linhaExtra,
       theme: "grid",
-      styles: { fontSize, cellPadding, halign: "center", valign: "middle", lineWidth: 0.3, lineColor: [0, 0, 0] },
+      styles: { fontSize, cellPadding, halign: "center", valign: "middle", lineWidth: 0.3, lineColor: [0, 0, 0], fontStyle: "bold" },
       headStyles: { fillColor: [20, 83, 45], textColor: [255, 255, 255], fontStyle: "bold" },
       columnStyles: columnStylesPrincipal,
       margin: { left: 14, right: 14 },
@@ -533,11 +535,11 @@ class PdfService {
     });
 
     const nomeArquivo = `Lista de turmas - ${nomeModalidade} - ${MESES[mes]} ${ano}.pdf`;
-    baixarEregistrar(doc, nomeArquivo, "presenca");
+    visualizarEregistrar(doc, nomeArquivo, "presenca");
   }
 
   // ==========================
-  // HISTÓRICO DE EXPORTAÇÕES
+  // HISTÃ“RICO DE EXPORTAÃ‡Ã•ES
   // ==========================
 
   listarHistorico(): RegistroExportacao[] {

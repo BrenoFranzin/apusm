@@ -53,8 +53,8 @@ export function AssociadoTable({
                 </td>
 
                 <td style={{ padding: "12px 16px", color: "var(--text-secondary)" }}>
-                  📞 {formatarTelefone(associado.telefone)}
-                </td>
+  {associado.telefone ? `📞 ${formatarTelefone(associado.telefone)}` : "—"}
+</td>
 
                 <td style={{ padding: "12px 16px" }}>
                   <span

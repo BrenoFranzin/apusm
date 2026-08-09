@@ -3,14 +3,16 @@
 // Arquivo: ModalidadeCard.tsx
 // ======================================================
 import type { Modalidade } from "../types/modalidade.types";
+import type { Instrutor } from "../../instrutores/types/instrutor.types";
 
 interface Props {
   modalidade: Modalidade;
+  instrutores: Instrutor[];
   onEditar?: (modalidade: Modalidade) => void;
   onExcluir?: (id: string) => void;
 }
 
-export function ModalidadeCard({ modalidade, onEditar, onExcluir }: Props) {
+export function ModalidadeCard({ modalidade, instrutores, onEditar, onExcluir }: Props) {
   return (
     <div
       style={{
@@ -57,7 +59,11 @@ export function ModalidadeCard({ modalidade, onEditar, onExcluir }: Props) {
           fontWeight: 600,
         }}
       >
-        {modalidade.instrutoresIds.length} instrutor(es)
+        {modalidade.instrutoresIds
+  .map((id) => instrutores.find((i) => i.id === id)?.nome)
+  .filter(Boolean)
+  .join(", ") || "Sem instrutor"}
+  
       </span>
       {(onEditar || onExcluir) && (
         <div

@@ -9,11 +9,14 @@ import { useModalidades } from "../hooks/useModalidades";
 import { ModalidadeCard } from "../components/ModalidadeCard";
 import ModalidadeForm from "../components/ModalidadeForm";
 import type { Modalidade } from "../types/modalidade.types";
+import { useInstrutores } from "../../instrutores/hooks/useInstrutores";
+
 
 export default function ModalidadesPage() {
   const { modalidades, criar, editar, excluir } = useModalidades();
   const [mostrarForm, setMostrarForm] = useState(false);
   const [modalidadeEditando, setModalidadeEditando] = useState<Modalidade | null>(null);
+  const { instrutores } = useInstrutores();
 
   function iniciarNova() {
     setModalidadeEditando(null);
@@ -67,11 +70,12 @@ export default function ModalidadesPage() {
       >
         {modalidades.map((modalidade) => (
           <ModalidadeCard
-            key={modalidade.id}
-            modalidade={modalidade}
-            onEditar={iniciarEdicao}
-            onExcluir={excluir}
-          />
+  key={modalidade.id}
+  modalidade={modalidade}
+  instrutores={instrutores}
+  onEditar={iniciarEdicao}
+  onExcluir={excluir}
+/>
         ))}
       </div>
     </div>
