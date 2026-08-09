@@ -77,6 +77,23 @@ function registrarHistorico(registro: RegistroExportacao) {
   localStorage.setItem(HISTORICO_KEY, JSON.stringify(limitada));
 }
 
+function baixarEregistrar(doc: jsPDF, nomeArquivo: string, tipo: RegistroExportacao["tipo"]) {
+  doc.save(nomeArquivo);
+
+  try {
+    const dataUri = doc.output("datauristring");
+    registrarHistorico({
+      id: crypto.randomUUID(),
+      tipo,
+      data: new Date().toISOString(),
+      dataUri,
+      nomeArquivo,
+    });
+  } catch {
+    // Se falhar ao gerar o data URI (ex: PDF muito grande), o download já aconteceu, só não entra no histórico
+  }
+}
+
 function visualizarEregistrar(doc: jsPDF, nomeArquivo: string, tipo: RegistroExportacao["tipo"]) {
   const blobUrl = doc.output("bloburl");
   window.open(blobUrl as unknown as string, "_blank");
