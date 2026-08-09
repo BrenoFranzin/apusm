@@ -43,6 +43,7 @@ class ModalidadesService {
         cor: dados.cor,
         salas: dados.salas,
         descricao: dados.descricao,
+        instrutores_ids: dados.instrutoresIds ?? [],
       })
       .select()
       .single();
@@ -57,7 +58,7 @@ class ModalidadesService {
     if (dados.cor !== undefined) payload.cor = dados.cor;
     if (dados.salas !== undefined) payload.salas = dados.salas;
     if (dados.descricao !== undefined) payload.descricao = dados.descricao;
-
+    if (dados.instrutoresIds !== undefined) payload.instrutores_ids = dados.instrutoresIds;
     const { data, error } = await supabase.from("modalidades").update(payload).eq("id", id).select().single();
     if (error) { console.error(error); return undefined; }
     return toModalidade(data);

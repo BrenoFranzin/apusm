@@ -11,6 +11,7 @@ export const modalidadeSchema = z.object({
   cor: z.string().min(4, "Escolha uma cor"),
   salas: z.array(z.string()).min(1, "Selecione ao menos uma sala"),
   descricao: z.string().max(300).optional(),
+  instrutoresIds: z.array(z.string()).optional(),
 });
 
 export type ModalidadeFormData = z.infer<typeof modalidadeSchema>;

@@ -49,6 +49,7 @@ export default function ModalidadesPage() {
       {mostrarForm && (
         <ModalidadeForm
           valoresIniciais={modalidadeEditando ?? undefined}
+          instrutores={instrutores}
           onSubmit={async (dados) => {
             if (modalidadeEditando) {
               await editar(modalidadeEditando.id, dados);

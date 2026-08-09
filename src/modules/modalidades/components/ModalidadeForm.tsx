@@ -21,12 +21,15 @@ const CORES_PALETA = [
   "#D4537E","#F06292","#BA68C8","#64B5F6","#4DB6AC","#81C784","#FFD54F","#FF8A65",
 ];
 
+import type { Instrutor } from "@/modules/instrutores/types/instrutor.types";
+
 interface Props {
   valoresIniciais?: Partial<ModalidadeFormData>;
   onSubmit: (dados: ModalidadeFormData) => void;
+  instrutores: Instrutor[];
 }
 
-export default function ModalidadeForm({ valoresIniciais, onSubmit }: Props) {
+export default function ModalidadeForm({ valoresIniciais, onSubmit, instrutores }: Props) {
   const { salas: salasCadastradas } = useSalas();
 
   const {
@@ -44,6 +47,7 @@ export default function ModalidadeForm({ valoresIniciais, onSubmit }: Props) {
         cor: CORES_PALETA[0],
         salas: [],
         descricao: "",
+        instrutoresIds: [],
         ...valoresIniciais,
       },
   });
@@ -67,6 +71,15 @@ export default function ModalidadeForm({ valoresIniciais, onSubmit }: Props) {
     if (atual.has(sala)) atual.delete(sala);
     else atual.add(sala);
     setValue("salas", Array.from(atual));
+  }
+
+  const instrutoresSelecionados = watch("instrutoresIds") ?? [];
+
+  function toggleInstrutor(id: string) {
+    const atual = new Set(instrutoresSelecionados);
+    if (atual.has(id)) atual.delete(id);
+    else atual.add(id);
+    setValue("instrutoresIds", Array.from(atual));
   }
 
   const corSelecionada = watch("cor");
@@ -153,6 +166,39 @@ export default function ModalidadeForm({ valoresIniciais, onSubmit }: Props) {
       <p style={{ color: "var(--color-danger)", fontSize: 12, margin: "0 0 8px" }}>
         {errors.salas?.message}
       </p>
+
+      <label style={{ fontSize: 12, color: "var(--text-secondary)" }}>Instrutores</label>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, margin: "6px 0 12px" }}>
+        {instrutores.map((inst) => {
+          const marcado = instrutoresSelecionados.includes(inst.id);
+          return (
+            <label
+              key={inst.id}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "6px 10px",
+                borderRadius: 8,
+                border: `1px solid ${marcado ? "var(--color-primary)" : "var(--border-default)"}`,
+                background: marcado ? "var(--color-primary)" : "var(--background-primary)",
+                cursor: "pointer",
+                fontSize: 13,
+                color: marcado ? "var(--text-white)" : "var(--text-primary)",
+                fontWeight: marcado ? 600 : 400,
+              }}
+            >
+              <input type="checkbox" checked={marcado} onChange={() => toggleInstrutor(inst.id)} />
+              {inst.nome}
+            </label>
+          );
+        })}
+        {instrutores.length === 0 && (
+          <p style={{ fontSize: 12, color: "var(--text-secondary)" }}>
+            Nenhum instrutor cadastrado.
+          </p>
+        )}
+      </div>
 
       <label style={{ fontSize: 12, color: "var(--text-secondary)" }}>Ícone</label>
       <div style={{ margin: "6px 0 12px", position: "relative" }}>

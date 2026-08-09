@@ -17,5 +17,6 @@ export interface CriarModalidadeDTO {
   cor: string;
   salas: string[];
   descricao?: string;
+  instrutoresIds?: string[];
 }
 export type AtualizarModalidadeDTO = Partial<CriarModalidadeDTO>;
