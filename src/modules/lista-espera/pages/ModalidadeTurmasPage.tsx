@@ -356,8 +356,9 @@ setTodasModalidades(mods);
               borderRadius: 12,
               padding: 20,
               minWidth: 320,
-              maxWidth: 840,
-              maxHeight: "80vh",
+              width: "92vw",
+              maxWidth: 1100,
+              maxHeight: "88vh",
               overflowY: "auto",
               boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
             }}
@@ -407,13 +408,13 @@ setTodasModalidades(mods);
               style={{
                 marginTop: 14,
                 width: "100%",
-                fontSize: 13,
-                fontWeight: 600,
-                border: "1px solid var(--color-primary)",
+                fontSize: 14,
+                fontWeight: 700,
+                border: "none",
                 borderRadius: 8,
-                padding: "8px 12px",
-                background: "transparent",
-                color: "var(--color-primary)",
+                padding: "10px 14px",
+                background: "var(--color-primary)",
+                color: "#fff",
                 cursor: "pointer",
               }}
             >
@@ -429,9 +430,20 @@ setTodasModalidades(mods);
                 .filter((f) => f.associadoId === associadoFilasAberto.id)
                 .map((f) => f.turmaId);
 
-              const outrasTurmas = turmas.filter(
-                (t) => !matriculaTurmaIds.includes(t.id) && !filaTurmaIds.includes(t.id)
-              );
+              const ORDEM_DIA_LOCAL = ["seg", "ter", "qua", "qui", "sex", "sab"];
+
+              const outrasTurmas = turmas
+                .filter((t) => !matriculaTurmaIds.includes(t.id) && !filaTurmaIds.includes(t.id))
+                .slice()
+                .sort((a, b) => {
+                  const modA = todasModalidades.find((m) => m.id === a.modalidadeId)?.nome ?? "";
+                  const modB = todasModalidades.find((m) => m.id === b.modalidadeId)?.nome ?? "";
+                  return (
+                    modA.localeCompare(modB) ||
+                    ORDEM_DIA_LOCAL.indexOf(a.dia) - ORDEM_DIA_LOCAL.indexOf(b.dia) ||
+                    a.horario.localeCompare(b.horario)
+                  );
+                });
 
               if (outrasTurmas.length === 0) {
                 return (
@@ -442,7 +454,7 @@ setTodasModalidades(mods);
               }
 
               return (
-                <div style={{ marginTop: 10, border: "1px solid var(--border-default)", borderRadius: 8, maxHeight: 260, overflowY: "auto" }}>
+                <div style={{ marginTop: 10, border: "1px solid var(--border-default)", borderRadius: 10, maxHeight: "50vh", overflowY: "auto" }}>
                   {outrasTurmas.map((t) => {
                     const mod = todasModalidades.find((m) => m.id === t.modalidadeId);
                     const qtdMatriculados = associados.filter((a) =>
@@ -450,6 +462,8 @@ setTodasModalidades(mods);
                     ).length;
                     const vagas = t.limiteVagas ?? 10;
                     const temVaga = qtdMatriculados < vagas;
+                    const qtdNaFila = filas.filter((f) => f.turmaId === t.id).length;
+                    const cor = mod?.cor || "#374151";
 
                     return (
                       <div
@@ -459,12 +473,12 @@ setTodasModalidades(mods);
                           alignItems: "center",
                           justifyContent: "space-between",
                           gap: 10,
-                          padding: "8px 10px",
+                          padding: "10px 12px",
                           borderBottom: "1px solid var(--border-light)",
+                          borderLeft: `4px solid ${cor}`,
                         }}
                       >
                         <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-                          <span style={{ width: 10, height: 10, borderRadius: "50%", background: mod?.cor || "#374151", flexShrink: 0 }} />
                           <div style={{ minWidth: 0 }}>
                             <p style={{ fontSize: 13, fontWeight: 600, margin: 0, color: "var(--text-primary)" }}>
                               {mod?.icone ? `${mod.icone} ` : ""}{mod?.nome ?? "Modalidade"}
@@ -480,26 +494,28 @@ setTodasModalidades(mods);
                             style={{
                               fontSize: 11,
                               fontWeight: 600,
-                              padding: "2px 8px",
+                              padding: "3px 9px",
                               borderRadius: 999,
+                              whiteSpace: "nowrap",
                               color: temVaga ? "#166534" : "#9a3412",
                               background: temVaga ? "#dcfce7" : "#ffedd5",
                             }}
                           >
-                            {temVaga ? "Vaga livre" : "Vai pra fila de espera"}
+                            {temVaga ? "Vaga livre" : `Fila de espera (${qtdNaFila} na frente)`}
                           </span>
                           <button
                             disabled={inserindoTurmaId === t.id}
                             onClick={() => handleInserirOutraTurma(t, mod?.nome ?? "")}
                             style={{
-                              fontSize: 12,
-                              fontWeight: 600,
+                              fontSize: 13,
+                              fontWeight: 700,
                               border: "none",
                               borderRadius: 6,
-                              padding: "6px 10px",
+                              padding: "7px 14px",
                               background: "var(--color-primary)",
                               color: "#fff",
                               cursor: inserindoTurmaId === t.id ? "not-allowed" : "pointer",
+                              opacity: inserindoTurmaId === t.id ? 0.6 : 1,
                             }}
                           >
                             {inserindoTurmaId === t.id ? "..." : "Inserir"}
