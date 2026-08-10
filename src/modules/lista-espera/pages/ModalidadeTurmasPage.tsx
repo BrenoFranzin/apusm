@@ -359,9 +359,10 @@ setTodasModalidades(mods);
               background: "var(--background-primary)",
               borderRadius: 12,
               padding: 20,
+              width: "70vw",
+              maxWidth: 1400,
               minWidth: 320,
-              maxWidth: 840,
-              maxHeight: "80vh",
+              maxHeight: "85vh",
               overflowY: "auto",
               boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
             }}
@@ -411,20 +412,20 @@ setTodasModalidades(mods);
               style={{
                 marginTop: 14,
                 width: "100%",
-                fontSize: 13,
-                fontWeight: 600,
-                border: "1px solid var(--color-primary)",
+                fontSize: 14,
+                fontWeight: 700,
+                border: "none",
                 borderRadius: 8,
-                padding: "8px 12px",
-                background: "transparent",
-                color: "var(--color-primary)",
+                padding: "12px 14px",
+                background: "var(--color-primary)",
+                color: "#ffffff",
                 cursor: "pointer",
               }}
             >
               {outrasTurmasAberto ? "▲ Ocultar outras turmas" : "+ Inserir em outras turmas"}
             </button>
 
-            {outrasTurmasAberto && (() => {
+           {outrasTurmasAberto && (() => {
               const associadoAtual = associados.find((a) => a.id === associadoFilasAberto.id);
               const matriculaTurmaIds = (associadoAtual?.matriculas ?? [])
                 .filter((m) => m.status !== "CANCELADA")
@@ -445,69 +446,122 @@ setTodasModalidades(mods);
                 );
               }
 
-              return (
-                <div style={{ marginTop: 10, border: "1px solid var(--border-default)", borderRadius: 8, maxHeight: 260, overflowY: "auto" }}>
-                  {outrasTurmas.map((t) => {
-                    const mod = todasModalidades.find((m) => m.id === t.modalidadeId);
-                    const qtdMatriculados = associados.filter((a) =>
-                      a.matriculas.some((m) => m.turmaId === t.id && m.status !== "CANCELADA")
-                    ).length;
-                    const vagas = t.limiteVagas ?? 10;
-                    const temVaga = qtdMatriculados < vagas;
+              const porModalidade = new Map<string, Turma[]>();
+              outrasTurmas.forEach((t) => {
+                const nomeMod = todasModalidades.find((m) => m.id === t.modalidadeId)?.nome ?? "Outras";
+                if (!porModalidade.has(nomeMod)) porModalidade.set(nomeMod, []);
+                porModalidade.get(nomeMod)!.push(t);
+              });
 
+              const gruposOrdenados = Array.from(porModalidade.entries()).sort((a, b) =>
+                a[0].localeCompare(b[0])
+              );
+
+              return (
+                <div
+                  style={{
+                    marginTop: 10,
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+                    gap: 12,
+                    maxHeight: "50vh",
+                    overflowY: "auto",
+                    paddingRight: 4,
+                  }}
+                >
+                  {gruposOrdenados.map(([nomeMod, turmasDoGrupo]) => {
+                    const mod = todasModalidades.find((m) => m.nome === nomeMod);
+                    const cor = mod?.cor || "#374151";
                     return (
                       <div
-                        key={t.id}
+                        key={nomeMod}
                         style={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          gap: 10,
-                          padding: "8px 10px",
-                          borderBottom: "1px solid var(--border-light)",
+                          border: `1px solid ${cor}`,
+                          borderRadius: 10,
+                          overflow: "hidden",
+                          background: "var(--background-primary)",
                         }}
                       >
-                        <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-                          <span style={{ width: 10, height: 10, borderRadius: "50%", background: mod?.cor || "#374151", flexShrink: 0 }} />
-                          <div style={{ minWidth: 0 }}>
-                            <p style={{ fontSize: 13, fontWeight: 600, margin: 0, color: "var(--text-primary)" }}>
-                              {mod?.icone ? `${mod.icone} ` : ""}{mod?.nome ?? "Modalidade"}
-                            </p>
-                            <p style={{ fontSize: 12, margin: 0, color: "var(--text-secondary)" }}>
-                              {DIA_LABEL[t.dia]} — {t.horario} — {t.sala}
-                            </p>
-                          </div>
+                        <div
+                          style={{
+                            background: cor + "22",
+                            padding: "8px 10px",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 6,
+                          }}
+                        >
+                          <span style={{ width: 10, height: 10, borderRadius: "50%", background: cor, flexShrink: 0 }} />
+                          <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>
+                            {mod?.icone ? `${mod.icone} ` : ""}{nomeMod}
+                          </span>
                         </div>
 
-                        <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-                          <span
-                            style={{
-                              fontSize: 11,
-                              fontWeight: 600,
-                              padding: "2px 8px",
-                              borderRadius: 999,
-                              color: temVaga ? "#166534" : "#9a3412",
-                              background: temVaga ? "#dcfce7" : "#ffedd5",
-                            }}
-                          >
-                            {temVaga ? "Vaga livre" : "Vai pra fila de espera"}
-                          </span>
-                          <button
-                            disabled={inserindoTurmaId === t.id}
-                            onClick={() => handleInserirOutraTurma(t, mod?.nome ?? "")}
-                            style={{
-                              fontSize: 12,
-                              fontWeight: 600,
-                              border: "none",
-                              borderRadius: 6,
-                              padding: "6px 10px",
-                              background: "var(--color-primary)",
-                              color: "#fff",
-                              cursor: inserindoTurmaId === t.id ? "not-allowed" : "pointer",
-                            }}
-                          >
-                            {inserindoTurmaId === t.id ? "..." : "Inserir"}
-                          </button>
+                        <div style={{ padding: 8, display: "flex", flexDirection: "column", gap: 6 }}>
+                          {turmasDoGrupo
+                            .slice()
+                            .sort(
+                              (a, b) =>
+                                ORDEM_DIA.indexOf(a.dia) - ORDEM_DIA.indexOf(b.dia) ||
+                                a.horario.localeCompare(b.horario)
+                            )
+                            .map((t) => {
+                              const qtdMatriculados = associados.filter((a) =>
+                                a.matriculas.some((m) => m.turmaId === t.id && m.status !== "CANCELADA")
+                              ).length;
+                              const vagas = t.limiteVagas ?? 10;
+                              const temVaga = qtdMatriculados < vagas;
+
+                              return (
+                                <div
+                                  key={t.id}
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                    gap: 8,
+                                    padding: "6px 8px",
+                                    borderRadius: 6,
+                                    background: "var(--background-secondary)",
+                                  }}
+                                >
+                                  <p style={{ fontSize: 12, margin: 0, color: "var(--text-primary)" }}>
+                                    {DIA_LABEL[t.dia]} — {t.horario} — {t.sala}
+                                  </p>
+                                  <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+                                    <span
+                                      style={{
+                                        fontSize: 10,
+                                        fontWeight: 600,
+                                        padding: "2px 6px",
+                                        borderRadius: 999,
+                                        whiteSpace: "nowrap",
+                                        color: temVaga ? "#166534" : "#9a3412",
+                                        background: temVaga ? "#dcfce7" : "#ffedd5",
+                                      }}
+                                    >
+                                      {temVaga ? "Vaga" : "Fila"}
+                                    </span>
+                                    <button
+                                      disabled={inserindoTurmaId === t.id}
+                                      onClick={() => handleInserirOutraTurma(t, nomeMod)}
+                                      style={{
+                                        fontSize: 11,
+                                        fontWeight: 700,
+                                        border: "none",
+                                        borderRadius: 6,
+                                        padding: "5px 10px",
+                                        background: "var(--color-primary)",
+                                        color: "#fff",
+                                        cursor: inserindoTurmaId === t.id ? "not-allowed" : "pointer",
+                                      }}
+                                    >
+                                      {inserindoTurmaId === t.id ? "..." : "Inserir"}
+                                    </button>
+                                  </div>
+                                </div>
+                              );
+                            })}
                         </div>
                       </div>
                     );
@@ -516,6 +570,8 @@ setTodasModalidades(mods);
               );
             })()}
 
+
+            
             <button
               onClick={() => { setAssociadoFilasAberto(null); setOutrasTurmasAberto(false); }}
               style={{
