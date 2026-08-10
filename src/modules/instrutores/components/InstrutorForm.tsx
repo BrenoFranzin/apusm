@@ -64,12 +64,13 @@ export default function InstrutorForm({ valoresIniciais, onSubmit }: Props) {
     <form
       onSubmit={handleSubmit(onSubmit)}
       style={{
-        background: "var(--background-primary)",
-        border: "1px solid var(--border-default)",
+        background: "var(--background-secondary)",
+        border: "2px solid var(--color-primary)",
         borderRadius: 12,
-        padding: "1rem 1.25rem",
+        padding: "1.5rem",
         maxWidth: 420,
         color: "var(--text-primary)",
+        boxShadow: "0 12px 40px rgba(0,0,0,0.35)",
       }}
     >
       <p style={{ fontWeight: 500, fontSize: 14, margin: "0 0 12px", color: "var(--text-primary)" }}>
@@ -85,9 +86,9 @@ export default function InstrutorForm({ valoresIniciais, onSubmit }: Props) {
           width: "100%",
           margin: "4px 0 4px",
           padding: 8,
-          background: "var(--background-primary)",
+          background: "var(--background-secondary)",
           color: "var(--text-primary)",
-          border: "1px solid var(--border-default)",
+          border: "2px solid var(--border-strong)",
           borderRadius: 6,
           boxSizing: "border-box",
         }}
@@ -105,7 +106,7 @@ export default function InstrutorForm({ valoresIniciais, onSubmit }: Props) {
           gap: 6,
           margin: "4px 0 12px",
           padding: 8,
-          border: "1px solid var(--border-default)",
+          border: "2px solid var(--border-strong)",
           borderRadius: 6,
         }}
       >
@@ -155,8 +156,8 @@ export default function InstrutorForm({ valoresIniciais, onSubmit }: Props) {
             fontSize: 24,
             padding: 8,
             borderRadius: 8,
-            border: "1px solid var(--border-default)",
-            background: "var(--background-primary)",
+            border: "2px solid var(--border-strong)",
+            background: "var(--background-secondary)",
             cursor: "pointer",
           }}
         >
@@ -202,8 +203,8 @@ export default function InstrutorForm({ valoresIniciais, onSubmit }: Props) {
       {mostrarCores && (
         <div
           style={{
-            background: "var(--background-primary)",
-            border: "1px solid var(--border-default)",
+            background: "var(--background-secondary)",
+            border: "2px solid var(--border-strong)",
             borderRadius: 10,
             padding: 12,
             marginBottom: 10,
@@ -247,9 +248,9 @@ export default function InstrutorForm({ valoresIniciais, onSubmit }: Props) {
                 flex: 1,
                 padding: "6px 8px",
                 fontSize: 13,
-                border: "1px solid var(--border-default)",
+                border: "2px solid var(--border-strong)",
                 borderRadius: 6,
-                background: "var(--background-primary)",
+                background: "var(--background-secondary)",
                 color: "var(--text-primary)",
               }}
             />
@@ -260,8 +261,8 @@ export default function InstrutorForm({ valoresIniciais, onSubmit }: Props) {
                 fontSize: 11,
                 padding: "5px 10px",
                 borderRadius: 6,
-                border: "1px solid var(--border-default)",
-                background: "var(--background-primary)",
+                border: "2px solid var(--border-strong)",
+                background: "var(--background-secondary)",
                 color: "var(--text-secondary)",
                 cursor: "pointer",
               }}

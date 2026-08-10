@@ -20,14 +20,14 @@ const inputStyle: React.CSSProperties = {
   width: "100%",
   padding: 12,
   borderRadius: 8,
-  border: "1px solid var(--border-default)",
+  border: "2px solid var(--border-strong)",
   background: "var(--background-primary)",
   color: "var(--text-primary)",
 };
 
 const labelStyle: React.CSSProperties = {
   fontSize: 13,
-  fontWeight: 500,
+  fontWeight: 700,
   color: "var(--text-secondary)",
   display: "block",
   marginBottom: 4,

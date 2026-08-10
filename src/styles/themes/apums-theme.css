@@ -41,9 +41,9 @@ CARDS PADRÃO
 
 .apusm-card {
   background: var(--background-primary);
-  border: 1.5px solid var(--border-strong);
+  border: 2px solid var(--color-primary);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.35);
   padding: var(--space-6);
   transition: box-shadow 0.2s ease, transform 0.15s ease;
 }

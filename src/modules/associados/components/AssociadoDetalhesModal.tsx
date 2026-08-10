@@ -281,7 +281,7 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
           </div>
 
           {!selecionado && nomeParaCadastrar && (
-            <div style={{ border: "1px solid var(--border-default)", borderRadius: 8, padding: 16, marginBottom: 16 }}>
+            <div style={{ border: "2px solid var(--color-primary)", borderRadius: 8, padding: 16, marginBottom: 16, background: "var(--background-secondary)", boxShadow: "0 4px 16px rgba(0,0,0,0.2)" }}>
               <p style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 10 }}>
                 Nenhum associado encontrado com "{nomeParaCadastrar}". Cadastrar agora?
               </p>

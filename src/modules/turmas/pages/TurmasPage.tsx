@@ -153,18 +153,32 @@ export default function TurmasPage() {
         </p>
 
         {mostrarForm && (
-          <>
-            <TurmaForm
-              modalidades={modalidades}
-              instrutores={instrutores}
-              salas={salas}
-              onSubmit={async (dados) => {
-                const ok = await criar(dados);
-                if (ok) setMostrarForm(false);
-              }}
-            />
-            {erro && <p style={{ color: "#dc2626", fontSize: 13 }}>{erro}</p>}
-          </>
+          <div
+            onClick={() => setMostrarForm(false)}
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "rgba(15, 23, 42, 0.6)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 1000,
+              padding: 16,
+            }}
+          >
+            <div onClick={(e) => e.stopPropagation()}>
+              <TurmaForm
+                modalidades={modalidades}
+                instrutores={instrutores}
+                salas={salas}
+                onSubmit={async (dados) => {
+                  const ok = await criar(dados);
+                  if (ok) setMostrarForm(false);
+                }}
+              />
+              {erro && <p style={{ color: "#dc2626", fontSize: 13 }}>{erro}</p>}
+            </div>
+          </div>
         )}
 
         {turmasPorDia.length === 0 && (

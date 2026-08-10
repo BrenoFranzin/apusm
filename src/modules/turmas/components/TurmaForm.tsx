@@ -30,9 +30,9 @@ const selectStyle: React.CSSProperties = {
   width: "100%",
   margin: "4px 0 12px",
   padding: 8,
-  background: "var(--background-primary)",
+  background: "var(--background-secondary)",
   color: "var(--text-primary)",
-  border: "1px solid var(--border-default)",
+  border: "2px solid var(--border-strong)",
   borderRadius: 6,
 };
 
@@ -61,12 +61,13 @@ export default function TurmaForm({ modalidades, instrutores, salas, onSubmit }:
     <form
       onSubmit={handleSubmit(onSubmit)}
       style={{
-        background: "var(--background-primary)",
-        border: "1px solid var(--border-default)",
+        background: "var(--background-secondary)",
+        border: "2px solid var(--color-primary)",
         borderRadius: 12,
-        padding: "1rem 1.25rem",
+        padding: "1.5rem",
         maxWidth: 420,
         color: "var(--text-primary)",
+        boxShadow: "0 12px 40px rgba(0,0,0,0.35)",
       }}
     >
       <p style={{ fontWeight: 500, fontSize: 14, margin: "0 0 12px", color: "var(--text-primary)" }}>Nova turma</p>
