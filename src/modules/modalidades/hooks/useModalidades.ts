@@ -1,11 +1,12 @@
-// ======================================================
-// APUSM SaaS — Módulo Modalidades
+﻿// ======================================================
+// APUSM SaaS â€” MÃ³dulo Modalidades
 // Arquivo: useModalidades.ts
 // ======================================================
 
 import { useEffect, useState, useCallback } from "react";
 
 import { modalidadesService } from "../services/modalidades.service";
+import { buscarComCache } from "../../../lib/cacheOffline";
 
 import type {
   Modalidade,
@@ -19,7 +20,7 @@ export function useModalidades() {
 
   const carregar = useCallback(async () => {
     setCarregando(true);
-    const lista = await modalidadesService.listar();
+    const lista = await buscarComCache("modalidades", () => modalidadesService.listar(), setModalidades);
     setModalidades(lista);
     setCarregando(false);
   }, []);

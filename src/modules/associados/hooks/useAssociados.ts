@@ -1,4 +1,4 @@
-import {
+﻿import {
   useCallback,
   useEffect,
   useMemo,
@@ -15,6 +15,8 @@ import {
   associadosService,
 } from "../services/associados.service";
 
+import { buscarComCache } from "../../../lib/cacheOffline";
+
 export function useAssociados() {
   const [associados, setAssociados] = useState<Associado[]>([]);
   const [loading, setLoading] = useState(true);
@@ -25,7 +27,7 @@ export function useAssociados() {
   const carregar = useCallback(async () => {
     try {
       setLoading(true);
-      const dados = await associadosService.listar();
+      const dados = await buscarComCache("associados", () => associadosService.listar(), setAssociados);
       setAssociados(dados);
     } catch {
       setErro("Erro ao carregar associados");

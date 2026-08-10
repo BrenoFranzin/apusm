@@ -1,11 +1,12 @@
-  // ======================================================
-  // APUSM SaaS — Módulo Turmas
+﻿  // ======================================================
+  // APUSM SaaS â€” MÃ³dulo Turmas
   // Arquivo: useTurmas.ts
   // ======================================================
 
   import { useEffect, useState, useCallback } from "react";
 
   import { turmasService } from "../services/turmas.service";
+import { buscarComCache } from "../../../lib/cacheOffline";
 
   import type {
     Turma,
@@ -20,7 +21,7 @@
 
     const carregar = useCallback(async () => {
       setCarregando(true);
-      const lista = await turmasService.listar();
+      const lista = await buscarComCache("turmas", () => turmasService.listar(), setTurmas);
       setTurmas(lista);
       setCarregando(false);
     }, []);
@@ -73,3 +74,4 @@
       excluir,
     };
   }
+

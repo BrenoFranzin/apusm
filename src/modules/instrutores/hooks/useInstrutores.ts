@@ -1,11 +1,12 @@
-// ======================================================
-// APUSM SaaS — Módulo Instrutores
+﻿// ======================================================
+// APUSM SaaS â€” MÃ³dulo Instrutores
 // Arquivo: useInstrutores.ts
 // ======================================================
 
 import { useEffect, useState, useCallback } from "react";
 
 import { instrutoresService } from "../services/instrutores.service";
+import { buscarComCache } from "../../../lib/cacheOffline";
 
 import type {
   Instrutor,
@@ -19,7 +20,7 @@ export function useInstrutores() {
 
   const carregar = useCallback(async () => {
     setCarregando(true);
-    const lista = await instrutoresService.listar();
+    const lista = await buscarComCache("instrutores", () => instrutoresService.listar(), setInstrutores);
     setInstrutores(lista);
     setCarregando(false);
   }, []);
