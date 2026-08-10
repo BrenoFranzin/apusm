@@ -26,7 +26,7 @@ const inputStyle: React.CSSProperties = {
 };
 
 const labelStyle: React.CSSProperties = {
-  fontSize: 13,
+  fontSize: 15,
   fontWeight: 700,
   color: "var(--text-secondary)",
   display: "block",
