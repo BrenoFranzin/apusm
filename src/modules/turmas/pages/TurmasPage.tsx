@@ -220,14 +220,14 @@ export default function TurmasPage() {
                       key={turma.id}
                       style={{
                         borderBottom: "1px solid var(--border-default)",
-                        background: emAndamento ? "rgba(59,130,246,0.08)" : "transparent",
-                        boxShadow: emAndamento ? "inset 3px 0 0 var(--color-primary)" : "none",
+                        background: emAndamento ? "rgba(34,197,94,0.12)" : "transparent",
+                        boxShadow: emAndamento ? "inset 5px 0 0 #22c55e" : "none",
                       }}
                     >
                       <td style={{ padding: "12px 8px" }}>
                         <span style={{ fontWeight: 700, color: "var(--text-primary)" }}>{turma.horario}</span>
                         {emAndamento && (
-                          <span style={{ marginLeft: 8, fontSize: 11, color: "var(--color-primary)", fontWeight: 700 }}>● Agora</span>
+                          <span style={{ marginLeft: 8, fontSize: 11, color: "#fff", fontWeight: 700, background: "#22c55e", padding: "2px 8px", borderRadius: 999 }}>● Agora</span>
                         )}
                       </td>
                       <td style={{ padding: "12px 8px" }}>
