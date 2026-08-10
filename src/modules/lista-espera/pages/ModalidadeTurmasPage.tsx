@@ -376,40 +376,49 @@ setTodasModalidades(mods);
               Está em fila de espera em:
             </p>
 
-<div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, maxHeight: "30vh", overflowY: "auto", flexShrink: 0 }}>
-            {filas
-              .filter((f) => f.associadoId === associadoFilasAberto.id)
-              .sort((a, b) => a.modalidadeNome.localeCompare(b.modalidadeNome))
-              .map((f) => {
-                
-                const mod = todasModalidades.find((m) => m.id === f.modalidadeId || m.nome === f.modalidadeNome);
+<div style={{ marginTop: 4, columnCount: 3, columnGap: 12, maxHeight: "30vh", overflowY: "auto", flexShrink: 0, paddingRight: 4 }}>
+            {(() => {
+              const filasDoAssociado = filas
+                .filter((f) => f.associadoId === associadoFilasAberto.id)
+                .sort((a, b) => a.modalidadeNome.localeCompare(b.modalidadeNome));
+
+              const porModalidade = new Map<string, typeof filasDoAssociado>();
+              filasDoAssociado.forEach((f) => {
+                if (!porModalidade.has(f.modalidadeNome)) porModalidade.set(f.modalidadeNome, []);
+                porModalidade.get(f.modalidadeNome)!.push(f);
+              });
+
+              return Array.from(porModalidade.entries()).map(([nomeMod, entradas]) => {
+                const mod = todasModalidades.find((m) => m.id === entradas[0].modalidadeId || m.nome === nomeMod);
                 const cor = mod?.cor || "#374151";
                 return (
                   <div
-                    key={f.id}
+                    key={nomeMod}
                     style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 10,
                       padding: "8px 10px",
                       borderRadius: 8,
-                      marginBottom: 6,
+                      marginBottom: 10,
                       background: cor + "1a",
                       border: `1px solid ${cor}`,
-                    }}
+                      breakInside: "avoid",
+                      WebkitColumnBreakInside: "avoid",
+                    } as React.CSSProperties}
                   >
-                    <span style={{ width: 10, height: 10, borderRadius: "50%", background: cor, flexShrink: 0 }} />
-                    <div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                      <span style={{ width: 10, height: 10, borderRadius: "50%", background: cor, flexShrink: 0 }} />
                       <p style={{ fontSize: 13, fontWeight: 600, margin: 0, color: "var(--text-primary)" }}>
-                        {mod?.icone ? `${mod.icone} ` : ""}{f.modalidadeNome}
-                      </p>
-                      <p style={{ fontSize: 12, margin: 0, color: "var(--text-secondary)" }}>
-                        {f.turmaNome} — {f.posicao}º na fila
+                        {mod?.icone ? `${mod.icone} ` : ""}{nomeMod}
                       </p>
                     </div>
+                    {entradas.map((f) => (
+                      <p key={f.id} style={{ fontSize: 12, margin: "2px 0 0 16px", color: "var(--text-secondary)" }}>
+                        {f.turmaNome} — {f.posicao}º na fila
+                      </p>
+                    ))}
                   </div>
                 );
-              })}
+              });
+            })()}
             </div>
 
             <button
@@ -462,25 +471,33 @@ setTodasModalidades(mods);
                 a[0].localeCompare(b[0])
               );
 
+              const NUM_COLUNAS = 3;
+              const colunas: [string, Turma[]][][] = Array.from({ length: NUM_COLUNAS }, () => []);
+              const alturaColunas = Array(NUM_COLUNAS).fill(0);
+
+              gruposOrdenados.forEach((grupo) => {
+                const alturaEstimada = 1 + grupo[1].length;
+                const indexMenor = alturaColunas.indexOf(Math.min(...alturaColunas));
+                colunas[indexMenor].push(grupo);
+                alturaColunas[indexMenor] += alturaEstimada;
+              });
+
               return (
                 <div
                   style={{
                     marginTop: 10,
-                    display: "grid",
-                    gridTemplateColumns: "repeat(3, 1fr)",
-                    gridAutoRows: "min-content",
-                    columnGap: 12,
-                    rowGap: 16,
+                    display: "flex",
+                    gap: 12,
                     flex: 1,
                     minHeight: 0,
                     overflowY: "auto",
                     paddingRight: 4,
                     paddingBottom: 8,
-                    alignContent: "start",
-                    alignItems: "start",
                   }}
                 >
-                  {gruposOrdenados.map(([nomeMod, turmasDoGrupo]) => {
+                  {colunas.map((coluna, colIndex) => (
+                    <div key={colIndex} style={{ flex: 1, display: "flex", flexDirection: "column", gap: 12, minWidth: 0 }}>
+                      {coluna.map(([nomeMod, turmasDoGrupo]) => {
                     const mod = todasModalidades.find((m) => m.nome === nomeMod);
                     const cor = mod?.cor || "#374151";
                     return (
@@ -491,10 +508,10 @@ setTodasModalidades(mods);
                           borderRadius: 10,
                           overflow: "hidden",
                           background: "var(--background-primary)",
-                          alignSelf: "start",
-                          height: "fit-content",
-                          marginBottom: 8,
-                        }}
+                          marginBottom: 12,
+                          breakInside: "avoid",
+                          WebkitColumnBreakInside: "avoid",
+                        } as React.CSSProperties}
                       >
                         <div
                           style={{
@@ -576,13 +593,15 @@ setTodasModalidades(mods);
                                 </div>
                               );
                             })}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              );
-            })()}
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
 
             <button
               onClick={() => { setAssociadoFilasAberto(null); setOutrasTurmasAberto(false); }}
