@@ -125,6 +125,13 @@ class AssociadosService {
     const associado = await this.buscarPorId(associadoId);
     if (!associado) throw new Error("Associado não encontrado.");
 
+    const jaMatriculadoNestaTurma = associado.matriculas.some(
+      (m) => m.turmaId === dadosMatricula.turmaId && m.status !== "CANCELADA"
+    );
+    if (jaMatriculadoNestaTurma) {
+      throw new Error(`${associado.nome} já está matriculado(a) em ${dadosMatricula.modalidadeNome} (${dadosMatricula.turmaNome}).`);
+    }
+
     const limiteModalidade = await limitesService.obterLimiteDaModalidade(dadosMatricula.modalidadeId);
     const turmasNaModalidade = associado.matriculas.filter(
       (m) => m.modalidadeId === dadosMatricula.modalidadeId && m.status !== "CANCELADA"

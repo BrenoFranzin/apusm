@@ -3,10 +3,8 @@
 // Arquivo: listaEspera.service.ts
 // ======================================================
 
-import { listaEsperaMock } from "../data/listaEspera.mock";
+import { supabase } from "@/lib/supabaseClient";
 import type { EntradaListaEspera } from "../types/listaEspera.types";
-
-const STORAGE_KEY = "apusm:lista-espera";
 
 function capitalizarNome(nome: string): string {
   const minusculas = ["de", "da", "do", "das", "dos", "e"];
@@ -23,38 +21,39 @@ function capitalizarNome(nome: string): string {
     .join(" ");
 }
 
+function toEntrada(row: any): EntradaListaEspera {
+  return {
+    id: row.id,
+    associadoId: row.associado_id,
+    associadoNome: capitalizarNome(row.associado_nome ?? ""),
+    turmaId: row.turma_id,
+    turmaNome: row.turma_nome,
+    modalidadeId: row.modalidade_id,
+    modalidadeNome: row.modalidade_nome,
+    dataEntrada: row.data_entrada,
+    posicao: row.posicao,
+    observacao: row.observacao ?? undefined,
+  };
+}
+
 class ListaEsperaService {
-  private normalizar(e: any): EntradaListaEspera {
-    return {
-      ...e,
-      associadoNome: capitalizarNome(e?.associadoNome ?? ""),
-    };
-  }
-
-  private carregarStorage(): EntradaListaEspera[] {
-    const dados = localStorage.getItem(STORAGE_KEY);
-
-    if (!dados) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(listaEsperaMock));
-      return listaEsperaMock;
-    }
-
-    const bruto = JSON.parse(dados);
-    return (Array.isArray(bruto) ? bruto : []).map((e) => this.normalizar(e));
-  }
-
-  private salvarStorage(lista: EntradaListaEspera[]) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(lista));
-  }
-
   async listarPorTurma(turmaId: string): Promise<EntradaListaEspera[]> {
-    return this.carregarStorage()
-      .filter((e) => e.turmaId === turmaId)
-      .sort((a, b) => a.posicao - b.posicao);
+    const { data, error } = await supabase
+      .from("lista_espera")
+      .select("*")
+      .eq("turma_id", turmaId)
+      .order("posicao", { ascending: true });
+    if (error) { console.error(error); return []; }
+    return (data ?? []).map(toEntrada);
   }
 
   async listarPorAssociado(associadoId: string): Promise<EntradaListaEspera[]> {
-    return this.carregarStorage().filter((e) => e.associadoId === associadoId);
+    const { data, error } = await supabase
+      .from("lista_espera")
+      .select("*")
+      .eq("associado_id", associadoId);
+    if (error) { console.error(error); return []; }
+    return (data ?? []).map(toEntrada);
   }
 
   async entrarNaFila(dados: {
@@ -65,52 +64,64 @@ class ListaEsperaService {
     modalidadeId: string;
     modalidadeNome: string;
   }): Promise<EntradaListaEspera> {
-    const lista = this.carregarStorage();
+    const { count, error: erroContagem } = await supabase
+      .from("lista_espera")
+      .select("*", { count: "exact", head: true })
+      .eq("turma_id", dados.turmaId);
 
-    const filaDaTurma = lista.filter((e) => e.turmaId === dados.turmaId);
-    const proximaPosicao = filaDaTurma.length + 1;
+    if (erroContagem) throw new Error(erroContagem.message);
+    const proximaPosicao = (count ?? 0) + 1;
 
-    const nova: EntradaListaEspera = {
-      id: crypto.randomUUID(),
-      ...dados,
-      associadoNome: capitalizarNome(dados.associadoNome),
-      dataEntrada: new Date().toISOString(),
-      posicao: proximaPosicao,
-    };
+    const { data, error } = await supabase
+      .from("lista_espera")
+      .insert({
+        associado_id: dados.associadoId,
+        associado_nome: capitalizarNome(dados.associadoNome),
+        turma_id: dados.turmaId,
+        turma_nome: dados.turmaNome,
+        modalidade_id: dados.modalidadeId,
+        modalidade_nome: dados.modalidadeNome,
+        posicao: proximaPosicao,
+      })
+      .select()
+      .single();
 
-    lista.push(nova);
-    this.salvarStorage(lista);
-
-    return nova;
+    if (error) throw new Error(error.message);
+    return toEntrada(data);
   }
 
   async sairDaFila(entradaId: string): Promise<void> {
-    const lista = this.carregarStorage();
-    const entrada = lista.find((e) => e.id === entradaId);
+    const { data: entrada, error: erroBusca } = await supabase
+      .from("lista_espera")
+      .select("*")
+      .eq("id", entradaId)
+      .single();
+    if (erroBusca || !entrada) return;
 
-    if (!entrada) return;
+    await supabase.from("lista_espera").delete().eq("id", entradaId);
 
-    const restante = lista.filter((e) => e.id !== entradaId);
+    const { data: restante, error } = await supabase
+      .from("lista_espera")
+      .select("*")
+      .eq("turma_id", entrada.turma_id)
+      .order("posicao", { ascending: true });
 
-    const filaDaTurma = restante
-      .filter((e) => e.turmaId === entrada.turmaId)
-      .sort((a, b) => a.posicao - b.posicao);
+    if (error || !restante) return;
 
-    filaDaTurma.forEach((e, i) => {
-      e.posicao = i + 1;
-    });
-
-    this.salvarStorage(restante);
+    for (let i = 0; i < restante.length; i++) {
+      const novaPosicao = i + 1;
+      if (restante[i].posicao !== novaPosicao) {
+        await supabase.from("lista_espera").update({ posicao: novaPosicao }).eq("id", restante[i].id);
+      }
+    }
   }
 
   async atualizarObservacao(entradaId: string, observacao: string): Promise<void> {
-    const lista = this.carregarStorage();
-    const index = lista.findIndex((e) => e.id === entradaId);
-
-    if (index < 0) return;
-
-    lista[index] = { ...lista[index], observacao };
-    this.salvarStorage(lista);
+    const { error } = await supabase
+      .from("lista_espera")
+      .update({ observacao })
+      .eq("id", entradaId);
+    if (error) console.error(error);
   }
 
   async chamarProximo(turmaId: string): Promise<EntradaListaEspera | undefined> {

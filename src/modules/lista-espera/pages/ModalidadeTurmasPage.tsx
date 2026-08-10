@@ -293,7 +293,7 @@ setTodasModalidades(mods);
           borderRadius: 999,
         }}
       >
-        {matriculados.length}/10 — {10 - matriculados.length} vaga(s)
+        {matriculados.length}/{turma.limiteVagas ?? 10} — {(turma.limiteVagas ?? 10) - matriculados.length <= 0 ? "TURMA CHEIA" : `${(turma.limiteVagas ?? 10) - matriculados.length} vaga(s)`}
       </span>
     </p>
     <table style={{ width: "100%", fontSize: 13, borderCollapse: "separate", borderSpacing: 0, borderRadius: 10, overflow: "hidden", border: "1px solid var(--border-default)" }}>
@@ -732,7 +732,7 @@ setTodasModalidades(mods);
       </tbody>
     </table>
 
-    {(selecionados[turma.id] ?? []).length >= 1 && (10 - matriculados.length) > 0 && (
+    {(selecionados[turma.id] ?? []).length >= 1 && ((turma.limiteVagas ?? 10) - matriculados.length) > 0 && (
       <button
         onClick={() => setDecisaoTurmaId(turma.id)}
         style={{ marginTop: 10, fontSize: 12, fontWeight: 600, border: "none", borderRadius: 6, padding: "6px 12px", background: "var(--color-primary)", color: "#fff", cursor: "pointer" }}

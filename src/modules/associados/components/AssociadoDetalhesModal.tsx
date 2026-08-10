@@ -455,10 +455,7 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
       {modalHistoricoAberto && (
         <div
           onClick={() => setModalHistoricoAberto(false)}
-          style={{
-            position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)",
-            display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2000,
-          }}
+          style={{ fontSize: 13, fontWeight: 700, color: "#fff", border: "none", background: "var(--color-success)", borderRadius: 8, padding: "10px 16px", cursor: "pointer" }}
         >
           <div
             onClick={(e) => e.stopPropagation()}
