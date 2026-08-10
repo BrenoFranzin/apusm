@@ -220,7 +220,7 @@ export default function TurmasPage() {
                       key={turma.id}
                       style={{
                         borderBottom: "1px solid var(--border-default)",
-                        background: emAndamento ? "var(--color-primary-light)" : "transparent",
+                        background: emAndamento ? "rgba(59,130,246,0.08)" : "transparent",
                         boxShadow: emAndamento ? "inset 3px 0 0 var(--color-primary)" : "none",
                       }}
                     >
