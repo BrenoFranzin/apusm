@@ -110,16 +110,21 @@ export default function AgendaPage() {
       </div>
 
       {mostrarFormTurma && (
-        <div className="apusm-card">
-          <TurmaForm
-            modalidades={modalidades}
-            instrutores={instrutores}
-            salas={listaSalas}
-            onSubmit={async (dados) => {
-              const ok = await criarTurma(dados);
-              if (ok) setMostrarFormTurma(false);
-            }}
-          />
+        <div
+          onClick={() => setMostrarFormTurma(false)}
+          style={{ position: "fixed", inset: 0, background: "rgba(15, 23, 42, 0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 16 }}
+        >
+          <div onClick={(e) => e.stopPropagation()}>
+            <TurmaForm
+              modalidades={modalidades}
+              instrutores={instrutores}
+              salas={listaSalas}
+              onSubmit={async (dados) => {
+                const ok = await criarTurma(dados);
+                if (ok) setMostrarFormTurma(false);
+              }}
+            />
+          </div>
         </div>
       )}
 

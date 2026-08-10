@@ -47,19 +47,26 @@ export default function ModalidadesPage() {
       </div>
 
       {mostrarForm && (
-        <ModalidadeForm
-          valoresIniciais={modalidadeEditando ?? undefined}
-          instrutores={instrutores}
-          onSubmit={async (dados) => {
-            if (modalidadeEditando) {
-              await editar(modalidadeEditando.id, dados);
-            } else {
-              await criar(dados);
-            }
-            setMostrarForm(false);
-            setModalidadeEditando(null);
-          }}
-        />
+        <div
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "flex-start", justifyContent: "center", paddingTop: "6vh", zIndex: 1000, overflowY: "auto" }}
+          onClick={() => { setMostrarForm(false); setModalidadeEditando(null); }}
+        >
+          <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 560 }}>
+            <ModalidadeForm
+              valoresIniciais={modalidadeEditando ?? undefined}
+              instrutores={instrutores}
+              onSubmit={async (dados) => {
+                if (modalidadeEditando) {
+                  await editar(modalidadeEditando.id, dados);
+                } else {
+                  await criar(dados);
+                }
+                setMostrarForm(false);
+                setModalidadeEditando(null);
+              }}
+            />
+          </div>
+        </div>
       )}
 
       <div
