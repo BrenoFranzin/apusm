@@ -359,11 +359,13 @@ setTodasModalidades(mods);
               background: "var(--background-primary)",
               borderRadius: 12,
               padding: 20,
-              width: "70vw",
-              maxWidth: 1400,
+              width: "90vw",
+              maxWidth: 1800,
               minWidth: 320,
-              maxHeight: "85vh",
-              overflowY: "auto",
+              maxHeight: "90vh",
+              overflowY: "hidden",
+              display: "flex",
+              flexDirection: "column",
               boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
             }}
           >
@@ -374,10 +376,12 @@ setTodasModalidades(mods);
               Está em fila de espera em:
             </p>
 
+<div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, maxHeight: "30vh", overflowY: "auto", flexShrink: 0 }}>
             {filas
               .filter((f) => f.associadoId === associadoFilasAberto.id)
               .sort((a, b) => a.modalidadeNome.localeCompare(b.modalidadeNome))
               .map((f) => {
+                
                 const mod = todasModalidades.find((m) => m.id === f.modalidadeId || m.nome === f.modalidadeNome);
                 const cor = mod?.cor || "#374151";
                 return (
@@ -406,6 +410,7 @@ setTodasModalidades(mods);
                   </div>
                 );
               })}
+            </div>
 
             <button
               onClick={() => setOutrasTurmasAberto((v) => !v)}
@@ -425,7 +430,7 @@ setTodasModalidades(mods);
               {outrasTurmasAberto ? "▲ Ocultar outras turmas" : "+ Inserir em outras turmas"}
             </button>
 
-           {outrasTurmasAberto && (() => {
+            {outrasTurmasAberto && (() => {
               const associadoAtual = associados.find((a) => a.id === associadoFilasAberto.id);
               const matriculaTurmaIds = (associadoAtual?.matriculas ?? [])
                 .filter((m) => m.status !== "CANCELADA")
@@ -440,7 +445,7 @@ setTodasModalidades(mods);
 
               if (outrasTurmas.length === 0) {
                 return (
-                  <p style={{ fontSize: 13, color: "var(--text-secondary)", marginTop: 10 }}>
+                  <p style={{ fontSize: 13, color: "var(--text-secondary)", marginTop: 10, textAlign: "center" }}>
                     Já está inserido(a) em todas as turmas disponíveis.
                   </p>
                 );
@@ -462,11 +467,17 @@ setTodasModalidades(mods);
                   style={{
                     marginTop: 10,
                     display: "grid",
-                    gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-                    gap: 12,
-                    maxHeight: "50vh",
+                    gridTemplateColumns: "repeat(3, 1fr)",
+                    gridAutoRows: "min-content",
+                    columnGap: 12,
+                    rowGap: 16,
+                    flex: 1,
+                    minHeight: 0,
                     overflowY: "auto",
                     paddingRight: 4,
+                    paddingBottom: 8,
+                    alignContent: "start",
+                    alignItems: "start",
                   }}
                 >
                   {gruposOrdenados.map(([nomeMod, turmasDoGrupo]) => {
@@ -476,23 +487,25 @@ setTodasModalidades(mods);
                       <div
                         key={nomeMod}
                         style={{
-                          border: `1px solid ${cor}`,
+                          border: `2px solid ${cor}`,
                           borderRadius: 10,
                           overflow: "hidden",
                           background: "var(--background-primary)",
+                          alignSelf: "start",
+                          height: "fit-content",
+                          marginBottom: 8,
                         }}
                       >
                         <div
                           style={{
-                            background: cor + "22",
-                            padding: "8px 10px",
+                            background: cor,
+                            padding: "6px 10px",
                             display: "flex",
                             alignItems: "center",
                             gap: 6,
                           }}
                         >
-                          <span style={{ width: 10, height: 10, borderRadius: "50%", background: cor, flexShrink: 0 }} />
-                          <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>
                             {mod?.icone ? `${mod.icone} ` : ""}{nomeMod}
                           </span>
                         </div>
@@ -511,6 +524,7 @@ setTodasModalidades(mods);
                               ).length;
                               const vagas = t.limiteVagas ?? 10;
                               const temVaga = qtdMatriculados < vagas;
+                              const qtdNaFila = filas.filter((f) => f.turmaId === t.id).length;
 
                               return (
                                 <div
@@ -519,20 +533,20 @@ setTodasModalidades(mods);
                                     display: "flex",
                                     alignItems: "center",
                                     justifyContent: "space-between",
-                                    gap: 8,
+                                    gap: 6,
                                     padding: "6px 8px",
                                     borderRadius: 6,
-                                    background: "var(--background-secondary)",
+                                    background: cor + "14",
                                   }}
                                 >
-                                  <p style={{ fontSize: 12, margin: 0, color: "var(--text-primary)" }}>
-                                    {DIA_LABEL[t.dia]} — {t.horario} — {t.sala}
+                                  <p style={{ fontSize: 12, margin: 0, color: "var(--text-primary)", fontWeight: 500 }}>
+                                    {DIA_LABEL[t.dia]} — {t.horario}
                                   </p>
                                   <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
                                     <span
                                       style={{
                                         fontSize: 10,
-                                        fontWeight: 600,
+                                        fontWeight: 700,
                                         padding: "2px 6px",
                                         borderRadius: 999,
                                         whiteSpace: "nowrap",
@@ -540,7 +554,7 @@ setTodasModalidades(mods);
                                         background: temVaga ? "#dcfce7" : "#ffedd5",
                                       }}
                                     >
-                                      {temVaga ? "Vaga" : "Fila"}
+                                      {temVaga ? "Vaga" : `Fila (${qtdNaFila} na frente)`}
                                     </span>
                                     <button
                                       disabled={inserindoTurmaId === t.id}
@@ -550,8 +564,8 @@ setTodasModalidades(mods);
                                         fontWeight: 700,
                                         border: "none",
                                         borderRadius: 6,
-                                        padding: "5px 10px",
-                                        background: "var(--color-primary)",
+                                        padding: "5px 9px",
+                                        background: cor,
                                         color: "#fff",
                                         cursor: inserindoTurmaId === t.id ? "not-allowed" : "pointer",
                                       }}
@@ -570,19 +584,18 @@ setTodasModalidades(mods);
               );
             })()}
 
-
-            
             <button
               onClick={() => { setAssociadoFilasAberto(null); setOutrasTurmasAberto(false); }}
               style={{
-                marginTop: 12,
+                marginTop: 14,
                 width: "100%",
-                fontSize: 13,
-                border: "1px solid var(--border-default)",
+                fontSize: 14,
+                fontWeight: 700,
+                border: "2px solid var(--border-default)",
                 borderRadius: 8,
-                padding: "8px 12px",
-                background: "transparent",
-                color: "var(--text-secondary)",
+                padding: "10px 12px",
+                background: "var(--background-secondary)",
+                color: "var(--text-primary)",
                 cursor: "pointer",
               }}
             >
