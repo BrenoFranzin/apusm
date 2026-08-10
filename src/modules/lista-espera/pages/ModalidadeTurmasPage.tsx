@@ -1,5 +1,5 @@
-// ======================================================
-// APUSM SaaS — Módulo Lista de Espera
+﻿// ======================================================
+// APUSM SaaS â€” MÃ³dulo Lista de Espera
 // Arquivo: ModalidadeTurmasPage.tsx
 // ======================================================
 
@@ -23,11 +23,11 @@ import type { EntradaListaEspera } from "../types/listaEspera.types";
 
 const DIA_LABEL: Record<string, string> = {
   seg: "Segunda-feira",
-  ter: "Terça-feira",
+  ter: "TerÃ§a-feira",
   qua: "Quarta-feira",
   qui: "Quinta-feira",
   sex: "Sexta-feira",
-  sab: "Sábado",
+  sab: "SÃ¡bado",
 };
 
 const ORDEM_DIA = ["seg", "ter", "qua", "qui", "sex", "sab"];
@@ -77,12 +77,16 @@ setTodasModalidades(mods);
     () =>
       turmas
         .filter((t) => t.modalidadeId === modalidadeId)
-        .sort((a, b) => ORDEM_DIA.indexOf(a.dia) - ORDEM_DIA.indexOf(b.dia)),
+        .sort(
+          (a, b) =>
+            ORDEM_DIA.indexOf(a.dia) - ORDEM_DIA.indexOf(b.dia) ||
+            a.horario.localeCompare(b.horario)
+        ),
     [turmas, modalidadeId]
   );
 
   function instrutorNome(id: string) {
-    return instrutores.find((i) => i.id === id)?.nome ?? "—";
+    return instrutores.find((i) => i.id === id)?.nome ?? "â€”";
   }
 
   async function recarregarFilas() {
@@ -97,14 +101,14 @@ setTodasModalidades(mods);
     matriculaId: string,
     valorAtual: string
   ) {
-    const novo = window.prompt("Observação:", valorAtual);
+    const novo = window.prompt("ObservaÃ§Ã£o:", valorAtual);
     if (novo === null) return;
     await associadosService.atualizarObservacaoMatricula(associadoId, matriculaId, novo);
     await recarregarAssociados();
   }
 
   async function handleEditarObservacaoFila(entradaId: string, valorAtual: string) {
-    const novo = window.prompt("Observação:", valorAtual);
+    const novo = window.prompt("ObservaÃ§Ã£o:", valorAtual);
     if (novo === null) return;
     await listaEsperaService.atualizarObservacao(entradaId, novo);
     await recarregarFilas();
@@ -175,7 +179,7 @@ setTodasModalidades(mods);
             fontSize: 14,
           }}
         >
-          ← Voltar
+          â† Voltar
         </button>
         <h1
           className="text-2xl font-bold"
@@ -227,7 +231,7 @@ setTodasModalidades(mods);
             }}
           >
             <p style={{ fontWeight: 600, fontSize: 15, margin: "0 0 4px", color: "var(--text-primary)" }}>
-              {DIA_LABEL[turma.dia]} — {turma.horario} — {turma.sala}
+              {DIA_LABEL[turma.dia]} â€” {turma.horario} â€” {turma.sala}
             </p>
 
             <button
@@ -250,7 +254,7 @@ setTodasModalidades(mods);
                 gap: 8,
               }}
             >
-              🖨️ Imprimir folha de presença
+              ðŸ–¨ï¸ Imprimir folha de presenÃ§a
             </button>
 
 
@@ -278,7 +282,7 @@ setTodasModalidades(mods);
         gap: 6,
       }}
     >
-      ✅ Matriculados
+      âœ… Matriculados
       <span
         style={{
           fontSize: 11,
@@ -289,7 +293,7 @@ setTodasModalidades(mods);
           borderRadius: 999,
         }}
       >
-        {matriculados.length}/10 — {10 - matriculados.length} vaga(s)
+        {matriculados.length}/10 â€” {10 - matriculados.length} vaga(s)
       </span>
     </p>
     <table style={{ width: "100%", fontSize: 13, borderCollapse: "separate", borderSpacing: 0, borderRadius: 10, overflow: "hidden", border: "1px solid var(--border-default)" }}>
@@ -320,9 +324,9 @@ setTodasModalidades(mods);
                   background: "transparent",
                   cursor: "pointer",
                 }}
-                title={matricula!.observacao || "Adicionar observação"}
+                title={matricula!.observacao || "Adicionar observaÃ§Ã£o"}
               >
-                {matricula!.observacao ? "📝" : "+"}
+                {matricula!.observacao ? "ðŸ“" : "+"}
               </button>
             </td>
           </tr>
@@ -367,7 +371,7 @@ setTodasModalidades(mods);
               {associadoFilasAberto.nome}
             </p>
             <p style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 14 }}>
-              Está em fila de espera em:
+              EstÃ¡ em fila de espera em:
             </p>
 
             {filas
@@ -396,7 +400,7 @@ setTodasModalidades(mods);
                         {mod?.icone ? `${mod.icone} ` : ""}{f.modalidadeNome}
                       </p>
                       <p style={{ fontSize: 12, margin: 0, color: "var(--text-secondary)" }}>
-                        {f.turmaNome} — {f.posicao}º na fila
+                        {f.turmaNome} â€” {f.posicao}Âº na fila
                       </p>
                     </div>
                   </div>
@@ -418,7 +422,7 @@ setTodasModalidades(mods);
                 cursor: "pointer",
               }}
             >
-              {outrasTurmasAberto ? "▲ Ocultar outras turmas" : "+ Inserir em outras turmas"}
+              {outrasTurmasAberto ? "â–² Ocultar outras turmas" : "+ Inserir em outras turmas"}
             </button>
 
             {outrasTurmasAberto && (() => {
@@ -448,7 +452,7 @@ setTodasModalidades(mods);
               if (outrasTurmas.length === 0) {
                 return (
                   <p style={{ fontSize: 13, color: "var(--text-secondary)", marginTop: 10 }}>
-                    Já está inserido(a) em todas as turmas disponíveis.
+                    JÃ¡ estÃ¡ inserido(a) em todas as turmas disponÃ­veis.
                   </p>
                 );
               }
@@ -484,7 +488,7 @@ setTodasModalidades(mods);
                               {mod?.icone ? `${mod.icone} ` : ""}{mod?.nome ?? "Modalidade"}
                             </p>
                             <p style={{ fontSize: 12, margin: 0, color: "var(--text-secondary)" }}>
-                              {DIA_LABEL[t.dia]} — {t.horario} — {t.sala}
+                              {DIA_LABEL[t.dia]} â€” {t.horario} â€” {t.sala}
                             </p>
                           </div>
                         </div>
@@ -568,7 +572,7 @@ setTodasModalidades(mods);
         gap: 6,
       }}
     >
-      ⏳ Lista de espera
+      â³ Lista de espera
       <span
         style={{
           fontSize: 11,
@@ -601,7 +605,7 @@ setTodasModalidades(mods);
                 onChange={() => toggleSelecionado(turma.id, entrada.id)}
               />
             </td>
-            <td style={{ padding: "8px" }}>{entrada.posicao}º</td>
+            <td style={{ padding: "8px" }}>{entrada.posicao}Âº</td>
             <td style={{ padding: "8px" }}>
   {entrada.associadoNome}
   {(() => {
@@ -639,9 +643,9 @@ setTodasModalidades(mods);
                   background: "transparent",
                   cursor: "pointer",
                 }}
-                title={entrada.observacao || "Adicionar observação"}
+                title={entrada.observacao || "Adicionar observaÃ§Ã£o"}
               >
-                {entrada.observacao ? "📝" : "+"}
+                {entrada.observacao ? "ðŸ“" : "+"}
               </button>
             </td>
           </tr>
@@ -649,7 +653,7 @@ setTodasModalidades(mods);
         {filaDaTurma.length === 0 && (
           <tr>
             <td colSpan={4} style={{ padding: "10px 8px", color: "var(--text-secondary)", textAlign: "center" }}>
-              Ninguém na fila.
+              NinguÃ©m na fila.
             </td>
           </tr>
         )}
