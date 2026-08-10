@@ -77,7 +77,11 @@ setTodasModalidades(mods);
     () =>
       turmas
         .filter((t) => t.modalidadeId === modalidadeId)
-        .sort((a, b) => ORDEM_DIA.indexOf(a.dia) - ORDEM_DIA.indexOf(b.dia)),
+        .sort(
+          (a, b) =>
+            ORDEM_DIA.indexOf(a.dia) - ORDEM_DIA.indexOf(b.dia) ||
+            a.horario.localeCompare(b.horario)
+        ),
     [turmas, modalidadeId]
   );
 
