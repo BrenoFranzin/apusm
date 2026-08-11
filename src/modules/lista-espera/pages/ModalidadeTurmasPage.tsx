@@ -11,6 +11,7 @@ import { useAssociados } from "@/modules/associados/hooks/useAssociados";
 import { modalidadesService } from "@/modules/modalidades/services/modalidades.service";
 import { instrutoresService } from "@/modules/instrutores/services/instrutores.service";
 import { listaEsperaService } from "../services/listaEspera.service";
+import { buscarComCache } from "@/lib/cacheOffline";
 import { associadosService } from "@/modules/associados/services/associados.service";
 
 
@@ -53,11 +54,11 @@ const [todasModalidades, setTodasModalidades] = useState<Modalidade[]>([]);
   useEffect(() => {
     async function carregar() {
       const [mods, instrutoresData] = await Promise.all([
-        modalidadesService.listar(),
-        instrutoresService.listar(),
+        buscarComCache("modalidades", () => modalidadesService.listar(), (m) => setTodasModalidades(m)),
+        buscarComCache("instrutores", () => instrutoresService.listar(), setInstrutores),
       ]);
       setModalidade(mods.find((m) => m.id === modalidadeId) ?? null);
-setTodasModalidades(mods);
+      setTodasModalidades(mods);
       setInstrutores(instrutoresData);
     }
     carregar();
@@ -65,13 +66,10 @@ setTodasModalidades(mods);
 
   useEffect(() => {
     async function carregarFilas() {
-      const todasEntradas = await Promise.all(
-        turmas.map((t) => listaEsperaService.listarPorTurma(t.id))
-      );
-      setFilas(todasEntradas.flat());
+      setFilas(await listaEsperaService.listarTudo());
     }
-    if (turmas.length > 0) carregarFilas();
-  }, [turmas]);
+    carregarFilas();
+  }, []);
 
   const turmasDaModalidade = useMemo(
     () =>

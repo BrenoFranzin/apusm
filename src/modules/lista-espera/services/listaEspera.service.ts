@@ -37,6 +37,13 @@ function toEntrada(row: any): EntradaListaEspera {
 }
 
 class ListaEsperaService {
+  
+  async listarTudo(): Promise<EntradaListaEspera[]> {
+    const { data, error } = await supabase.from("lista_espera").select("*").order("posicao", { ascending: true });
+    if (error) { console.error(error); return []; }
+    return (data ?? []).map(toEntrada);
+  }
+
   async listarPorTurma(turmaId: string): Promise<EntradaListaEspera[]> {
     const { data, error } = await supabase
       .from("lista_espera")

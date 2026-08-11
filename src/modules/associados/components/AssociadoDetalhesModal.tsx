@@ -14,6 +14,7 @@ import type { EntradaListaEspera } from "@/modules/lista-espera/types/listaEsper
 import type { Turma } from "@/modules/turmas/types/turma.types";
 import type { Modalidade } from "@/modules/modalidades/types/modalidade.types";
 import { listaEsperaService } from "@/modules/lista-espera/services/listaEspera.service";
+import { buscarComCache } from "@/lib/cacheOffline";
 
 interface Props {
   aberto: boolean;
@@ -43,21 +44,19 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
 
   useEffect(() => {
     if (!aberto) return;
-    turmasService.listar().then(setTurmas);
-    modalidadesService.listar().then(setModalidades);
+    buscarComCache("turmas", () => turmasService.listar(), setTurmas);
+    buscarComCache("modalidades", () => modalidadesService.listar(), setModalidades);
   }, [aberto]);
 
+  function aplicarContagens(todasEntradas: EntradaListaEspera[]) {
+    const contagens: Record<string, number> = {};
+    turmas.forEach((t) => { contagens[t.id] = todasEntradas.filter((e) => e.turmaId === t.id).length; });
+    setFilasContagem(contagens);
+  }
+
   useEffect(() => {
-    async function carregarContagens() {
-      if (turmas.length === 0) return;
-      const contagens: Record<string, number> = {};
-      for (const t of turmas) {
-        const fila = await listaEsperaService.listarPorTurma(t.id);
-        contagens[t.id] = fila.length;
-      }
-      setFilasContagem(contagens);
-    }
-    carregarContagens();
+    if (turmas.length === 0) return;
+    buscarComCache("lista_espera", () => listaEsperaService.listarTudo(), aplicarContagens).then(aplicarContagens);
   }, [turmas]);
 
   async function handleBuscar(texto: string) {
