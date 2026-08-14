@@ -348,19 +348,23 @@ useEffect(() => {
             </p>
 
             <div style={{ overflowX: "auto", width: "100%", display: "flex", justifyContent: "center" }}>
-              <table style={{ borderCollapse: "collapse", minWidth: 520 }}>
+              <table style={{ borderCollapse: "collapse", tableLayout: "fixed", minWidth: 520 }}>
+                <colgroup>
+                  <col style={{ width: 70 }} />
+                  {ORDEM_DIAS.map((d) => <col key={d} style={{ width: 90 }} />)}
+                </colgroup>
                 <thead>
                   <tr>
-                    <th style={{ border: "1px solid #1e293b", padding: 6, fontSize: 11, color: "var(--text-secondary)" }}>Horário</th>
+                    <th style={{ border: "2px solid #1e293b", padding: 8, fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, color: "#fff", background: "var(--color-primary)" }}>Horário</th>
                     {ORDEM_DIAS.map((d) => (
-                      <th key={d} style={{ border: "1px solid var(--border-default)", padding: 6, fontSize: 11, color: "var(--text-secondary)" }}>{NOME_DIA[d]}</th>
+                      <th key={d} style={{ border: "2px solid #1e293b", padding: 8, fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, color: "#fff", background: "var(--color-primary)" }}>{NOME_DIA[d]}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {HORARIOS.map((horario) => (
                     <tr key={horario}>
-                      <td style={{ border: "1px solid var(--border-default)", padding: 6, fontWeight: 600, textAlign: "center", color: "var(--text-primary)" }}>{horario}</td>
+                      <td style={{ border: "2px solid #1e293b", padding: 8, fontWeight: 700, fontSize: 13, textAlign: "center", color: "#fff", background: "var(--color-primary-hover)" }}>{horario}</td>
                       {ORDEM_DIAS.map((dia) => {
                         const chave = `${dia}|${horario}`;
                         const marcado = marcados.has(chave);
@@ -374,12 +378,16 @@ useEffect(() => {
                             onClick={() => toggleCelula(dia, horario)}
                             title={emAula ? "Instrutor já dá aula neste horário" : undefined}
                             style={{
-                              border: "1px solid var(--border-default)",
-                              padding: 6,
+                              border: "2px solid #1e293b",
+                              padding: 0,
+                              height: 34,
+                              width: 90,
                               textAlign: "center",
                               cursor: "pointer",
                               background: corFundo,
                               color: marcado || emAula ? "#fff" : "var(--text-primary)",
+                              fontSize: 15,
+                              fontWeight: 700,
                             }}
                           >
                             {marcado ? "✓" : ""}
