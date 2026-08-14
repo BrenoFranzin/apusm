@@ -1,4 +1,4 @@
-import jsPDF from "jspdf";
+﻿import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
 import { turmasService } from "@/modules/turmas/services/turmas.service";
@@ -108,7 +108,7 @@ function visualizarEregistrar(doc: jsPDF, nomeArquivo: string, tipo: RegistroExp
       nomeArquivo,
     });
   } catch {
-    // Se falhar ao gerar o data URI, a visualizaÃ§Ã£o jÃ¡ abriu, sÃ³ nÃ£o entra no histÃ³rico
+    // Se falhar ao gerar o data URI, a visualização já abriu, só não entra no histórico
   }
 }
 
@@ -324,7 +324,7 @@ class PdfService {
       });
     };
 
-    doc.text("Academia APUSM - Escala de Serviço (Manhã)", 105, 14, { align: "center" });
+    doc.text("Academia APUSM - Escala de Servi�o (Manh�)", 105, 14, { align: "center" });
     gerarTabelaServico(manhaSlots, 20);
 
     doc.addPage();
@@ -434,7 +434,7 @@ class PdfService {
   }
 
   // ==========================
-  // FOLHA DE PRESENÇA (por turma, para imprimir e marcar à mão)
+  // FOLHA DE PRESEN�A (por turma, para imprimir e marcar � m�o)
   // ==========================
 
   async exportarFolhaPresenca(turmaId: string, mes: number, ano: number): Promise<void> {
@@ -446,7 +446,7 @@ class PdfService {
     ]);
 
     const turma = turmas.find((t: any) => t.id === turmaId);
-    if (!turma) throw new Error("Turma não encontrada");
+    if (!turma) throw new Error("Turma n�o encontrada");
 
     const modalidade = modalidades.find((m: any) => m.id === turma.modalidadeId);
     const instrutor = instrutores.find((i: any) => i.id === turma.instrutorId);
@@ -556,7 +556,7 @@ class PdfService {
   }
 
   // ==========================
-  // HISTÃ“RICO DE EXPORTAÃ‡Ã•ES
+  // HISTÓRICO DE EXPORTAÇÕES
   // ==========================
 
   listarHistorico(): RegistroExportacao[] {

@@ -1,5 +1,5 @@
 ﻿// ======================================================
-// APUSM SaaS â€” MÃ³dulo Modalidades
+// APUSM SaaS — Módulo Modalidades
 // Arquivo: useModalidades.ts
 // ======================================================
 
@@ -61,4 +61,5 @@ export function useModalidades() {
     excluir,
   };
 }
+
 

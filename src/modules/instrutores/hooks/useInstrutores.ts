@@ -1,5 +1,5 @@
 ﻿// ======================================================
-// APUSM SaaS â€” MÃ³dulo Instrutores
+// APUSM SaaS — Módulo Instrutores
 // Arquivo: useInstrutores.ts
 // ======================================================
 
@@ -61,4 +61,5 @@ export function useInstrutores() {
     excluir,
   };
 }
+
 

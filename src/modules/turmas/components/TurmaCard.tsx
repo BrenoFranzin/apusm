@@ -1,5 +1,5 @@
-// ======================================================
-// APUSM SaaS â€” MÃ³dulo Turmas
+﻿// ======================================================
+// APUSM SaaS — Módulo Turmas
 // Arquivo: TurmaCard.tsx
 // ======================================================
 
@@ -15,8 +15,8 @@ interface Props {
 }
 
 const DIA_LABEL: Record<string, string> = {
-  seg: "Segunda", ter: "TerÃ§a", qua: "Quarta",
-  qui: "Quinta", sex: "Sexta", sab: "SÃ¡bado",
+  seg: "Segunda", ter: "Terça", qua: "Quarta",
+  qui: "Quinta", sex: "Sexta", sab: "Sábado",
 };
 
 export function TurmaCard({ turma, modalidade, instrutor, onExcluir }: Props) {
@@ -63,7 +63,7 @@ export function TurmaCard({ turma, modalidade, instrutor, onExcluir }: Props) {
         <button
           onClick={() => {
             const confirmar = window.confirm(
-              `Excluir esta turma (${DIA_LABEL[turma.dia]} ${turma.horario})? Essa aÃ§Ã£o nÃ£o pode ser desfeita.`
+              `Excluir esta turma (${DIA_LABEL[turma.dia]} ${turma.horario})? Essa ação não pode ser desfeita.`
             );
             if (confirmar) onExcluir(turma.id);
           }}

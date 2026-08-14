@@ -1,5 +1,5 @@
 ﻿  // ======================================================
-  // APUSM SaaS â€” MÃ³dulo Turmas
+  // APUSM SaaS — Módulo Turmas
   // Arquivo: useTurmas.ts
   // ======================================================
 
@@ -74,5 +74,6 @@ import { buscarComCache } from "../../../lib/cacheOffline";
       excluir,
     };
   }
+
 
 
