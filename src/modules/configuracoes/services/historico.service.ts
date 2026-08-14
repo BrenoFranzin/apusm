@@ -1,145 +1,71 @@
-const CHAVES = [
-  "apusm:associados",
-  "apusm:instrutores",
-  "apusm:modalidades",
-  "apusm:turmas",
-] as const;
+﻿import { syncQueueService } from "@/lib/syncQueue.service";
 
-const CHAVE_UNDO = "apusm:historico:undo";
-const CHAVE_REDO = "apusm:historico:redo";
 const LIMITE = 20;
-const PAUSA_MS = 800;
+type Operacao = "insert" | "update" | "delete";
 
-type Snapshot = Record<string, string | null>;
-
-let patched = false;
-let setItemOriginal: typeof localStorage.setItem;
-let removeItemOriginal: typeof localStorage.removeItem;
-
-let snapshotPendente: Snapshot | null = null;
-let temporizador: ReturnType<typeof setTimeout> | null = null;
-
-function capturarSnapshot(): Snapshot {
-  const snap: Snapshot = {};
-  for (const chave of CHAVES) {
-    snap[chave] = localStorage.getItem(chave);
-  }
-  return snap;
+interface EntradaHistorico {
+  tabela: string;
+  operacaoOriginal: Operacao;
+  antes: Record<string, unknown> | null;
+  depois: Record<string, unknown> | null;
 }
 
-function aplicarSnapshot(snap: Snapshot): void {
-  for (const chave of CHAVES) {
-    const valor = snap[chave];
-    if (valor === null) {
-      removeItemOriginal.call(localStorage, chave);
-    } else {
-      setItemOriginal.call(localStorage, chave, valor);
-    }
-  }
-}
-
-function carregarPilha(chave: string): Snapshot[] {
-  const bruto = localStorage.getItem(chave);
-  return bruto ? JSON.parse(bruto) : [];
-}
-
-function salvarPilha(chave: string, pilha: Snapshot[]): void {
-  setItemOriginal.call(localStorage, chave, JSON.stringify(pilha));
-}
+const pilhasUndo: Record<string, EntradaHistorico[]> = {};
+const pilhasRedo: Record<string, EntradaHistorico[]> = {};
 
 class HistoricoService {
-  iniciar(): void {
-    if (patched) {
-      return;
-    }
-    patched = true;
-
-    setItemOriginal = localStorage.setItem.bind(localStorage);
-    removeItemOriginal = localStorage.removeItem.bind(localStorage);
-
-    localStorage.setItem = (chave: string, valor: string) => {
-      if ((CHAVES as readonly string[]).includes(chave)) {
-        this.marcarAlteracao();
-      }
-      setItemOriginal(chave, valor);
-    };
-
-    localStorage.removeItem = (chave: string) => {
-      if ((CHAVES as readonly string[]).includes(chave)) {
-        this.marcarAlteracao();
-      }
-      removeItemOriginal(chave);
-    };
-  }
-
-  private marcarAlteracao(): void {
-    if (snapshotPendente === null) {
-      snapshotPendente = capturarSnapshot();
-    }
-    if (temporizador) {
-      clearTimeout(temporizador);
-    }
-    temporizador = setTimeout(() => {
-      this.consolidar();
-    }, PAUSA_MS);
-  }
-
-  private consolidar(): void {
-    if (snapshotPendente === null) {
-      return;
-    }
-    const undoPilha = carregarPilha(CHAVE_UNDO);
-    undoPilha.push(snapshotPendente);
-    if (undoPilha.length > LIMITE) {
-      undoPilha.shift();
-    }
-    salvarPilha(CHAVE_UNDO, undoPilha);
-    salvarPilha(CHAVE_REDO, []);
-    snapshotPendente = null;
-    temporizador = null;
+  registrar(tabela: string, operacaoOriginal: Operacao, antes: Record<string, unknown> | null, depois: Record<string, unknown> | null): void {
+    if (!pilhasUndo[tabela]) pilhasUndo[tabela] = [];
+    pilhasUndo[tabela].push({ tabela, operacaoOriginal, antes, depois });
+    if (pilhasUndo[tabela].length > LIMITE) pilhasUndo[tabela].shift();
+    pilhasRedo[tabela] = [];
     window.dispatchEvent(new Event("apusm:historico:mudou"));
   }
 
-  podeDesfazer(): boolean {
-    return carregarPilha(CHAVE_UNDO).length > 0;
+  podeDesfazer(tabela: string): boolean {
+    return (pilhasUndo[tabela]?.length ?? 0) > 0;
   }
 
-  podeRefazer(): boolean {
-    return carregarPilha(CHAVE_REDO).length > 0;
+  podeRefazer(tabela: string): boolean {
+    return (pilhasRedo[tabela]?.length ?? 0) > 0;
   }
 
-  desfazer(): boolean {
-    const undoPilha = carregarPilha(CHAVE_UNDO);
-    const snap = undoPilha.pop();
-    if (!snap) {
-      return false;
+  async desfazer(tabela: string): Promise<boolean> {
+    const pilha = pilhasUndo[tabela];
+    const entrada = pilha?.pop();
+    if (!entrada) return false;
+
+    if (entrada.operacaoOriginal === "insert") {
+      await syncQueueService.gravar(tabela, "delete", { id: (entrada.depois as any).id });
+    } else if (entrada.operacaoOriginal === "delete") {
+      await syncQueueService.gravar(tabela, "insert", entrada.antes!);
+    } else {
+      await syncQueueService.gravar(tabela, "update", entrada.antes!);
     }
-    const redoPilha = carregarPilha(CHAVE_REDO);
-    redoPilha.push(capturarSnapshot());
-    if (redoPilha.length > LIMITE) {
-      redoPilha.shift();
-    }
-    salvarPilha(CHAVE_UNDO, undoPilha);
-    salvarPilha(CHAVE_REDO, redoPilha);
-    aplicarSnapshot(snap);
+
+    if (!pilhasRedo[tabela]) pilhasRedo[tabela] = [];
+    pilhasRedo[tabela].push(entrada);
+    if (pilhasRedo[tabela].length > LIMITE) pilhasRedo[tabela].shift();
     window.dispatchEvent(new Event("apusm:historico:mudou"));
     return true;
   }
 
-  refazer(): boolean {
-    const redoPilha = carregarPilha(CHAVE_REDO);
-    const snap = redoPilha.pop();
-    if (!snap) {
-      return false;
+  async refazer(tabela: string): Promise<boolean> {
+    const pilha = pilhasRedo[tabela];
+    const entrada = pilha?.pop();
+    if (!entrada) return false;
+
+    if (entrada.operacaoOriginal === "insert") {
+      await syncQueueService.gravar(tabela, "insert", entrada.depois!);
+    } else if (entrada.operacaoOriginal === "delete") {
+      await syncQueueService.gravar(tabela, "delete", { id: (entrada.antes as any).id });
+    } else {
+      await syncQueueService.gravar(tabela, "update", entrada.depois!);
     }
-    const undoPilha = carregarPilha(CHAVE_UNDO);
-    undoPilha.push(capturarSnapshot());
-    if (undoPilha.length > LIMITE) {
-      undoPilha.shift();
-    }
-    salvarPilha(CHAVE_REDO, redoPilha);
-    salvarPilha(CHAVE_UNDO, undoPilha);
-    aplicarSnapshot(snap);
+
+    if (!pilhasUndo[tabela]) pilhasUndo[tabela] = [];
+    pilhasUndo[tabela].push(entrada);
+    if (pilhasUndo[tabela].length > LIMITE) pilhasUndo[tabela].shift();
     window.dispatchEvent(new Event("apusm:historico:mudou"));
     return true;
   }

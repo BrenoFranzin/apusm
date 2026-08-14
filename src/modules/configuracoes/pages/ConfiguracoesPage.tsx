@@ -21,8 +21,19 @@ const LABEL_TIPO: Record<RegistroExportacao["tipo"], string> = {
   presenca: "Folha de Presença",
 };
 
+const TABELAS_HISTORICO = [
+  { valor: "associados", label: "Associados" },
+  { valor: "instrutores", label: "Instrutores" },
+  { valor: "modalidades", label: "Modalidades" },
+  { valor: "turmas", label: "Turmas" },
+  { valor: "salas", label: "Salas" },
+  { valor: "lista_espera", label: "Lista de espera" },
+  { valor: "plantao", label: "Plantão" },
+] as const;
+
 export default function ConfiguracoesPage() {
   const inputRestaurarRef = useRef<HTMLInputElement>(null);
+  const [tabelaHistorico, setTabelaHistorico] = useState<string>("associados");
   const [mensagem, setMensagem] = useState<string | null>(null);
   const [mostrarHistorico, setMostrarHistorico] = useState(false);
   const [historico, setHistorico] = useState<RegistroExportacao[]>([]);
@@ -159,23 +170,23 @@ function handleSalvarDadosNoProjeto() {
     setTimeout(() => window.location.reload(), 1500);
   }
 
-  function handleDesfazer() {
-    const ok = historicoService.desfazer();
+  async function handleDesfazer() {
+    const ok = await historicoService.desfazer(tabelaHistorico);
     if (ok) {
       avisar("Última alteração desfeita. Recarregando...");
       setTimeout(() => window.location.reload(), 1000);
     } else {
-      avisar("Não há nada para desfazer.");
+      avisar("Não há nada para desfazer nessa aba.");
     }
   }
 
-  function handleRefazer() {
-    const ok = historicoService.refazer();
+  async function handleRefazer() {
+    const ok = await historicoService.refazer(tabelaHistorico);
     if (ok) {
       avisar("Alteração refeita. Recarregando...");
       setTimeout(() => window.location.reload(), 1000);
     } else {
-      avisar("Não há nada para refazer.");
+      avisar("Não há nada para refazer nessa aba.");
     }
   }
 
@@ -312,11 +323,20 @@ function handleSalvarDadosNoProjeto() {
         <Btn onClick={handleCarregarDadosDoProjeto}>📥 Carregar dados do projeto</Btn>
       </Section>
 
-      <Section title="Desfazer / Refazer" desc="Reverter as últimas alterações feitas no sistema">
-        <Btn onClick={handleDesfazer} disabled={!historicoService.podeDesfazer()}>
+      <Section title="Desfazer / Refazer" desc="Reverter as últimas alterações feitas no sistema, por aba/módulo">
+        <select
+          value={tabelaHistorico}
+          onChange={(e) => setTabelaHistorico(e.target.value)}
+          style={{ padding: 8, borderRadius: 6, border: "1px solid var(--border-default)", background: "var(--background-primary)", color: "var(--text-primary)" }}
+        >
+          {TABELAS_HISTORICO.map((t) => (
+            <option key={t.valor} value={t.valor}>{t.label}</option>
+          ))}
+        </select>
+        <Btn onClick={handleDesfazer} disabled={!historicoService.podeDesfazer(tabelaHistorico)}>
           ↩️ Desfazer última ação
         </Btn>
-        <Btn onClick={handleRefazer} disabled={!historicoService.podeRefazer()}>
+        <Btn onClick={handleRefazer} disabled={!historicoService.podeRefazer(tabelaHistorico)}>
           ↪️ Refazer
         </Btn>
       </Section>
