@@ -250,8 +250,24 @@ export default function TurmasPage() {
                           {modalidade ? `${modalidade.icone} ${modalidade.nome}` : "Modalidade removida"}
                         </span>
                       </td>
-                      <td style={{ padding: "12px 8px", color: "var(--text-primary)" }}>
-                        {instrutor?.nome ?? "Sem instrutor"}
+                      <td style={{ padding: "12px 8px" }}>
+                        <select
+                          value={turma.instrutorId ?? ""}
+                          onChange={(e) => editar(turma.id, { instrutorId: e.target.value })}
+                          style={{
+                            padding: "4px 6px",
+                            borderRadius: 6,
+                            border: "1px solid var(--border-default)",
+                            background: "var(--background-secondary)",
+                            color: "var(--text-primary)",
+                            fontSize: 13,
+                          }}
+                        >
+                          <option value="">Sem instrutor</option>
+                          {instrutores.map((i) => (
+                            <option key={i.id} value={i.id}>{i.nome}</option>
+                          ))}
+                        </select>
                       </td>
                       <td style={{ padding: "12px 8px", color: "var(--text-primary)" }}>
                         {turma.sala}
