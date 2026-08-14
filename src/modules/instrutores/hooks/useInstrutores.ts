@@ -7,7 +7,6 @@ import { useEffect, useState, useCallback } from "react";
 
 import { instrutoresService } from "../services/instrutores.service";
 import { buscarComCache } from "../../../lib/cacheOffline";
-import { executarOuEnfileirar } from "../../../lib/filaOffline";
 
 import type {
   Instrutor,
