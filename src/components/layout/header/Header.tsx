@@ -1,7 +1,22 @@
+import { useEffect, useState } from "react";
 import { useTema } from "@/hooks/useTema";
-
+import { syncQueueService } from "@/lib/syncQueue.service";
 export function Header() {
   const { escuro, alternar } = useTema();
+  const [pendencias, setPendencias] = useState(0);
+
+  useEffect(() => {
+    const atualizar = () => setPendencias(syncQueueService.qtdPendencias());
+    atualizar();
+    window.addEventListener("apusm:sync:mudou", atualizar);
+    window.addEventListener("online", atualizar);
+    window.addEventListener("offline", atualizar);
+    return () => {
+      window.removeEventListener("apusm:sync:mudou", atualizar);
+      window.removeEventListener("online", atualizar);
+      window.removeEventListener("offline", atualizar);
+    };
+  }, []);
 
   return (
     <header
@@ -24,6 +39,24 @@ export function Header() {
       </h2>
 
       <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
+        {pendencias > 0 && (
+          <div
+            title={`${pendencias} alteração(ões) aguardando conexão`}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              fontSize: 12,
+              fontWeight: 600,
+              color: "#b45309",
+              background: "#fef3c7",
+              padding: "4px 10px",
+              borderRadius: 12,
+            }}
+          >
+            ⏳ {pendencias} pendente{pendencias > 1 ? "s" : ""}
+          </div>
+        )}
         <button
           onClick={alternar}
           title={escuro ? "Mudar para tema claro" : "Mudar para tema escuro"}
