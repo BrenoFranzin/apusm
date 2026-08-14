@@ -328,7 +328,7 @@ useEffect(() => {
           <div
             onClick={(e) => e.stopPropagation()}
             className="apusm-card"
-            style={{ maxWidth: 820, width: "100%", background: "var(--background-tertiary)" }}
+            style={{ maxWidth: 820, width: "100%", background: "var(--background-tertiary)", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}
           >
             <h2 style={{ fontWeight: 600, fontSize: 17, marginBottom: 12, color: "var(--text-primary)" }}>Inserir plantão em massa</h2>
 
@@ -336,7 +336,7 @@ useEffect(() => {
             <select
               value={instrutorMassa}
               onChange={(e) => trocarInstrutorMassa(e.target.value)}
-              style={{ width: "100%", border: "1px solid var(--border-default)", background: "var(--background-primary)", color: "var(--text-primary)", borderRadius: 6, padding: 8, margin: "4px 0 14px" }}
+              style={{ width: "100%", maxWidth: 400, border: "1px solid var(--border-default)", background: "var(--background-primary)", color: "var(--text-primary)", borderRadius: 6, padding: 8, margin: "4px 0 14px" }}
             >
               {instrutores.map((i) => (
                 <option key={i.id} value={i.id}>{i.nome}</option>
@@ -347,7 +347,7 @@ useEffect(() => {
               Marque todos os dias/horários em que ele deve entrar no plantão.
             </p>
 
-            <div style={{ overflowX: "auto" }}>
+            <div style={{ overflowX: "auto", width: "100%", display: "flex", justifyContent: "center" }}>
               <table style={{ borderCollapse: "collapse", minWidth: 520 }}>
                 <thead>
                   <tr>
