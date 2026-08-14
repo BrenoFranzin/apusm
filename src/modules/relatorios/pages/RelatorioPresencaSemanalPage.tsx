@@ -240,9 +240,16 @@ function SemanaModal({
   const { inicio, fim } = calcularFaixaSemana(ano, mes, semana);
   const fmtCompleto = (d: Date) => `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
 
+  const hojeSemHora = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+  const semanaJaPassou = fim < hojeSemHora;
+
   function valorAtual(turmaId: string): number {
     const r = registros.find((r) => r.turmaId === turmaId && r.semana === semana);
     return r?.totalAlunos ?? 0;
+  }
+
+  function temRegistro(turmaId: string): boolean {
+    return registros.some((r) => r.turmaId === turmaId && r.semana === semana);
   }
 
   const gruposPorModalidade = turmasComModalidade.reduce((acc, item) => {
@@ -331,7 +338,7 @@ function SemanaModal({
                               onBlur={(e) => onAlterar(turma.id, semana, e.target.value)}
                               style={{
                                 width: 65, padding: "6px 3px", textAlign: "center",
-                                border: `1px solid ${valorAtual(turma.id) === 0 ? "#dc2626" : "var(--border-default)"}`, borderRadius: 5,
+                                border: `1px solid ${semanaJaPassou && !temRegistro(turma.id) && !registroDaTurma(turma.id) ? "#dc2626" : "var(--border-default)"}`, borderRadius: 5,
                                 background: salvando === chave ? "var(--color-primary-light)" : "var(--background-primary)",
                                 color: "var(--text-primary)", fontSize: 15, fontWeight: 700,
                               }}
@@ -710,6 +717,15 @@ export default function RelatorioPresencaSemanalPage() {
             >
               <p style={{ fontWeight: 700, fontSize: 15, margin: "0 0 2px", color: "var(--text-primary)" }}>{ORDINAL[semana - 1]} SEMANA</p>
               <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: 0 }}>{label}</p>
+              {(() => {
+                const pendentes = turmasNaoPreenchidas(semana);
+                if (pendentes.length === 0) return null;
+                return (
+                  <p style={{ fontSize: 11, fontWeight: 700, color: "#dc2626", margin: "4px 0 0" }} title={pendentes.map(({ turma }) => `${DIA_LABEL[turma.dia]} ${turma.horario}`).join(", ")}>
+                    ⚠ {pendentes.length} turma(s) pendente(s)
+                  </p>
+                );
+              })()}
             </button>
           );
         })}
