@@ -68,21 +68,18 @@ class AssociadosService {
       throw new Error(`Já existe um associado cadastrado com o nome "${dados.nome.trim()}".`);
     }
 
-    const { data, error } = await supabase
-      .from("associados")
-      .insert({
-        nome: nomeFormatado,
-        telefone: dados.telefone ?? "",
-        status: dados.status,
-        historico: [{ id: crypto.randomUUID(), data: new Date().toISOString(), descricao: "Cadastro criado" }],
-        matriculas: [],
-        frequencias: [],
-      })
-      .select()
-      .single();
+    const novoAssociado = {
+      id: crypto.randomUUID(),
+      nome: nomeFormatado,
+      telefone: dados.telefone ?? "",
+      status: dados.status,
+      historico: [{ id: crypto.randomUUID(), data: new Date().toISOString(), descricao: "Cadastro criado" }],
+      matriculas: [],
+      frequencias: [],
+    };
 
-    if (error) throw new Error(error.message);
-    return toAssociado(data);
+    await syncQueueService.gravar("associados", "insert", novoAssociado);
+    return toAssociado(novoAssociado);
   }
 
   async atualizar(id: string, dados: AtualizarAssociadoDTO): Promise<Associado | undefined> {
@@ -99,14 +96,13 @@ class AssociadosService {
     if (dados.telefone !== undefined) payload.telefone = dados.telefone;
     if (dados.status !== undefined) payload.status = dados.status;
 
-    const { data, error } = await supabase.from("associados").update(payload).eq("id", id).select().single();
-    if (error) { console.error(error); return undefined; }
-    return toAssociado(data);
+    payload.id = id;
+    await syncQueueService.gravar("associados", "update", payload);
+    return toAssociado({ ...atual, ...payload });
   }
 
   async excluir(id: string): Promise<void> {
-    const { error } = await supabase.from("associados").delete().eq("id", id);
-    if (error) console.error(error);
+    await syncQueueService.gravar("associados", "delete", { id });
   }
 
   async contarMatriculasPorTurma(turmaId: string): Promise<number> {
