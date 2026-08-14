@@ -8,6 +8,7 @@ import { listaEsperaService } from "@/modules/lista-espera/services/listaEspera.
 import { limitesService } from "@/modules/limites/services/limites.service";
 import { turmasService } from "@/modules/turmas/services/turmas.service";
 import { supabase } from "@/lib/supabaseClient";
+import { syncQueueService } from "@/lib/syncQueue.service";
 
 import type {
   Associado,
