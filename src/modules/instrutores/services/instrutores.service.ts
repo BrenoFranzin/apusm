@@ -3,6 +3,7 @@
 // Arquivo: instrutores.service.ts
 // ======================================================
 import { supabase } from "@/lib/supabaseClient";
+import { syncQueueService } from "@/lib/syncQueue.service";
 import type {
   Instrutor,
   CriarInstrutorDTO,
