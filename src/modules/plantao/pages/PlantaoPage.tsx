@@ -328,7 +328,7 @@ useEffect(() => {
           <div
             onClick={(e) => e.stopPropagation()}
             className="apusm-card"
-            style={{ maxWidth: 820, width: "100%", background: "var(--background-tertiary)" }}
+            style={{ maxWidth: 820, width: "100%", background: "var(--background-tertiary)", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}
           >
             <h2 style={{ fontWeight: 600, fontSize: 17, marginBottom: 12, color: "var(--text-primary)" }}>Inserir plantão em massa</h2>
 
@@ -336,7 +336,7 @@ useEffect(() => {
             <select
               value={instrutorMassa}
               onChange={(e) => trocarInstrutorMassa(e.target.value)}
-              style={{ width: "100%", border: "1px solid var(--border-default)", background: "var(--background-primary)", color: "var(--text-primary)", borderRadius: 6, padding: 8, margin: "4px 0 14px" }}
+              style={{ width: "100%", maxWidth: 400, border: "1px solid var(--border-default)", background: "var(--background-primary)", color: "var(--text-primary)", borderRadius: 6, padding: 8, margin: "4px 0 14px" }}
             >
               {instrutores.map((i) => (
                 <option key={i.id} value={i.id}>{i.nome}</option>
@@ -347,20 +347,24 @@ useEffect(() => {
               Marque todos os dias/horários em que ele deve entrar no plantão.
             </p>
 
-            <div style={{ overflowX: "auto" }}>
-              <table style={{ borderCollapse: "collapse", minWidth: 520 }}>
+            <div style={{ overflowX: "auto", width: "100%", display: "flex", justifyContent: "center" }}>
+              <table style={{ borderCollapse: "collapse", tableLayout: "fixed", minWidth: 520 }}>
+                <colgroup>
+                  <col style={{ width: 70 }} />
+                  {ORDEM_DIAS.map((d) => <col key={d} style={{ width: 90 }} />)}
+                </colgroup>
                 <thead>
                   <tr>
-                    <th style={{ border: "1px solid #1e293b", padding: 6, fontSize: 11, color: "var(--text-secondary)" }}>Horário</th>
+                    <th style={{ border: "2px solid #1e293b", padding: 8, fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, color: "#fff", background: "var(--color-primary)" }}>Horário</th>
                     {ORDEM_DIAS.map((d) => (
-                      <th key={d} style={{ border: "1px solid var(--border-default)", padding: 6, fontSize: 11, color: "var(--text-secondary)" }}>{NOME_DIA[d]}</th>
+                      <th key={d} style={{ border: "2px solid #1e293b", padding: 8, fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, color: "#fff", background: "var(--color-primary)" }}>{NOME_DIA[d]}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {HORARIOS.map((horario) => (
                     <tr key={horario}>
-                      <td style={{ border: "1px solid var(--border-default)", padding: 6, fontWeight: 600, textAlign: "center", color: "var(--text-primary)" }}>{horario}</td>
+                      <td style={{ border: "2px solid #1e293b", padding: 8, fontWeight: 700, fontSize: 13, textAlign: "center", color: "#fff", background: "var(--color-primary-hover)" }}>{horario}</td>
                       {ORDEM_DIAS.map((dia) => {
                         const chave = `${dia}|${horario}`;
                         const marcado = marcados.has(chave);
@@ -374,25 +378,29 @@ useEffect(() => {
                             onClick={() => toggleCelula(dia, horario)}
                             title={emAula ? "Instrutor já dá aula neste horário" : undefined}
                             style={{
-                              border: "1px solid var(--border-default)",
-                              padding: 6,
+                              border: "2px solid #1e293b",
+                              padding: 0,
+                              height: 34,
+                              width: 90,
                               textAlign: "center",
                               cursor: "pointer",
                               background: corFundo,
                               color: marcado || emAula ? "#fff" : "var(--text-primary)",
+                              fontSize: 15,
+                              fontWeight: 700,
                             }}
                           >
                             {marcado ? "✓" : ""}
                           </td>
                         );
-                      })}cd C:\Projetos\Projetos\SaaS\apusm-modalidades; git add .; git commit -m "fix: modal plantao em massa maior, fecha ao clicar fora, aviso de instrutor ja em aula"; git push
+                      })}
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
 
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
+            <div style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 16 }}>
               <button onClick={() => setModalAberto(false)} style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid var(--border-default)", background: "var(--background-primary)", color: "var(--text-primary)" }}>
                 Cancelar
               </button>

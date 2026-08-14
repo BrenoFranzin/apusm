@@ -1,107 +1,71 @@
-﻿// ======================================================
-// APUSM SaaS — Módulo Configurações
-// Arquivo: historico.service.ts
-// Sistema de Desfazer/Refazer baseado em ações registradas
-// pelos services (não mais espiona localStorage)
-// ======================================================
-import { syncQueueService } from "@/lib/syncQueue.service";
+﻿import { syncQueueService } from "@/lib/syncQueue.service";
 
+const LIMITE = 20;
 type Operacao = "insert" | "update" | "delete";
 
-interface AcaoHistorico {
+interface EntradaHistorico {
   tabela: string;
-  operacao: Operacao;
-  payload: Record<string, unknown>;
+  operacaoOriginal: Operacao;
+  antes: Record<string, unknown> | null;
+  depois: Record<string, unknown> | null;
 }
 
-export interface RegistroHistorico {
-  desfazer: AcaoHistorico;
-  refazer: AcaoHistorico;
-}
-
-const CHAVE_UNDO = "apusm:historico:undo";
-const CHAVE_REDO = "apusm:historico:redo";
-const LIMITE = 20;
-
-function carregarPilha(chave: string): RegistroHistorico[] {
-  const bruto = localStorage.getItem(chave);
-  return bruto ? JSON.parse(bruto) : [];
-}
-
-function salvarPilha(chave: string, pilha: RegistroHistorico[]): void {
-  localStorage.setItem(chave, JSON.stringify(pilha));
-}
+const pilhasUndo: Record<string, EntradaHistorico[]> = {};
+const pilhasRedo: Record<string, EntradaHistorico[]> = {};
 
 class HistoricoService {
-  // Mantido por compatibilidade com main.tsx — não faz mais nada,
-  // pois o histórico agora é alimentado pelos services diretamente.
-  iniciar(): void {}
-
-  registrar(registro: RegistroHistorico): void {
-    const undoPilha = carregarPilha(CHAVE_UNDO);
-    undoPilha.push(registro);
-    if (undoPilha.length > LIMITE) {
-      undoPilha.shift();
-    }
-    salvarPilha(CHAVE_UNDO, undoPilha);
-    salvarPilha(CHAVE_REDO, []);
+  registrar(tabela: string, operacaoOriginal: Operacao, antes: Record<string, unknown> | null, depois: Record<string, unknown> | null): void {
+    if (!pilhasUndo[tabela]) pilhasUndo[tabela] = [];
+    pilhasUndo[tabela].push({ tabela, operacaoOriginal, antes, depois });
+    if (pilhasUndo[tabela].length > LIMITE) pilhasUndo[tabela].shift();
+    pilhasRedo[tabela] = [];
     window.dispatchEvent(new Event("apusm:historico:mudou"));
   }
 
-  podeDesfazer(): boolean {
-    return carregarPilha(CHAVE_UNDO).length > 0;
+  podeDesfazer(tabela: string): boolean {
+    return (pilhasUndo[tabela]?.length ?? 0) > 0;
   }
 
-  podeRefazer(): boolean {
-    return carregarPilha(CHAVE_REDO).length > 0;
+  podeRefazer(tabela: string): boolean {
+    return (pilhasRedo[tabela]?.length ?? 0) > 0;
   }
 
-  async desfazer(): Promise<boolean> {
-    const undoPilha = carregarPilha(CHAVE_UNDO);
-    const registro = undoPilha.pop();
-    if (!registro) {
-      return false;
+  async desfazer(tabela: string): Promise<boolean> {
+    const pilha = pilhasUndo[tabela];
+    const entrada = pilha?.pop();
+    if (!entrada) return false;
+
+    if (entrada.operacaoOriginal === "insert") {
+      await syncQueueService.gravar(tabela, "delete", { id: (entrada.depois as any).id });
+    } else if (entrada.operacaoOriginal === "delete") {
+      await syncQueueService.gravar(tabela, "insert", entrada.antes!);
+    } else {
+      await syncQueueService.gravar(tabela, "update", entrada.antes!);
     }
 
-    await syncQueueService.gravar(
-      registro.desfazer.tabela,
-      registro.desfazer.operacao,
-      registro.desfazer.payload
-    );
-
-    const redoPilha = carregarPilha(CHAVE_REDO);
-    redoPilha.push(registro);
-    if (redoPilha.length > LIMITE) {
-      redoPilha.shift();
-    }
-
-    salvarPilha(CHAVE_UNDO, undoPilha);
-    salvarPilha(CHAVE_REDO, redoPilha);
+    if (!pilhasRedo[tabela]) pilhasRedo[tabela] = [];
+    pilhasRedo[tabela].push(entrada);
+    if (pilhasRedo[tabela].length > LIMITE) pilhasRedo[tabela].shift();
     window.dispatchEvent(new Event("apusm:historico:mudou"));
     return true;
   }
 
-  async refazer(): Promise<boolean> {
-    const redoPilha = carregarPilha(CHAVE_REDO);
-    const registro = redoPilha.pop();
-    if (!registro) {
-      return false;
+  async refazer(tabela: string): Promise<boolean> {
+    const pilha = pilhasRedo[tabela];
+    const entrada = pilha?.pop();
+    if (!entrada) return false;
+
+    if (entrada.operacaoOriginal === "insert") {
+      await syncQueueService.gravar(tabela, "insert", entrada.depois!);
+    } else if (entrada.operacaoOriginal === "delete") {
+      await syncQueueService.gravar(tabela, "delete", { id: (entrada.antes as any).id });
+    } else {
+      await syncQueueService.gravar(tabela, "update", entrada.depois!);
     }
 
-    await syncQueueService.gravar(
-      registro.refazer.tabela,
-      registro.refazer.operacao,
-      registro.refazer.payload
-    );
-
-    const undoPilha = carregarPilha(CHAVE_UNDO);
-    undoPilha.push(registro);
-    if (undoPilha.length > LIMITE) {
-      undoPilha.shift();
-    }
-
-    salvarPilha(CHAVE_REDO, redoPilha);
-    salvarPilha(CHAVE_UNDO, undoPilha);
+    if (!pilhasUndo[tabela]) pilhasUndo[tabela] = [];
+    pilhasUndo[tabela].push(entrada);
+    if (pilhasUndo[tabela].length > LIMITE) pilhasUndo[tabela].shift();
     window.dispatchEvent(new Event("apusm:historico:mudou"));
     return true;
   }

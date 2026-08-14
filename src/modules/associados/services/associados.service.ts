@@ -9,7 +9,6 @@ import { limitesService } from "@/modules/limites/services/limites.service";
 import { turmasService } from "@/modules/turmas/services/turmas.service";
 import { supabase } from "@/lib/supabaseClient";
 import { syncQueueService } from "@/lib/syncQueue.service";
-import { historicoService } from "@/modules/configuracoes/services/historico.service";
 
 import type {
   Associado,
@@ -80,12 +79,6 @@ class AssociadosService {
     };
 
     await syncQueueService.gravar("associados", "insert", novoAssociado);
-
-    historicoService.registrar({
-      desfazer: { tabela: "associados", operacao: "delete", payload: { id: novoAssociado.id } },
-      refazer: { tabela: "associados", operacao: "insert", payload: novoAssociado },
-    });
-
     return toAssociado(novoAssociado);
   }
 
@@ -103,37 +96,13 @@ class AssociadosService {
     if (dados.telefone !== undefined) payload.telefone = dados.telefone;
     if (dados.status !== undefined) payload.status = dados.status;
 
-    const { data: linhaAntes } = await supabase.from("associados").select("*").eq("id", id).single();
-
-    const { data, error } = await supabase.from("associados").update(payload).eq("id", id).select().single();
-    if (error) { console.error(error); return undefined; }
-
-    if (linhaAntes) {
-      const payloadAnterior: Record<string, unknown> = { id };
-      for (const campo of Object.keys(payload)) {
-        payloadAnterior[campo] = (linhaAntes as any)[campo];
-      }
-      historicoService.registrar({
-        desfazer: { tabela: "associados", operacao: "update", payload: payloadAnterior },
-        refazer: { tabela: "associados", operacao: "update", payload: { id, ...payload } },
-      });
-    }
-
-    return toAssociado(data);
+    payload.id = id;
+    await syncQueueService.gravar("associados", "update", payload);
+    return toAssociado({ ...atual, ...payload });
   }
 
   async excluir(id: string): Promise<void> {
-    const { data: linhaAntes } = await supabase.from("associados").select("*").eq("id", id).single();
-
-    const { error } = await supabase.from("associados").delete().eq("id", id);
-    if (error) { console.error(error); return; }
-
-    if (linhaAntes) {
-      historicoService.registrar({
-        desfazer: { tabela: "associados", operacao: "insert", payload: linhaAntes },
-        refazer: { tabela: "associados", operacao: "delete", payload: { id } },
-      });
-    }
+    await syncQueueService.gravar("associados", "delete", { id });
   }
 
   async contarMatriculasPorTurma(turmaId: string): Promise<number> {

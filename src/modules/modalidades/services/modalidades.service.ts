@@ -3,7 +3,7 @@
 // Arquivo: modalidades.service.ts
 // ======================================================
 import { supabase } from "@/lib/supabaseClient";
-import { historicoService } from "@/modules/configuracoes/services/historico.service";
+import { syncQueueService } from "@/lib/syncQueue.service";
 import type {
   Modalidade,
   CriarModalidadeDTO,
@@ -36,26 +36,17 @@ class ModalidadesService {
   }
 
   async criar(dados: CriarModalidadeDTO): Promise<Modalidade | undefined> {
-    const { data, error } = await supabase
-      .from("modalidades")
-      .insert({
-        nome: dados.nome,
-        icone: dados.icone,
-        cor: dados.cor,
-        salas: dados.salas,
-        descricao: dados.descricao,
-        instrutores_ids: dados.instrutoresIds ?? [],
-      })
-      .select()
-      .single();
-    if (error) { console.error(error); return undefined; }
-
-    historicoService.registrar({
-      desfazer: { tabela: "modalidades", operacao: "delete", payload: { id: data.id } },
-      refazer: { tabela: "modalidades", operacao: "insert", payload: data },
-    });
-
-    return toModalidade(data);
+    const nova = {
+      id: crypto.randomUUID(),
+      nome: dados.nome,
+      icone: dados.icone,
+      cor: dados.cor,
+      salas: dados.salas,
+      descricao: dados.descricao,
+      instrutores_ids: dados.instrutoresIds ?? [],
+    };
+    await syncQueueService.gravar("modalidades", "insert", nova);
+    return toModalidade(nova);
   }
 
   async atualizar(id: string, dados: AtualizarModalidadeDTO): Promise<Modalidade | undefined> {
@@ -66,38 +57,14 @@ class ModalidadesService {
     if (dados.salas !== undefined) payload.salas = dados.salas;
     if (dados.descricao !== undefined) payload.descricao = dados.descricao;
     if (dados.instrutoresIds !== undefined) payload.instrutores_ids = dados.instrutoresIds;
-
-    const { data: linhaAntes } = await supabase.from("modalidades").select("*").eq("id", id).single();
-
-    const { data, error } = await supabase.from("modalidades").update(payload).eq("id", id).select().single();
-    if (error) { console.error(error); return undefined; }
-
-    if (linhaAntes) {
-      const payloadAnterior: Record<string, unknown> = { id };
-      for (const campo of Object.keys(payload)) {
-        payloadAnterior[campo] = (linhaAntes as any)[campo];
-      }
-      historicoService.registrar({
-        desfazer: { tabela: "modalidades", operacao: "update", payload: payloadAnterior },
-        refazer: { tabela: "modalidades", operacao: "update", payload: { id, ...payload } },
-      });
-    }
-
-    return toModalidade(data);
+    payload.id = id;
+    const atual = await this.buscarPorId(id);
+    await syncQueueService.gravar("modalidades", "update", payload);
+    return atual ? toModalidade({ ...atual, ...payload }) : undefined;
   }
 
   async excluir(id: string): Promise<void> {
-    const { data: linhaAntes } = await supabase.from("modalidades").select("*").eq("id", id).single();
-
-    const { error } = await supabase.from("modalidades").delete().eq("id", id);
-    if (error) { console.error(error); return; }
-
-    if (linhaAntes) {
-      historicoService.registrar({
-        desfazer: { tabela: "modalidades", operacao: "insert", payload: linhaAntes },
-        refazer: { tabela: "modalidades", operacao: "delete", payload: { id } },
-      });
-    }
+    await syncQueueService.gravar("modalidades", "delete", { id });
   }
 
   async vincularInstrutores(id: string, instrutoresIds: string[]): Promise<void> {
