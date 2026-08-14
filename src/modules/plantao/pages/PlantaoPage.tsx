@@ -385,14 +385,14 @@ useEffect(() => {
                             {marcado ? "✓" : ""}
                           </td>
                         );
-                      })}cd C:\Projetos\Projetos\SaaS\apusm-modalidades; git add .; git commit -m "fix: modal plantao em massa maior, fecha ao clicar fora, aviso de instrutor ja em aula"; git push
+                      })}
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
 
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
+            <div style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 16 }}>
               <button onClick={() => setModalAberto(false)} style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid var(--border-default)", background: "var(--background-primary)", color: "var(--text-primary)" }}>
                 Cancelar
               </button>
