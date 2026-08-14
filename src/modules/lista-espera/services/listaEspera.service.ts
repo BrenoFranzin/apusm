@@ -4,6 +4,7 @@
 // ======================================================
 
 import { supabase } from "@/lib/supabaseClient";
+import { syncQueueService } from "@/lib/syncQueue.service";
 import type { EntradaListaEspera } from "../types/listaEspera.types";
 
 function capitalizarNome(nome: string): string {
@@ -79,22 +80,19 @@ class ListaEsperaService {
     if (erroContagem) throw new Error(erroContagem.message);
     const proximaPosicao = (count ?? 0) + 1;
 
-    const { data, error } = await supabase
-      .from("lista_espera")
-      .insert({
-        associado_id: dados.associadoId,
-        associado_nome: capitalizarNome(dados.associadoNome),
-        turma_id: dados.turmaId,
-        turma_nome: dados.turmaNome,
-        modalidade_id: dados.modalidadeId,
-        modalidade_nome: dados.modalidadeNome,
-        posicao: proximaPosicao,
-      })
-      .select()
-      .single();
+    const nova = {
+      id: crypto.randomUUID(),
+      associado_id: dados.associadoId,
+      associado_nome: capitalizarNome(dados.associadoNome),
+      turma_id: dados.turmaId,
+      turma_nome: dados.turmaNome,
+      modalidade_id: dados.modalidadeId,
+      modalidade_nome: dados.modalidadeNome,
+      posicao: proximaPosicao,
+    };
 
-    if (error) throw new Error(error.message);
-    return toEntrada(data);
+    await syncQueueService.gravar("lista_espera", "insert", nova);
+    return toEntrada(nova);
   }
 
   async sairDaFila(entradaId: string): Promise<void> {
@@ -124,11 +122,7 @@ class ListaEsperaService {
   }
 
   async atualizarObservacao(entradaId: string, observacao: string): Promise<void> {
-    const { error } = await supabase
-      .from("lista_espera")
-      .update({ observacao })
-      .eq("id", entradaId);
-    if (error) console.error(error);
+    await syncQueueService.gravar("lista_espera", "update", { id: entradaId, observacao });
   }
 
   async chamarProximo(turmaId: string): Promise<EntradaListaEspera | undefined> {

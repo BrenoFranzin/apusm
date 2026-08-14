@@ -3,6 +3,7 @@
 // Arquivo: plantao.service.ts
 // ======================================================
 import { supabase } from "@/lib/supabaseClient";
+import { syncQueueService } from "@/lib/syncQueue.service";
 import type { EntradaPlantao, DiaSemanaPlantao } from "../types/plantao.types";
 
 class PlantaoService {
@@ -18,20 +19,25 @@ class PlantaoService {
   }
 
   async adicionar(instrutorId: string, dia: DiaSemanaPlantao, horario: string): Promise<void> {
-    const { error } = await supabase
-      .from("plantao")
-      .insert({ instrutor_id: instrutorId, dia, horario });
-    if (error) console.error(error);
+    await syncQueueService.gravar("plantao", "insert", {
+      id: crypto.randomUUID(),
+      instrutor_id: instrutorId,
+      dia,
+      horario,
+    });
   }
 
   async remover(instrutorId: string, dia: DiaSemanaPlantao, horario: string): Promise<void> {
-    const { error } = await supabase
+    const { data } = await supabase
       .from("plantao")
-      .delete()
+      .select("id")
       .eq("instrutor_id", instrutorId)
       .eq("dia", dia)
-      .eq("horario", horario);
-    if (error) console.error(error);
+      .eq("horario", horario)
+      .maybeSingle();
+    if (data?.id) {
+      await syncQueueService.gravar("plantao", "delete", { id: data.id });
+    }
   }
 
   async definirEmMassa(instrutorId: string, entradas: { dia: DiaSemanaPlantao; horario: string }[]): Promise<void> {
