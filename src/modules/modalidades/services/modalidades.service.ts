@@ -4,6 +4,7 @@
 // ======================================================
 import { supabase } from "@/lib/supabaseClient";
 import { syncQueueService } from "@/lib/syncQueue.service";
+import { historicoService } from "@/modules/configuracoes/services/historico.service";
 import type {
   Modalidade,
   CriarModalidadeDTO,
@@ -46,6 +47,7 @@ class ModalidadesService {
       instrutores_ids: dados.instrutoresIds ?? [],
     };
     await syncQueueService.gravar("modalidades", "insert", nova);
+    historicoService.registrar("modalidades", "insert", null, nova);
     return toModalidade(nova);
   }
 
@@ -60,11 +62,24 @@ class ModalidadesService {
     payload.id = id;
     const atual = await this.buscarPorId(id);
     await syncQueueService.gravar("modalidades", "update", payload);
+    if (atual) {
+      const antes: Record<string, unknown> = { id };
+      for (const campo of Object.keys(payload)) {
+        if (campo === "id") continue;
+        const campoOriginal = campo === "instrutores_ids" ? "instrutoresIds" : campo;
+        antes[campo] = (atual as any)[campoOriginal];
+      }
+      historicoService.registrar("modalidades", "update", antes, payload);
+    }
     return atual ? toModalidade({ ...atual, ...payload }) : undefined;
   }
 
   async excluir(id: string): Promise<void> {
+    const atual = await this.buscarPorId(id);
     await syncQueueService.gravar("modalidades", "delete", { id });
+    if (atual) {
+      historicoService.registrar("modalidades", "delete", atual as unknown as Record<string, unknown>, null);
+    }
   }
 
   async vincularInstrutores(id: string, instrutoresIds: string[]): Promise<void> {

@@ -4,6 +4,7 @@
 // ======================================================
 import { supabase } from "@/lib/supabaseClient";
 import { syncQueueService } from "@/lib/syncQueue.service";
+import { historicoService } from "@/modules/configuracoes/services/historico.service";
 import type {
   Turma,
   CriarTurmaDTO,
@@ -65,6 +66,7 @@ class TurmasService {
     };
 
     await syncQueueService.gravar("turmas", "insert", nova);
+    historicoService.registrar("turmas", "insert", null, nova);
     return toTurma(nova);
   }
 
@@ -107,12 +109,29 @@ class TurmasService {
     if (dados.limiteNovosAlunos !== undefined) payload.limite_novos_alunos = dados.limiteNovosAlunos;
 
     payload.id = id;
+    const antes: Record<string, unknown> = { id };
+    for (const campo of Object.keys(payload)) {
+      if (campo === "id") continue;
+      antes[campo] = (nova => nova)(
+        campo === "modalidade_id" ? atual.modalidadeId :
+        campo === "instrutor_id" ? atual.instrutorId :
+        campo === "limite_vagas" ? atual.limiteVagas :
+        campo === "limite_novos_alunos" ? atual.limiteNovosAlunos :
+        (atual as any)[campo]
+      );
+    }
     await syncQueueService.gravar("turmas", "update", payload);
+    historicoService.registrar("turmas", "update", antes, payload);
     return toTurma({ ...atual, ...atualizada });
+
   }
 
   async excluir(id: string): Promise<void> {
+    const { data: linhaAntes } = await supabase.from("turmas").select("*").eq("id", id).single();
     await syncQueueService.gravar("turmas", "delete", { id });
+    if (linhaAntes) {
+      historicoService.registrar("turmas", "delete", linhaAntes, null);
+    }
   }
 }
 

@@ -9,6 +9,7 @@ import { limitesService } from "@/modules/limites/services/limites.service";
 import { turmasService } from "@/modules/turmas/services/turmas.service";
 import { supabase } from "@/lib/supabaseClient";
 import { syncQueueService } from "@/lib/syncQueue.service";
+import { historicoService } from "@/modules/configuracoes/services/historico.service";
 
 import type {
   Associado,
@@ -79,6 +80,7 @@ class AssociadosService {
     };
 
     await syncQueueService.gravar("associados", "insert", novoAssociado);
+    historicoService.registrar("associados", "insert", null, novoAssociado);
     return toAssociado(novoAssociado);
   }
 
@@ -97,12 +99,21 @@ class AssociadosService {
     if (dados.status !== undefined) payload.status = dados.status;
 
     payload.id = id;
+    const antes: Record<string, unknown> = { id };
+    for (const campo of Object.keys(payload)) {
+      antes[campo] = (atual as any)[campo === "historico" ? "historico" : campo];
+    }
     await syncQueueService.gravar("associados", "update", payload);
+    historicoService.registrar("associados", "update", antes, payload);
     return toAssociado({ ...atual, ...payload });
   }
 
   async excluir(id: string): Promise<void> {
+    const atual = await this.buscarPorId(id);
     await syncQueueService.gravar("associados", "delete", { id });
+    if (atual) {
+      historicoService.registrar("associados", "delete", atual as unknown as Record<string, unknown>, null);
+    }
   }
 
   async contarMatriculasPorTurma(turmaId: string): Promise<number> {
