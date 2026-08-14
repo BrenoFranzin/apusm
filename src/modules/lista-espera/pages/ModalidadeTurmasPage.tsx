@@ -11,6 +11,7 @@ import { useAssociados } from "@/modules/associados/hooks/useAssociados";
 import { modalidadesService } from "@/modules/modalidades/services/modalidades.service";
 import { instrutoresService } from "@/modules/instrutores/services/instrutores.service";
 import { listaEsperaService } from "../services/listaEspera.service";
+import { buscarComCache } from "@/lib/cacheOffline";
 import { associadosService } from "@/modules/associados/services/associados.service";
 
 
@@ -53,11 +54,11 @@ const [todasModalidades, setTodasModalidades] = useState<Modalidade[]>([]);
   useEffect(() => {
     async function carregar() {
       const [mods, instrutoresData] = await Promise.all([
-        modalidadesService.listar(),
-        instrutoresService.listar(),
+        buscarComCache("modalidades", () => modalidadesService.listar(), (m) => setTodasModalidades(m)),
+        buscarComCache("instrutores", () => instrutoresService.listar(), setInstrutores),
       ]);
       setModalidade(mods.find((m) => m.id === modalidadeId) ?? null);
-setTodasModalidades(mods);
+      setTodasModalidades(mods);
       setInstrutores(instrutoresData);
     }
     carregar();
@@ -65,13 +66,10 @@ setTodasModalidades(mods);
 
   useEffect(() => {
     async function carregarFilas() {
-      const todasEntradas = await Promise.all(
-        turmas.map((t) => listaEsperaService.listarPorTurma(t.id))
-      );
-      setFilas(todasEntradas.flat());
+      setFilas(await listaEsperaService.listarTudo());
     }
-    if (turmas.length > 0) carregarFilas();
-  }, [turmas]);
+    carregarFilas();
+  }, []);
 
   const turmasDaModalidade = useMemo(
     () =>
@@ -293,7 +291,7 @@ setTodasModalidades(mods);
           borderRadius: 999,
         }}
       >
-        {matriculados.length}/10 — {10 - matriculados.length} vaga(s)
+        {matriculados.length}/{turma.limiteVagas ?? 10} — {(turma.limiteVagas ?? 10) - matriculados.length <= 0 ? "TURMA CHEIA" : `${(turma.limiteVagas ?? 10) - matriculados.length} vaga(s)`}
       </span>
     </p>
     <table style={{ width: "100%", fontSize: 13, borderCollapse: "separate", borderSpacing: 0, borderRadius: 10, overflow: "hidden", border: "1px solid var(--border-default)" }}>
@@ -732,7 +730,7 @@ setTodasModalidades(mods);
       </tbody>
     </table>
 
-    {(selecionados[turma.id] ?? []).length >= 1 && (10 - matriculados.length) > 0 && (
+    {(selecionados[turma.id] ?? []).length >= 1 && ((turma.limiteVagas ?? 10) - matriculados.length) > 0 && (
       <button
         onClick={() => setDecisaoTurmaId(turma.id)}
         style={{ marginTop: 10, fontSize: 12, fontWeight: 600, border: "none", borderRadius: 6, padding: "6px 12px", background: "var(--color-primary)", color: "#fff", cursor: "pointer" }}

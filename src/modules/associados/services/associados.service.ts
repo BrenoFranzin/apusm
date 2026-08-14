@@ -45,7 +45,7 @@ function toAssociado(row: any): Associado {
 
 class AssociadosService {
   async listar(): Promise<Associado[]> {
-    const { data, error } = await supabase.from("associados").select("*").order("nome");
+    const { data, error } = await supabase.from("associados").select("id, nome, telefone, status, data_cadastro, matriculas, frequencias").order("nome");
     if (error) { console.error(error); return []; }
     return (data ?? []).map(toAssociado);
   }
@@ -124,6 +124,13 @@ class AssociadosService {
   ): Promise<{ status: "MATRICULADO" | "LISTA_ESPERA"; associado?: Associado; posicaoFila?: number }> {
     const associado = await this.buscarPorId(associadoId);
     if (!associado) throw new Error("Associado não encontrado.");
+
+    const jaMatriculadoNestaTurma = associado.matriculas.some(
+      (m) => m.turmaId === dadosMatricula.turmaId && m.status !== "CANCELADA"
+    );
+    if (jaMatriculadoNestaTurma) {
+      throw new Error(`${associado.nome} já está matriculado(a) em ${dadosMatricula.modalidadeNome} (${dadosMatricula.turmaNome}).`);
+    }
 
     const limiteModalidade = await limitesService.obterLimiteDaModalidade(dadosMatricula.modalidadeId);
     const turmasNaModalidade = associado.matriculas.filter(

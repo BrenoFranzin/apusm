@@ -4,7 +4,7 @@
 // ======================================================
 
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 import { modalidadesService } from "@/modules/modalidades/services/modalidades.service";
 import { turmasService } from "@/modules/turmas/services/turmas.service";
@@ -30,6 +30,7 @@ function ajustarCorParaTema(cor: string, escuro: boolean) {
 
 export default function ListasEsperaPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [modalidades, setModalidades] = useState<Modalidade[]>([]);
   const [contagemPorModalidade, setContagemPorModalidade] = useState<Record<string, number>>({});
   const [escuro, setEscuro] = useState(ehModoEscuro());
@@ -43,19 +44,26 @@ export default function ListasEsperaPage() {
       const turmas = await turmasService.listar();
       const contagens: Record<string, number> = {};
 
-      for (const mod of mods) {
-        const turmasDaModalidade = turmas.filter((t) => t.modalidadeId === mod.id);
-        let total = 0;
-        for (const turma of turmasDaModalidade) {
-          const fila = await listaEsperaService.listarPorTurma(turma.id);
-          total += fila.length;
-        }
-        contagens[mod.id] = total;
-      }
+      const filasPorTurma = await Promise.all(
+        turmas.map((t) => listaEsperaService.listarPorTurma(t.id))
+      );
+
+      turmas.forEach((turma, i) => {
+        contagens[turma.modalidadeId] = (contagens[turma.modalidadeId] ?? 0) + filasPorTurma[i].length;
+      });
+
       setContagemPorModalidade(contagens);
     }
     carregar();
-  }, []);
+
+    // recarrega toda vez que o usuário volta pra essa aba/página
+    window.addEventListener("focus", carregar);
+    document.addEventListener("visibilitychange", carregar);
+    return () => {
+      window.removeEventListener("focus", carregar);
+      document.removeEventListener("visibilitychange", carregar);
+    };
+  }, [location.key]);
 
   useEffect(() => {
     const obs = new MutationObserver(() => setEscuro(ehModoEscuro()));
