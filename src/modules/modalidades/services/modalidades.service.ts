@@ -3,6 +3,7 @@
 // Arquivo: modalidades.service.ts
 // ======================================================
 import { supabase } from "@/lib/supabaseClient";
+import { syncQueueService } from "@/lib/syncQueue.service";
 import type {
   Modalidade,
   CriarModalidadeDTO,
@@ -35,20 +36,17 @@ class ModalidadesService {
   }
 
   async criar(dados: CriarModalidadeDTO): Promise<Modalidade | undefined> {
-    const { data, error } = await supabase
-      .from("modalidades")
-      .insert({
-        nome: dados.nome,
-        icone: dados.icone,
-        cor: dados.cor,
-        salas: dados.salas,
-        descricao: dados.descricao,
-        instrutores_ids: dados.instrutoresIds ?? [],
-      })
-      .select()
-      .single();
-    if (error) { console.error(error); return undefined; }
-    return toModalidade(data);
+    const nova = {
+      id: crypto.randomUUID(),
+      nome: dados.nome,
+      icone: dados.icone,
+      cor: dados.cor,
+      salas: dados.salas,
+      descricao: dados.descricao,
+      instrutores_ids: dados.instrutoresIds ?? [],
+    };
+    await syncQueueService.gravar("modalidades", "insert", nova);
+    return toModalidade(nova);
   }
 
   async atualizar(id: string, dados: AtualizarModalidadeDTO): Promise<Modalidade | undefined> {
@@ -59,14 +57,14 @@ class ModalidadesService {
     if (dados.salas !== undefined) payload.salas = dados.salas;
     if (dados.descricao !== undefined) payload.descricao = dados.descricao;
     if (dados.instrutoresIds !== undefined) payload.instrutores_ids = dados.instrutoresIds;
-    const { data, error } = await supabase.from("modalidades").update(payload).eq("id", id).select().single();
-    if (error) { console.error(error); return undefined; }
-    return toModalidade(data);
+    payload.id = id;
+    const atual = await this.buscarPorId(id);
+    await syncQueueService.gravar("modalidades", "update", payload);
+    return atual ? toModalidade({ ...atual, ...payload }) : undefined;
   }
 
   async excluir(id: string): Promise<void> {
-    const { error } = await supabase.from("modalidades").delete().eq("id", id);
-    if (error) console.error(error);
+    await syncQueueService.gravar("modalidades", "delete", { id });
   }
 
   async vincularInstrutores(id: string, instrutoresIds: string[]): Promise<void> {

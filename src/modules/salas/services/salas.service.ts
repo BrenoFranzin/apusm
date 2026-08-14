@@ -3,6 +3,7 @@
 // Arquivo: salas.service.ts
 // ======================================================
 import { supabase } from "@/lib/supabaseClient";
+import { syncQueueService } from "@/lib/syncQueue.service";
 import type { Sala, CriarSalaDTO, AtualizarSalaDTO } from "../types/sala.types";
 
 class SalasService {
@@ -13,20 +14,19 @@ class SalasService {
   }
 
   async criar(dados: CriarSalaDTO): Promise<Sala | undefined> {
-    const { data, error } = await supabase.from("salas").insert(dados).select().single();
-    if (error) { console.error(error); return undefined; }
-    return data as Sala;
+    const nova = { id: crypto.randomUUID(), ...dados };
+    await syncQueueService.gravar("salas", "insert", nova);
+    return nova as Sala;
   }
 
   async atualizar(id: string, dados: AtualizarSalaDTO): Promise<Sala | undefined> {
-    const { data, error } = await supabase.from("salas").update(dados).eq("id", id).select().single();
-    if (error) { console.error(error); return undefined; }
-    return data as Sala;
+    const payload: any = { ...dados, id };
+    await syncQueueService.gravar("salas", "update", payload);
+    return payload as Sala;
   }
 
   async excluir(id: string): Promise<void> {
-    const { error } = await supabase.from("salas").delete().eq("id", id);
-    if (error) console.error(error);
+    await syncQueueService.gravar("salas", "delete", { id });
   }
 }
 

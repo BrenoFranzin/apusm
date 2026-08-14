@@ -3,6 +3,7 @@
 // Arquivo: turmas.service.ts
 // ======================================================
 import { supabase } from "@/lib/supabaseClient";
+import { syncQueueService } from "@/lib/syncQueue.service";
 import type {
   Turma,
   CriarTurmaDTO,
@@ -52,22 +53,19 @@ class TurmasService {
       throw new Error(`A ${dados.sala} já está ocupada nesse dia e horário.`);
     }
 
-    const { data, error } = await supabase
-      .from("turmas")
-      .insert({
-        modalidade_id: dados.modalidadeId,
-        instrutor_id: dados.instrutorId,
-        dia: dados.dia,
-        horario: dados.horario,
-        sala: dados.sala,
-        limite_vagas: dados.limiteVagas ?? 10,
-        limite_novos_alunos: dados.limiteNovosAlunos ?? 9,
-      })
-      .select()
-      .single();
+    const nova = {
+      id: crypto.randomUUID(),
+      modalidade_id: dados.modalidadeId,
+      instrutor_id: dados.instrutorId,
+      dia: dados.dia,
+      horario: dados.horario,
+      sala: dados.sala,
+      limite_vagas: dados.limiteVagas ?? 10,
+      limite_novos_alunos: dados.limiteNovosAlunos ?? 9,
+    };
 
-    if (error) throw new Error(error.message);
-    return toTurma(data);
+    await syncQueueService.gravar("turmas", "insert", nova);
+    return toTurma(nova);
   }
 
   async atualizar(id: string, dados: AtualizarTurmaDTO): Promise<Turma | undefined> {
@@ -108,14 +106,13 @@ class TurmasService {
     if (dados.limiteVagas !== undefined) payload.limite_vagas = dados.limiteVagas;
     if (dados.limiteNovosAlunos !== undefined) payload.limite_novos_alunos = dados.limiteNovosAlunos;
 
-    const { data, error } = await supabase.from("turmas").update(payload).eq("id", id).select().single();
-    if (error) { console.error(error); return undefined; }
-    return toTurma(data);
+    payload.id = id;
+    await syncQueueService.gravar("turmas", "update", payload);
+    return toTurma({ ...atual, ...atualizada });
   }
 
   async excluir(id: string): Promise<void> {
-    const { error } = await supabase.from("turmas").delete().eq("id", id);
-    if (error) console.error(error);
+    await syncQueueService.gravar("turmas", "delete", { id });
   }
 }
 
