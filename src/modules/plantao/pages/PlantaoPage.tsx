@@ -321,8 +321,15 @@ useEffect(() => {
       </div>
 
       {modalAberto && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 999, padding: 16 }}>
-          <div className="apusm-card" style={{ maxWidth: 640, width: "100%", background: "var(--background-tertiary)", maxHeight: "85vh", overflowY: "auto" }}>
+        <div
+          onClick={() => setModalAberto(false)}
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 999, padding: 16 }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="apusm-card"
+            style={{ maxWidth: 820, width: "100%", background: "var(--background-tertiary)" }}
+          >
             <h2 style={{ fontWeight: 600, fontSize: 17, marginBottom: 12, color: "var(--text-primary)" }}>Inserir plantão em massa</h2>
 
             <label style={{ fontSize: 13, color: "var(--text-secondary)" }}>Instrutor</label>
@@ -357,22 +364,28 @@ useEffect(() => {
                       {ORDEM_DIAS.map((dia) => {
                         const chave = `${dia}|${horario}`;
                         const marcado = marcados.has(chave);
+                        const emAula = instrutorMassa ? tambemDandoAula(instrutorMassa, dia, horario) : false;
+                        const corFundo = marcado
+                          ? (emAula ? "#F97316" : "var(--color-primary)")
+                          : (emAula ? "#B45309" : "var(--background-primary)");
                         return (
                           <td
                             key={dia}
                             onClick={() => toggleCelula(dia, horario)}
+                            title={emAula ? "Instrutor já dá aula neste horário" : undefined}
                             style={{
                               border: "1px solid var(--border-default)",
                               padding: 6,
                               textAlign: "center",
                               cursor: "pointer",
-                              background: marcado ? "var(--color-primary)" : "var(--background-primary)",
+                              background: corFundo,
+                              color: marcado || emAula ? "#fff" : "var(--text-primary)",
                             }}
                           >
                             {marcado ? "✓" : ""}
                           </td>
                         );
-                      })}
+                      })}cd C:\Projetos\Projetos\SaaS\apusm-modalidades; git add .; git commit -m "fix: modal plantao em massa maior, fecha ao clicar fora, aviso de instrutor ja em aula"; git push
                     </tr>
                   ))}
                 </tbody>
