@@ -3,6 +3,7 @@
 // Arquivo: turmas.service.ts
 // ======================================================
 import { supabase } from "@/lib/supabaseClient";
+import { historicoService } from "@/modules/configuracoes/services/historico.service";
 import type {
   Turma,
   CriarTurmaDTO,
@@ -67,6 +68,12 @@ class TurmasService {
       .single();
 
     if (error) throw new Error(error.message);
+
+    historicoService.registrar({
+      desfazer: { tabela: "turmas", operacao: "delete", payload: { id: data.id } },
+      refazer: { tabela: "turmas", operacao: "insert", payload: data },
+    });
+
     return toTurma(data);
   }
 
@@ -108,14 +115,37 @@ class TurmasService {
     if (dados.limiteVagas !== undefined) payload.limite_vagas = dados.limiteVagas;
     if (dados.limiteNovosAlunos !== undefined) payload.limite_novos_alunos = dados.limiteNovosAlunos;
 
+    const { data: linhaAntes } = await supabase.from("turmas").select("*").eq("id", id).single();
+
     const { data, error } = await supabase.from("turmas").update(payload).eq("id", id).select().single();
     if (error) { console.error(error); return undefined; }
+
+    if (linhaAntes) {
+      const payloadAnterior: Record<string, unknown> = { id };
+      for (const campo of Object.keys(payload)) {
+        payloadAnterior[campo] = (linhaAntes as any)[campo];
+      }
+      historicoService.registrar({
+        desfazer: { tabela: "turmas", operacao: "update", payload: payloadAnterior },
+        refazer: { tabela: "turmas", operacao: "update", payload: { id, ...payload } },
+      });
+    }
+
     return toTurma(data);
   }
 
   async excluir(id: string): Promise<void> {
+    const { data: linhaAntes } = await supabase.from("turmas").select("*").eq("id", id).single();
+
     const { error } = await supabase.from("turmas").delete().eq("id", id);
-    if (error) console.error(error);
+    if (error) { console.error(error); return; }
+
+    if (linhaAntes) {
+      historicoService.registrar({
+        desfazer: { tabela: "turmas", operacao: "insert", payload: linhaAntes },
+        refazer: { tabela: "turmas", operacao: "delete", payload: { id } },
+      });
+    }
   }
 }
 

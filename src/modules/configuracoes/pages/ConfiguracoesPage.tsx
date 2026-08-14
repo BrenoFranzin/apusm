@@ -1,7 +1,7 @@
-// ======================================================
-// APUSM SaaS — Módulo Configurações
+﻿// ======================================================
+// APUSM SaaS â€” MÃ³dulo ConfiguraÃ§Ãµes
 // Arquivo: ConfiguracoesPage.tsx
-// Histórico de exportações agora é um modal
+// HistÃ³rico de exportaÃ§Ãµes agora Ã© um modal
 // ======================================================
 
 import { useEffect, useRef, useState } from "react";
@@ -15,10 +15,10 @@ import seedTeste from "../../../data/seed-teste.json";
 import type { BackupData } from "../services/backup.service";
 
 const LABEL_TIPO: Record<RegistroExportacao["tipo"], string> = {
-  servico: "Escala de Serviço",
+  servico: "Escala de ServiÃ§o",
   turmas: "Escala de Turmas",
   salas: "Escala de Salas",
-  presenca: "Folha de Presença",
+  presenca: "Folha de PresenÃ§a",
 };
 
 export default function ConfiguracoesPage() {
@@ -38,7 +38,7 @@ export default function ConfiguracoesPage() {
     if (!turmaSelecionadaId) { avisar("Selecione uma turma."); return; }
     const agora = new Date();
     await pdfService.exportarFolhaPresenca(turmaSelecionadaId, agora.getMonth(), agora.getFullYear());
-    avisar("Folha de presença exportada.");
+    avisar("Folha de presenÃ§a exportada.");
   }
 
   async function handleExportarPresencaMassa(idsSelecionados: string[]) {
@@ -47,7 +47,7 @@ export default function ConfiguracoesPage() {
       await pdfService.exportarFolhaPresenca(id, agora.getMonth(), agora.getFullYear());
     }
     setMostrarExportacaoMassa(false);
-    avisar(`${idsSelecionados.length} folha(s) de presença exportada(s).`);
+    avisar(`${idsSelecionados.length} folha(s) de presenÃ§a exportada(s).`);
   }
 
   useEffect(() => {
@@ -68,7 +68,7 @@ export default function ConfiguracoesPage() {
 
   function handleSalvarSeedTeste() {
     backupService.exportarSeedTeste();
-    avisar("Arquivo seed-teste.json baixado. Mova ele pra src/data e faça o commit.");
+    avisar("Arquivo seed-teste.json baixado. Mova ele pra src/data e faÃ§a o commit.");
   }
 
   function handleCarregarSeedTeste() {
@@ -78,7 +78,7 @@ export default function ConfiguracoesPage() {
 
     if (confirmar) {
       backupService.carregarSeedTeste(seedTeste as BackupData);
-      avisar("Dados de teste carregados. Recarregando a página...");
+      avisar("Dados de teste carregados. Recarregando a pÃ¡gina...");
       setTimeout(() => window.location.reload(), 1500);
     }
   }
@@ -98,10 +98,10 @@ export default function ConfiguracoesPage() {
     if (confirmar) {
       try {
         await backupService.restaurar(arquivo);
-        avisar("Dados restaurados. Recarregando a página...");
+        avisar("Dados restaurados. Recarregando a pÃ¡gina...");
         setTimeout(() => window.location.reload(), 1500);
       } catch {
-        avisar("Arquivo de backup inválido.");
+        avisar("Arquivo de backup invÃ¡lido.");
       }
     }
 
@@ -110,7 +110,7 @@ export default function ConfiguracoesPage() {
 
 function handleSalvarDadosNoProjeto() {
     backupService.exportarSeedTeste();
-    avisar("Arquivo seed-teste.json baixado. Mova ele pra pasta public/ do projeto e faça o commit/push.");
+    avisar("Arquivo seed-teste.json baixado. Mova ele pra pasta public/ do projeto e faÃ§a o commit/push.");
   }
 
   async function handleCarregarDadosDoProjeto() {
@@ -121,7 +121,7 @@ function handleSalvarDadosNoProjeto() {
 
     try {
       await backupService.carregarSeedTesteDoProjeto();
-      avisar("Dados carregados do projeto. Recarregando a página...");
+      avisar("Dados carregados do projeto. Recarregando a pÃ¡gina...");
       setTimeout(() => window.location.reload(), 1500);
     } catch (e) {
       avisar(e instanceof Error ? e.message : "Erro ao carregar dados do projeto.");
@@ -131,12 +131,12 @@ function handleSalvarDadosNoProjeto() {
 
   function handleResetarFabrica() {
     const confirmar = window.confirm(
-      "Isso vai apagar todos os dados e voltar ao estado inicial do sistema. Essa ação não pode ser desfeita. Deseja continuar?"
+      "Isso vai apagar todos os dados e voltar ao estado inicial do sistema. Essa aÃ§Ã£o nÃ£o pode ser desfeita. Deseja continuar?"
     );
 
     if (confirmar) {
       backupService.resetarFabrica();
-      avisar("Sistema restaurado ao padrão de fábrica. Recarregando...");
+      avisar("Sistema restaurado ao padrÃ£o de fÃ¡brica. Recarregando...");
       setTimeout(() => window.location.reload(), 1500);
     }
   }
@@ -144,13 +144,13 @@ function handleSalvarDadosNoProjeto() {
   function handleApagarTudo() {
     const FRASE = "APUSM ACADEMIA MODALIDADES";
 
-    if (!window.confirm("ATENÇÃO 1/3: isso vai apagar TODOS os associados, turmas, modalidades e instrutores. Deseja continuar?")) return;
-    if (!window.confirm("ATENÇÃO 2/3: essa ação NÃO PODE ser desfeita. Tem certeza absoluta?")) return;
-    if (!window.confirm("ATENÇÃO 3/3: última chance. Confirmar a exclusão definitiva de todos os dados?")) return;
+    if (!window.confirm("ATENÃ‡ÃƒO 1/3: isso vai apagar TODOS os associados, turmas, modalidades e instrutores. Deseja continuar?")) return;
+    if (!window.confirm("ATENÃ‡ÃƒO 2/3: essa aÃ§Ã£o NÃƒO PODE ser desfeita. Tem certeza absoluta?")) return;
+    if (!window.confirm("ATENÃ‡ÃƒO 3/3: Ãºltima chance. Confirmar a exclusÃ£o definitiva de todos os dados?")) return;
 
     const digitado = window.prompt(`Para confirmar, digite exatamente: ${FRASE}`);
     if (digitado?.trim() !== FRASE) {
-      avisar("Confirmação incorreta. Nenhum dado foi apagado.");
+      avisar("ConfirmaÃ§Ã£o incorreta. Nenhum dado foi apagado.");
       return;
     }
 
@@ -159,30 +159,30 @@ function handleSalvarDadosNoProjeto() {
     setTimeout(() => window.location.reload(), 1500);
   }
 
-  function handleDesfazer() {
-    const ok = historicoService.desfazer();
+  async function handleDesfazer() {
+    const ok = await historicoService.desfazer();
     if (ok) {
-      avisar("Última alteração desfeita. Recarregando...");
+      avisar("Ãšltima alteraÃ§Ã£o desfeita. Recarregando...");
       setTimeout(() => window.location.reload(), 1000);
     } else {
-      avisar("Não há nada para desfazer.");
+      avisar("NÃ£o hÃ¡ nada para desfazer.");
     }
   }
 
-  function handleRefazer() {
-    const ok = historicoService.refazer();
+  async function handleRefazer() {
+    const ok = await historicoService.refazer();
     if (ok) {
-      avisar("Alteração refeita. Recarregando...");
+      avisar("AlteraÃ§Ã£o refeita. Recarregando...");
       setTimeout(() => window.location.reload(), 1000);
     } else {
-      avisar("Não há nada para refazer.");
+      avisar("NÃ£o hÃ¡ nada para refazer.");
     }
   }
 
   async function handleExportarEscalaServico() {
     try {
       await pdfService.exportarEscalaServico();
-      avisar("Escala de serviço exportada.");
+      avisar("Escala de serviÃ§o exportada.");
     } catch {
       avisar("Erro ao gerar o PDF.");
     }
@@ -236,7 +236,7 @@ function handleSalvarDadosNoProjeto() {
     <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
       <div>
         <h1 style={{ fontSize: 26, fontWeight: 700, margin: 0, color: "var(--text-primary)" }}>
-          Configurações
+          ConfiguraÃ§Ãµes
         </h1>
         <p style={{ color: "var(--text-secondary)", margin: "4px 0 0" }}>
           Ajustes administrativos do sistema APUSM
@@ -262,14 +262,14 @@ function handleSalvarDadosNoProjeto() {
         <Btn onClick={() => setMostrarSalas(true)}>Gerenciar salas</Btn>
       </Section>
 
-      <Section title="Exportações" desc="Gerar PDFs e consultar exportações anteriores">
-        <Btn onClick={handleExportarEscalaServico}>Exportar escala de serviço</Btn>
+      <Section title="ExportaÃ§Ãµes" desc="Gerar PDFs e consultar exportaÃ§Ãµes anteriores">
+        <Btn onClick={handleExportarEscalaServico}>Exportar escala de serviÃ§o</Btn>
         <Btn onClick={handleExportarEscalaTurmas}>Exportar escala de turmas</Btn>
         <Btn onClick={handleExportarEscalaSalas}>Exportar salas</Btn>
-        <Btn onClick={handleAbrirHistorico}>Histórico de exportações</Btn>
+        <Btn onClick={handleAbrirHistorico}>HistÃ³rico de exportaÃ§Ãµes</Btn>
       </Section>
 
-      <Section title="Folha de presença" desc="Selecione a turma e gere a folha do mês atual">
+      <Section title="Folha de presenÃ§a" desc="Selecione a turma e gere a folha do mÃªs atual">
         <select
           value={turmaSelecionadaId}
           onChange={(e) => setTurmaSelecionadaId(e.target.value)}
@@ -280,24 +280,24 @@ function handleSalvarDadosNoProjeto() {
             const mod = modalidades.find((m) => m.id === t.modalidadeId);
             return (
               <option key={t.id} value={t.id}>
-                {mod?.nome ?? "-"} — {t.dia} {t.horario}
+                {mod?.nome ?? "-"} â€” {t.dia} {t.horario}
               </option>
             );
           })}
         </select>
-        <Btn onClick={handleExportarPresenca}>🖨️ Exportar folha de presença</Btn>
-        <Btn onClick={() => setMostrarExportacaoMassa(true)}>📤 Exportar presença em massa</Btn>
+        <Btn onClick={handleExportarPresenca}>ðŸ–¨ï¸ Exportar folha de presenÃ§a</Btn>
+        <Btn onClick={() => setMostrarExportacaoMassa(true)}>ðŸ“¤ Exportar presenÃ§a em massa</Btn>
       </Section>
 
-      <Section title="Dados de teste (sincronizado via Git)" desc="Salvar ou carregar dados de teste que ficam junto com o código do projeto">
+      <Section title="Dados de teste (sincronizado via Git)" desc="Salvar ou carregar dados de teste que ficam junto com o cÃ³digo do projeto">
         <Btn onClick={handleSalvarSeedTeste}>Salvar dados atuais como dados de teste</Btn>
         <Btn onClick={handleCarregarSeedTeste}>Carregar dados de teste do projeto</Btn>
       </Section>
 
-      <Section title="Dados do sistema" desc="Backup, restauração e reset. Use com cuidado">
+      <Section title="Dados do sistema" desc="Backup, restauraÃ§Ã£o e reset. Use com cuidado">
         <Btn onClick={handleBackup}>Fazer backup (baixar .json)</Btn>
         <Btn onClick={handleClickRestaurar}>Restaurar de um backup</Btn>
-        <Btn danger onClick={handleResetarFabrica}>Restaurar padrão de fábrica</Btn>
+        <Btn danger onClick={handleResetarFabrica}>Restaurar padrÃ£o de fÃ¡brica</Btn>
         <input
           ref={inputRestaurarRef}
           type="file"
@@ -307,31 +307,31 @@ function handleSalvarDadosNoProjeto() {
         />
       </Section>
 
-      <Section title="Sincronizar dados entre PCs (temporário)" desc="Salva os dados de teste como arquivo do projeto, pra levar via Git de um PC pro outro">
-        <Btn onClick={handleSalvarDadosNoProjeto}>💾 Salvar dados no projeto</Btn>
-        <Btn onClick={handleCarregarDadosDoProjeto}>📥 Carregar dados do projeto</Btn>
+      <Section title="Sincronizar dados entre PCs (temporÃ¡rio)" desc="Salva os dados de teste como arquivo do projeto, pra levar via Git de um PC pro outro">
+        <Btn onClick={handleSalvarDadosNoProjeto}>ðŸ’¾ Salvar dados no projeto</Btn>
+        <Btn onClick={handleCarregarDadosDoProjeto}>ðŸ“¥ Carregar dados do projeto</Btn>
       </Section>
 
-      <Section title="Desfazer / Refazer" desc="Reverter as últimas alterações feitas no sistema">
+      <Section title="Desfazer / Refazer" desc="Reverter as Ãºltimas alteraÃ§Ãµes feitas no sistema">
         <Btn onClick={handleDesfazer} disabled={!historicoService.podeDesfazer()}>
-          ↩️ Desfazer última ação
+          â†©ï¸ Desfazer Ãºltima aÃ§Ã£o
         </Btn>
         <Btn onClick={handleRefazer} disabled={!historicoService.podeRefazer()}>
-          ↪️ Refazer
+          â†ªï¸ Refazer
         </Btn>
       </Section>
 
-      <Section title="Preferências" desc="Aparência e comportamento do sistema">
+      <Section title="PreferÃªncias" desc="AparÃªncia e comportamento do sistema">
         <p style={{ fontSize: 13, color: "var(--text-secondary)" }}>
-          O tema escuro agora fica disponível no botão 🌙 no canto superior direito, em qualquer tela.
+          O tema escuro agora fica disponÃ­vel no botÃ£o ðŸŒ™ no canto superior direito, em qualquer tela.
         </p>
         <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, color: "var(--text-primary)" }}>
-          <input type="checkbox" defaultChecked /> Pedir confirmação antes de excluir
+          <input type="checkbox" defaultChecked /> Pedir confirmaÃ§Ã£o antes de excluir
         </label>
       </Section>
 
-      <Section title="Zona de risco" desc="Ações que apagam dados permanentemente" perigo>
-        <Btn danger onClick={handleApagarTudo}>Apagar tudo e recomeçar</Btn>
+      <Section title="Zona de risco" desc="AÃ§Ãµes que apagam dados permanentemente" perigo>
+        <Btn danger onClick={handleApagarTudo}>Apagar tudo e recomeÃ§ar</Btn>
       </Section>
 
       {mostrarHistorico && (
@@ -359,7 +359,7 @@ function handleSalvarDadosNoProjeto() {
 }
 
 // ==========================
-// MODAL DE EXPORTAÇÃO EM MASSA
+// MODAL DE EXPORTAÃ‡ÃƒO EM MASSA
 // ==========================
 
 function ModalExportacaoMassa({
@@ -428,13 +428,13 @@ function ModalExportacaoMassa({
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
           <h2 style={{ fontWeight: 600, fontSize: 17, margin: 0, color: "var(--text-primary)" }}>
-            Exportar presença em massa
+            Exportar presenÃ§a em massa
           </h2>
           <button
             onClick={onFechar}
             style={{ fontSize: 20, lineHeight: 1, color: "var(--text-muted)", background: "none", border: "none" }}
           >
-            ×
+            Ã—
           </button>
         </div>
 
@@ -478,7 +478,7 @@ function ModalExportacaoMassa({
                     checked={selecionadas.has(t.id)}
                     onChange={() => alternar(t.id)}
                   />
-                  {mod?.nome ?? "-"} — {t.dia} {t.horario}
+                  {mod?.nome ?? "-"} â€” {t.dia} {t.horario}
                 </label>
               );
             })
@@ -516,7 +516,7 @@ function ModalExportacaoMassa({
 }
 
 // ==========================
-// MODAL DE HISTÓRICO
+// MODAL DE HISTÃ“RICO
 // ==========================
 
 function ModalHistorico({
@@ -559,19 +559,19 @@ function ModalHistorico({
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <h2 style={{ fontWeight: 600, fontSize: 17, margin: 0, color: "var(--text-primary)" }}>
-            Histórico de exportações
+            HistÃ³rico de exportaÃ§Ãµes
           </h2>
           <button
             onClick={onFechar}
             style={{ fontSize: 20, lineHeight: 1, color: "var(--text-muted)", background: "none", border: "none" }}
           >
-            ×
+            Ã—
           </button>
         </div>
 
         {historico.length === 0 ? (
           <p style={{ color: "var(--text-muted)", fontSize: 14 }}>
-            Nenhuma exportação registrada ainda.
+            Nenhuma exportaÃ§Ã£o registrada ainda.
           </p>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -626,7 +626,7 @@ function ModalHistorico({
 }
 
 // ==========================
-// SEÇÃO PADRÃO
+// SEÃ‡ÃƒO PADRÃƒO
 // ==========================
 
 function Section({

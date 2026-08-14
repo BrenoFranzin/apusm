@@ -16,7 +16,6 @@ import {
 } from "../services/associados.service";
 
 import { buscarComCache } from "../../../lib/cacheOffline";
-import { executarOuEnfileirar } from "../../../lib/filaOffline";
 
 export function useAssociados() {
   const [associados, setAssociados] = useState<Associado[]>([]);

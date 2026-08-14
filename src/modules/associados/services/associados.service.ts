@@ -9,6 +9,7 @@ import { limitesService } from "@/modules/limites/services/limites.service";
 import { turmasService } from "@/modules/turmas/services/turmas.service";
 import { supabase } from "@/lib/supabaseClient";
 import { syncQueueService } from "@/lib/syncQueue.service";
+import { historicoService } from "@/modules/configuracoes/services/historico.service";
 
 import type {
   Associado,
@@ -68,21 +69,24 @@ class AssociadosService {
       throw new Error(`Já existe um associado cadastrado com o nome "${dados.nome.trim()}".`);
     }
 
-    const { data, error } = await supabase
-      .from("associados")
-      .insert({
-        nome: nomeFormatado,
-        telefone: dados.telefone ?? "",
-        status: dados.status,
-        historico: [{ id: crypto.randomUUID(), data: new Date().toISOString(), descricao: "Cadastro criado" }],
-        matriculas: [],
-        frequencias: [],
-      })
-      .select()
-      .single();
+    const novoAssociado = {
+      id: crypto.randomUUID(),
+      nome: nomeFormatado,
+      telefone: dados.telefone ?? "",
+      status: dados.status,
+      historico: [{ id: crypto.randomUUID(), data: new Date().toISOString(), descricao: "Cadastro criado" }],
+      matriculas: [],
+      frequencias: [],
+    };
 
-    if (error) throw new Error(error.message);
-    return toAssociado(data);
+    await syncQueueService.gravar("associados", "insert", novoAssociado);
+
+    historicoService.registrar({
+      desfazer: { tabela: "associados", operacao: "delete", payload: { id: novoAssociado.id } },
+      refazer: { tabela: "associados", operacao: "insert", payload: novoAssociado },
+    });
+
+    return toAssociado(novoAssociado);
   }
 
   async atualizar(id: string, dados: AtualizarAssociadoDTO): Promise<Associado | undefined> {
@@ -99,14 +103,37 @@ class AssociadosService {
     if (dados.telefone !== undefined) payload.telefone = dados.telefone;
     if (dados.status !== undefined) payload.status = dados.status;
 
+    const { data: linhaAntes } = await supabase.from("associados").select("*").eq("id", id).single();
+
     const { data, error } = await supabase.from("associados").update(payload).eq("id", id).select().single();
     if (error) { console.error(error); return undefined; }
+
+    if (linhaAntes) {
+      const payloadAnterior: Record<string, unknown> = { id };
+      for (const campo of Object.keys(payload)) {
+        payloadAnterior[campo] = (linhaAntes as any)[campo];
+      }
+      historicoService.registrar({
+        desfazer: { tabela: "associados", operacao: "update", payload: payloadAnterior },
+        refazer: { tabela: "associados", operacao: "update", payload: { id, ...payload } },
+      });
+    }
+
     return toAssociado(data);
   }
 
   async excluir(id: string): Promise<void> {
+    const { data: linhaAntes } = await supabase.from("associados").select("*").eq("id", id).single();
+
     const { error } = await supabase.from("associados").delete().eq("id", id);
-    if (error) console.error(error);
+    if (error) { console.error(error); return; }
+
+    if (linhaAntes) {
+      historicoService.registrar({
+        desfazer: { tabela: "associados", operacao: "insert", payload: linhaAntes },
+        refazer: { tabela: "associados", operacao: "delete", payload: { id } },
+      });
+    }
   }
 
   async contarMatriculasPorTurma(turmaId: string): Promise<number> {
