@@ -1,4 +1,4 @@
-// ======================================================
+﻿// ======================================================
 // APUSM SaaS — Módulo Turmas
 // Arquivo: TurmasPage.tsx
 // Gerenciamento de Salas movido para Configurações
@@ -12,6 +12,8 @@ import TurmaForm from "../components/TurmaForm";
 import { useModalidades } from "@/modules/modalidades/hooks/useModalidades";
 import { useInstrutores } from "@/modules/instrutores/hooks/useInstrutores";
 import { useSalas } from "@/modules/salas/hooks/useSalas";
+import { useAssociados } from "@/modules/associados/hooks/useAssociados";
+import { associadosService } from "@/modules/associados/services/associados.service";
 import type { Turma } from "../types/turma.types";
 
 const DIAS_ORDEM: Turma["dia"][] = ["seg", "ter", "qua", "qui", "sex", "sab"];
@@ -30,6 +32,13 @@ export default function TurmasPage() {
   const { modalidades } = useModalidades();
   const { instrutores } = useInstrutores();
   const { salas } = useSalas();
+  const { todos: associados, carregar: recarregarAssociados } = useAssociados();
+
+  const [modalLimite, setModalLimite] = useState<{
+    turma: Turma;
+    novoLimite: number;
+    matriculados: { id: string; nome: string; matriculaId: string }[];
+  } | null>(null);
 
   const [agora, setAgora] = useState<{ dia: string; hhmm: string } | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -279,7 +288,27 @@ export default function TurmasPage() {
                           defaultValue={turma.limiteVagas}
                           onBlur={(e) => {
                             const valor = Number(e.target.value);
-                            if (valor > 0 && valor !== turma.limiteVagas) {
+                            if (valor <= 0 || valor === turma.limiteVagas) return;
+
+                            const matriculadosDaTurma = associados
+                              .map((a) => ({
+                                associado: a,
+                                matricula: a.matriculas.find((m) => m.turmaId === turma.id && m.status !== "CANCELADA"),
+                              }))
+                              .filter((x) => x.matricula);
+
+                            if (valor < matriculadosDaTurma.length) {
+                              setModalLimite({
+                                turma,
+                                novoLimite: valor,
+                                matriculados: matriculadosDaTurma.map((x) => ({
+                                  id: x.associado.id,
+                                  nome: x.associado.nome,
+                                  matriculaId: x.matricula!.id,
+                                })),
+                              });
+                              e.target.value = String(turma.limiteVagas ?? "");
+                            } else {
                               editar(turma.id, { limiteVagas: valor });
                             }
                           }}
@@ -294,6 +323,55 @@ export default function TurmasPage() {
           </div>
         ))}
       </div>
+
+      {modalLimite && (
+        <div
+          onClick={() => setModalLimite(null)}
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 3000 }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{ background: "var(--background-primary)", borderRadius: 12, padding: 20, width: "90vw", maxWidth: 480 }}
+          >
+            <p style={{ fontWeight: 700, fontSize: 16, marginBottom: 8, color: "var(--text-primary)" }}>
+              ⚠ Turma com mais alunos que o novo limite
+            </p>
+            <p style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 14 }}>
+              Essa turma tem {modalLimite.matriculados.length} matriculado(s), mas o novo limite é {modalLimite.novoLimite}.
+              Escolha quem deve sair pra aplicar a mudança:
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 14, maxHeight: "40vh", overflowY: "auto" }}>
+              {modalLimite.matriculados.map((m) => (
+                <div key={m.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 10px", border: "1px solid var(--border-default)", borderRadius: 8 }}>
+                  <span style={{ fontSize: 13, color: "var(--text-primary)" }}>{m.nome}</span>
+                  <button
+                    onClick={async () => {
+                      await associadosService.cancelarMatricula(m.id, m.matriculaId);
+                      const restantes = modalLimite.matriculados.filter((x) => x.id !== m.id);
+                      if (restantes.length <= modalLimite.novoLimite) {
+                        await editar(modalLimite.turma.id, { limiteVagas: modalLimite.novoLimite });
+                        setModalLimite(null);
+                      } else {
+                        setModalLimite({ ...modalLimite, matriculados: restantes });
+                      }
+                    }}
+                    style={{ fontSize: 12, fontWeight: 600, border: "none", borderRadius: 6, padding: "6px 12px", background: "var(--color-danger)", color: "#fff", cursor: "pointer" }}
+                  >
+                    Remover
+                  </button>
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={() => setModalLimite(null)}
+              style={{ width: "100%", fontSize: 14, fontWeight: 600, border: "1px solid var(--border-default)", borderRadius: 8, padding: "10px 12px", background: "transparent", color: "var(--text-primary)", cursor: "pointer" }}
+            >
+              Cancelar (não mudar o limite)
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
