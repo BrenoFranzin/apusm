@@ -347,6 +347,7 @@ export default function TurmasPage() {
                   <button
                     onClick={async () => {
                       await associadosService.cancelarMatricula(m.id, m.matriculaId);
+                      window.alert(`${m.nome} foi removido(a) da turma com sucesso.`);
                       const restantes = modalLimite.matriculados.filter((x) => x.id !== m.id);
                       if (restantes.length <= modalLimite.novoLimite) {
                         await editar(modalLimite.turma.id, { limiteVagas: modalLimite.novoLimite });
