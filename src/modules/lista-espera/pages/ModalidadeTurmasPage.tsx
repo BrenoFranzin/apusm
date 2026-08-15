@@ -228,8 +228,20 @@ const [todasModalidades, setTodasModalidades] = useState<Modalidade[]>([]);
               background: "var(--background-primary)",
             }}
           >
-            <p style={{ fontWeight: 600, fontSize: 15, margin: "0 0 4px", color: "var(--text-primary)" }}>
+            <p style={{ fontWeight: 600, fontSize: 15, margin: "0 0 4px", color: "var(--text-primary)", display: "flex", alignItems: "center", gap: 10 }}>
               {DIA_LABEL[turma.dia]} — {turma.horario} — {turma.sala}
+              <span
+                style={{
+                  fontSize: 12,
+                  fontWeight: 700,
+                  padding: "2px 10px",
+                  borderRadius: 999,
+                  color: matriculados.length >= (turma.limiteVagas ?? 10) ? "#9a3412" : "#166534",
+                  background: matriculados.length >= (turma.limiteVagas ?? 10) ? "#ffedd5" : "#dcfce7",
+                }}
+              >
+                {matriculados.length}/{turma.limiteVagas ?? 10} vagas
+              </span>
             </p>
 
             <button
