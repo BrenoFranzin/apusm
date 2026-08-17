@@ -72,11 +72,13 @@ export function InstrutorCard({ instrutor, onEditar, onExcluir }: Props) {
         }}>
           {instrutor.nome}
         </p>
-        <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: "2px 0 0" }}>
+                <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: "2px 0 0" }}>
           {modalidadesNomes.length > 0
-            ? `${modalidadesNomes.join(", ")} · ${turmasDoInstrutor.length} turma(s)`
+            ? `${modalidadesNomes.join(", ")} - ${turmasDoInstrutor.length} turma(s)`
             : "Sem turmas vinculadas"}
-          {instrutor.terceirizado ? " · Terceirizado" : ""}
+          {instrutor.terceirizado ? (
+            <span style={{ fontWeight: 700, color: "#991b1b" }}> - Terceirizado</span>
+          ) : ""}
         </p>
       </div>
 

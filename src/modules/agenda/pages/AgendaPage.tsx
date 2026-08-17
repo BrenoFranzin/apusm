@@ -155,26 +155,40 @@ export default function AgendaPage() {
           <div className="flex justify-between items-center mb-2">
             <span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>Filtrar modalidades</span>
             <div className="flex gap-2">
-              <button onClick={marcarTodas} className="text-xs rounded px-2 py-1" style={inputStyle}>Marcar todas</button>
-              <button onClick={desmarcarTodas} className="text-xs rounded px-2 py-1" style={inputStyle}>Desmarcar todas</button>
+              <button
+                onClick={marcarTodas}
+                style={{ fontSize: 13, fontWeight: 700, padding: "8px 16px", borderRadius: 8, border: "1px solid var(--color-primary)", background: "var(--color-primary)", color: "#fff", cursor: "pointer" }}
+              >
+                Marcar todas
+              </button>
+              <button
+                onClick={desmarcarTodas}
+                style={{ fontSize: 13, fontWeight: 700, padding: "8px 16px", borderRadius: 8, border: "1px solid var(--color-danger)", background: "var(--color-danger)", color: "#fff", cursor: "pointer" }}
+              >
+                Desmarcar todas
+              </button>
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2" style={{ justifyContent: "center" }}>
             {modalidades.map((m) => {
               const marcada = passaFiltroModalidade(m.id);
               return (
                 <label
                   key={m.id}
-                  className="flex items-center gap-2 rounded-lg px-3 py-1.5 cursor-pointer"
+                  className="flex items-center justify-center gap-2 rounded-lg px-3 py-1.5 cursor-pointer"
                   style={{
-                    border: "1px solid " + (marcada ? m.cor : "var(--border-default)"),
-                    background: "var(--background-primary)",
+                    border: `1px solid ${m.cor}`,
+                    background: marcada ? m.cor : "var(--background-primary)",
                   }}
                 >
-                  <input type="checkbox" checked={marcada} onChange={() => toggleModalidade(m.id)} />
-                  <span className="w-3 h-3 rounded-full inline-block" style={{ backgroundColor: m.cor }} />
-                  <span className="text-sm" style={{ color: "var(--text-primary)" }}>{m.nome}</span>
+                  <input
+                    type="checkbox"
+                    checked={marcada}
+                    onChange={() => toggleModalidade(m.id)}
+                    style={{ width: 19, height: 19, borderRadius: "50%", accentColor: m.cor, cursor: "pointer" }}
+                  />
+                  <span className="text-sm" style={{ fontWeight: 700, color: marcada ? "#fff" : m.cor }}>{m.nome}</span>
                 </label>
               );
             })}

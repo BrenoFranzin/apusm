@@ -298,13 +298,18 @@ function SemanaModal({
           {fmtCompleto(inicio)} ate {fmtCompleto(fim)}
         </p>
 
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 8 }}>
           <StatusPicker
             tamanho="grande"
             statusAtual={registroSemana?.status}
             motivoAtual={registroSemana?.motivo}
             onSalvar={(status, motivo) => onDefinirStatus(semana, status, undefined, motivo)}
           />
+        </div>
+        <div style={{ display: "flex", justifyContent: "center", gap: 14, fontSize: 11, fontWeight: 700, flexWrap: "wrap", marginBottom: 16 }}>
+          <span style={{ color: STATUS_CONFIG.cancelada.cor }}>Cancelada</span>
+          <span style={{ color: STATUS_CONFIG.ferias.cor }}>Ferias</span>
+          <span style={{ color: STATUS_CONFIG.evento.cor }}>Evento</span>
         </div>
 
 
@@ -698,9 +703,6 @@ export default function RelatorioPresencaSemanalPage() {
         <span style={{ color: COR_LEGENDA.futura }}>Futura</span>
         <span style={{ color: COR_LEGENDA.atualCompleta }}>Atual/Completa</span>
         <span style={{ color: COR_LEGENDA.pendente }}>Pendente (semana passada)</span>
-        <span style={{ color: COR_LEGENDA.cancelada }}>Cancelada</span>
-        <span style={{ color: COR_LEGENDA.ferias }}>Ferias</span>
-        <span style={{ color: COR_LEGENDA.evento }}>Evento</span>
       </div>
 
       {turmasComModalidade.length === 0 && (

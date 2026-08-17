@@ -36,8 +36,8 @@ function ajustarCorParaTema(cor: string, escuro: boolean) {
   const g = parseInt(cor.slice(3, 5), 16);
   const b = parseInt(cor.slice(5, 7), 16);
   const luminancia = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-  if (luminancia >= 0.35) return cor;
-  const clarear = (v: number) => Math.min(255, Math.round(v + (255 - v) * 0.6));
+  if (luminancia >= 0.45) return cor;
+  const clarear = (v: number) => Math.min(255, Math.round(v + (255 - v) * 0.8));
   const hex = (v: number) => clarear(v).toString(16).padStart(2, "0");
   return `#${hex(r)}${hex(g)}${hex(b)}`;
 }
@@ -125,6 +125,13 @@ useEffect(() => {
 
   async function confirmarAdicaoRapida() {
     if (!celulaRapida || !instrutorRapido) return;
+    const jaExiste = entradas.some(
+      (e) => e.instrutorId === instrutorRapido && e.dia === celulaRapida.dia && e.horario === celulaRapida.horario
+    );
+    if (jaExiste) {
+      window.alert(`${nomeInstrutor(instrutorRapido)} ja esta no plantao de ${NOME_DIA[celulaRapida.dia]} as ${celulaRapida.horario}.`);
+      return;
+    }
     await adicionar(instrutorRapido, celulaRapida.dia as DiaSemanaPlantao, celulaRapida.horario);
     setCelulaRapida(null);
   }
@@ -158,7 +165,7 @@ useEffect(() => {
           <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-secondary)", marginBottom: 8 }}>
             Filtrar por instrutor
           </p>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center" }}>
             <button
               onClick={() => setInstrutoresFiltro(new Set())}
               style={{
@@ -175,8 +182,9 @@ useEffect(() => {
             >
               Todos
             </button>
-            {instrutores.map((i) => {
+            {instrutores.filter((i) => !i.terceirizado).map((i) => {
               const ativo = instrutoresFiltro.has(i.id);
+              const corAjustada = ajustarCorParaTema(i.cor, escuro);
               return (
                 <button
                   key={i.id}
@@ -187,9 +195,9 @@ useEffect(() => {
                     fontSize: 13,
                     fontWeight: 600,
                     cursor: "pointer",
-                    border: ativo ? `2px solid ${i.cor}` : "1px solid var(--border-default)",
-                    background: ativo ? i.cor : "var(--background-primary)",
-                    color: ativo ? "#fff" : "var(--text-primary)",
+                    border: `2px solid ${corAjustada}`,
+                    background: ativo ? corAjustada : "var(--background-primary)",
+                    color: ativo ? "#fff" : corAjustada,
                     transition: "all 0.15s ease",
                   }}
                 >
@@ -338,7 +346,7 @@ useEffect(() => {
               onChange={(e) => trocarInstrutorMassa(e.target.value)}
               style={{ width: "100%", maxWidth: 400, border: "1px solid var(--border-default)", background: "var(--background-primary)", color: "var(--text-primary)", borderRadius: 6, padding: 8, margin: "4px 0 14px" }}
             >
-              {instrutores.map((i) => (
+              {instrutores.filter((i) => !i.terceirizado).map((i) => (
                 <option key={i.id} value={i.id}>{i.nome}</option>
               ))}
             </select>
