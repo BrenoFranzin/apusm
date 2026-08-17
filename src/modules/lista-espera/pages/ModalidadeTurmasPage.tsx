@@ -275,7 +275,7 @@ const [todasModalidades, setTodasModalidades] = useState<Modalidade[]>([]);
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
   <div
     style={{
-      background: "var(--background-secondary)",
+      background: "#e2e2e5",
       border: "1px solid var(--border-default)",
       borderRadius: 10,
       padding: 14,
@@ -308,9 +308,9 @@ const [todasModalidades, setTodasModalidades] = useState<Modalidade[]>([]);
     </p>
     <table style={{ width: "100%", fontSize: 13, borderCollapse: "separate", borderSpacing: 0, borderRadius: 10, overflow: "hidden", border: "1px solid var(--border-default)" }}>
       <thead>
-        <tr style={{ textAlign: "left", color: "var(--text-secondary)", background: "var(--background-tertiary)" }}>
-          <th style={{ padding: "6px 8px" }}>Nome</th>
-          <th style={{ padding: "6px 8px" }}>Obs.</th>
+        <tr style={{ textAlign: "left", background: "var(--color-primary)" }}>
+          <th style={{ padding: "8px", color: "#fff", fontWeight: 700, fontSize: 14 }}>Nome</th>
+          <th style={{ padding: "8px", color: "#fff", fontWeight: 700, fontSize: 14 }}>Obs.</th>
         </tr>
       </thead>
       <tbody>
@@ -637,8 +637,8 @@ const [todasModalidades, setTodasModalidades] = useState<Modalidade[]>([]);
 
   <div
     style={{
-      background: "var(--background-secondary)",
-      border: "1px solid var(--border-default)",
+      background: "var(--card-acinzentado)",
+      border: "1px solid var(--card-acinzentado-borda)",
       borderRadius: 10,
       padding: 14,
     }}
@@ -670,11 +670,11 @@ const [todasModalidades, setTodasModalidades] = useState<Modalidade[]>([]);
     </p>
     <table style={{ width: "100%", fontSize: 13, borderCollapse: "separate", borderSpacing: 0, borderRadius: 10, overflow: "hidden", border: "1px solid var(--border-default)" }}>
       <thead>
-        <tr style={{ textAlign: "left", color: "var(--text-secondary)", background: "var(--background-tertiary)" }}>
-          <th style={{ padding: "6px 8px" }}></th>
-          <th style={{ padding: "6px 8px" }}>#</th>
-          <th style={{ padding: "6px 8px" }}>Nome</th>
-          <th style={{ padding: "6px 8px" }}>Obs.</th>
+        <tr style={{ textAlign: "left", background: "var(--color-primary)" }}>
+          <th style={{ padding: "8px" }}></th>
+          <th style={{ padding: "8px", color: "#fff", fontWeight: 700, fontSize: 14 }}>#</th>
+          <th style={{ padding: "8px", color: "#fff", fontWeight: 700, fontSize: 14 }}>Nome</th>
+          <th style={{ padding: "8px", color: "#fff", fontWeight: 700, fontSize: 14 }}>Obs.</th>
         </tr>
       </thead>
       <tbody>

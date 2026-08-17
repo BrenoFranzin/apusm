@@ -24,6 +24,7 @@ interface Props {
   instrutores: Instrutor[];
   salas: { id: string; nome: string }[];
   onSubmit: (dados: TurmaFormData) => void;
+  mostrarLimites?: boolean;
 }
 
 const selectStyle: React.CSSProperties = {
@@ -36,7 +37,7 @@ const selectStyle: React.CSSProperties = {
   borderRadius: 6,
 };
 
-export default function TurmaForm({ modalidades, instrutores, salas, onSubmit }: Props) {
+export default function TurmaForm({ modalidades, instrutores, salas, onSubmit, mostrarLimites = true }: Props) {
   const {
     register,
     handleSubmit,
@@ -111,11 +112,15 @@ export default function TurmaForm({ modalidades, instrutores, salas, onSubmit }:
         ))}
       </select>
 
-      <label style={{ fontSize: 12, color: "var(--text-secondary)" }}>Limite de vagas na turma</label>
-      <input type="number" min={1} {...register("limiteVagas")} style={selectStyle} />
+      {mostrarLimites && (
+        <>
+          <label style={{ fontSize: 12, color: "var(--text-secondary)" }}>Limite de vagas na turma</label>
+          <input type="number" min={1} {...register("limiteVagas")} style={selectStyle} />
 
-      <label style={{ fontSize: 12, color: "var(--text-secondary)" }}>Linhas extras para novos alunos na folha de presenca</label>
-      <input type="number" min={0} {...register("limiteNovosAlunos")} style={{ ...selectStyle, margin: "4px 0 14px" }} />
+          <label style={{ fontSize: 12, color: "var(--text-secondary)" }}>Linhas extras para novos alunos na folha de presenca</label>
+          <input type="number" min={0} {...register("limiteNovosAlunos")} style={{ ...selectStyle, margin: "4px 0 14px" }} />
+        </>
+      )}
 
       <button
         type="submit"

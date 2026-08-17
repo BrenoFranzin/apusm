@@ -119,6 +119,7 @@ export default function AgendaPage() {
               modalidades={modalidades}
               instrutores={instrutores}
               salas={listaSalas}
+              mostrarLimites={false}
               onSubmit={async (dados) => {
                 const ok = await criarTurma(dados);
                 if (ok) setMostrarFormTurma(false);

@@ -116,6 +116,8 @@ BOTÕES PADRÃO (aplicar via classe .apusm-btn quando quiser)
   --background-secondary: #F1F5F9;
   --background-tertiary: #E2E8F0;
   --background-dark: #0F172A;
+  --card-acinzentado: #C7CCD4;
+  --card-acinzentado-borda: #94A3B8;
 
   /*
   =====================================
@@ -206,6 +208,8 @@ html.dark {
   --background-secondary: #454D61;
   --background-tertiary: #5C6777;
   --border-default: #5C6777;
+  --card-acinzentado: var(--background-secondary);
+  --card-acinzentado-borda: var(--border-default);
   --border-light: #6C7787;
   --border-strong: #A8B3C4;
   --page-heading: #F1F5F9;
