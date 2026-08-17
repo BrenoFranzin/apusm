@@ -230,6 +230,7 @@ export default function TurmasPage() {
                   <th style={{ textAlign: "left", padding: "10px 8px", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--text-secondary)" }}>Instrutor</th>
                   <th style={{ textAlign: "left", padding: "10px 8px", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--text-secondary)" }}>Sala</th>
                   <th style={{ textAlign: "left", padding: "10px 8px", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--text-secondary)" }}>Limite vagas</th>
+                  <th style={{ textAlign: "left", padding: "10px 8px", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--text-secondary)" }}>Linhas extras</th>
                 </tr>
               </thead>
               <tbody>
@@ -311,6 +312,19 @@ export default function TurmasPage() {
                             } else {
                               editar(turma.id, { limiteVagas: valor });
                             }
+                          }}
+                          style={{ width: 60, padding: 4, textAlign: "center", background: "var(--background-secondary)", color: "var(--text-primary)", border: "1px solid var(--border-default)", borderRadius: 6 }}
+                        />
+                      </td>
+                      <td style={{ padding: "12px 8px" }}>
+                        <input
+                          type="number"
+                          min={0}
+                          defaultValue={turma.limiteNovosAlunos ?? 0}
+                          onBlur={(e) => {
+                            const valor = Number(e.target.value);
+                            if (valor < 0 || valor === (turma.limiteNovosAlunos ?? 0)) return;
+                            editar(turma.id, { limiteNovosAlunos: valor });
                           }}
                           style={{ width: 60, padding: 4, textAlign: "center", background: "var(--background-secondary)", color: "var(--text-primary)", border: "1px solid var(--border-default)", borderRadius: 6 }}
                         />
