@@ -1,5 +1,5 @@
-// ======================================================
-// APUSM SaaS — Módulo Lista de Espera
+﻿// ======================================================
+// APUSM SaaS - Modulo Lista de Espera
 // Arquivo: ListasEsperaPage.tsx
 // ======================================================
 
@@ -56,7 +56,7 @@ export default function ListasEsperaPage() {
     }
     carregar();
 
-    // recarrega toda vez que o usuário volta pra essa aba/página
+    // recarrega toda vez que o usuario volta pra essa aba/pagina
     window.addEventListener("focus", carregar);
     document.addEventListener("visibilitychange", carregar);
     return () => {
@@ -86,7 +86,7 @@ export default function ListasEsperaPage() {
         onClick={() => setModalAssociadoAberto(true)}
         className="bg-blue-700 text-white px-5 py-3 rounded-lg"
       >
-        🔍 Buscar / inserir associado
+        {"\u{1F50D}"} Buscar / inserir associado
       </button>
 
       <AssociadoDetalhesModal
@@ -98,7 +98,7 @@ export default function ListasEsperaPage() {
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(2, 1fr)",
-          gap: 12,
+          gap: 18,
         }}
       >
         {[...modalidades]
@@ -117,27 +117,27 @@ export default function ListasEsperaPage() {
                   alignItems: "center",
                   justifyContent: "center",
                   textAlign: "center",
-                  gap: 4,
-                  background: cor + "1a",
+                  gap: 6,
+                  background: cor + "33",
                   color: cor,
                   border: `2px solid ${cor}`,
-                  borderRadius: 10,
-                  padding: "16px 20px",
-                  minHeight: 60,
+                  borderRadius: 12,
+                  padding: "22px 24px",
+                  minHeight: 80,
                   fontWeight: 700,
-                  fontSize: 15,
+                  fontSize: 16,
                   cursor: "pointer",
                 }}
               >
                 <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <span style={{ fontSize: 20 }}>{mod.icone}</span>
+                  <span style={{ fontSize: 22 }}>{mod.icone}</span>
                   <span>{mod.nome}</span>
                 </span>
-                <span style={{ fontSize: 12, fontWeight: 500, opacity: 0.85 }}>
+                <span style={{ fontSize: 13, fontWeight: 600, opacity: 0.9 }}>
                   {qtdFila} na fila de espera
                 </span>
                 {mod.descricao && (
-                  <span style={{ fontSize: 11, fontStyle: "italic", opacity: 0.8 }}>
+                  <span style={{ fontSize: 12, fontStyle: "italic", opacity: 0.85 }}>
                     {mod.descricao}
                   </span>
                 )}
