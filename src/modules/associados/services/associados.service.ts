@@ -18,18 +18,7 @@ import type {
 } from "../types/associado.types";
 
 function capitalizarNome(nome: string): string {
-  const minusculas = ["de", "da", "do", "das", "dos", "e"];
-  return nome
-    .trim()
-    .toLowerCase()
-    .split(" ")
-    .filter((p) => p.length > 0)
-    .map((palavra) =>
-      minusculas.includes(palavra)
-        ? palavra
-        : palavra.charAt(0).toUpperCase() + palavra.slice(1)
-    )
-    .join(" ");
+  return nome.trim().toUpperCase();
 }
 
 function toAssociado(row: any): Associado {

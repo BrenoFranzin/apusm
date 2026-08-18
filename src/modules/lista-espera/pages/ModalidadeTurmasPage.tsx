@@ -83,8 +83,12 @@ const [todasModalidades, setTodasModalidades] = useState<Modalidade[]>([]);
     [turmas, modalidadeId]
   );
 
-  function instrutorNome(id: string) {
-    return instrutores.find((i) => i.id === id)?.nome ?? "—";
+    function instrutorNome(id: string) {
+    return instrutores.find((i) => i.id === id)?.nome ?? "â€”";
+  }
+
+  function instrutorCor(id: string) {
+    return instrutores.find((i) => i.id === id)?.cor ?? "var(--text-secondary)";
   }
 
   async function recarregarFilas() {
@@ -268,23 +272,26 @@ const [todasModalidades, setTodasModalidades] = useState<Modalidade[]>([]);
             </button>
 
 
-            <p style={{ fontSize: 13, color: "var(--text-secondary)", margin: "0 0 12px" }}>
-              Instrutor: {instrutorNome(turma.instrutorId)}
+            <p style={{ fontSize: 16, color: "var(--text-secondary)", margin: "0 0 12px" }}>
+              Instrutor:{" "}
+              <span style={{ fontWeight: 700, color: instrutorCor(turma.instrutorId) }}>
+                {instrutorNome(turma.instrutorId)}
+              </span>
             </p>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
   <div
     style={{
-      background: "#e2e2e5",
-      border: "1px solid var(--border-default)",
+      background: "var(--card-acinzentado)",
+      border: "1px solid var(--card-acinzentado-borda)",
       borderRadius: 10,
       padding: 14,
     }}
   >
     <p
       style={{
-        fontWeight: 600,
-        fontSize: 13,
+        fontWeight: 700,
+        fontSize: 17,
         marginBottom: 10,
         color: "var(--text-primary)",
         display: "flex",
@@ -306,11 +313,11 @@ const [todasModalidades, setTodasModalidades] = useState<Modalidade[]>([]);
         {matriculados.length}/{turma.limiteVagas ?? 10} — {(turma.limiteVagas ?? 10) - matriculados.length <= 0 ? "TURMA CHEIA" : `${(turma.limiteVagas ?? 10) - matriculados.length} vaga(s)`}
       </span>
     </p>
-    <table style={{ width: "100%", fontSize: 13, borderCollapse: "separate", borderSpacing: 0, borderRadius: 10, overflow: "hidden", border: "1px solid var(--border-default)" }}>
+    <table style={{ width: "100%", fontSize: 15, borderCollapse: "separate", borderSpacing: 0, borderRadius: 10, overflow: "hidden", border: "1px solid var(--border-default)" }}>
       <thead>
         <tr style={{ textAlign: "left", background: "var(--color-primary)" }}>
-          <th style={{ padding: "8px", color: "#fff", fontWeight: 700, fontSize: 14 }}>Nome</th>
-          <th style={{ padding: "8px", color: "#fff", fontWeight: 700, fontSize: 14 }}>Obs.</th>
+          <th style={{ padding: "8px", color: "#fff", fontWeight: 700, fontSize: 16 }}>Nome</th>
+          <th style={{ padding: "8px", color: "#fff", fontWeight: 700, fontSize: 16 }}>Obs.</th>
         </tr>
       </thead>
       <tbody>
@@ -645,8 +652,8 @@ const [todasModalidades, setTodasModalidades] = useState<Modalidade[]>([]);
   >
     <p
       style={{
-        fontWeight: 600,
-        fontSize: 13,
+        fontWeight: 700,
+        fontSize: 17,
         marginBottom: 10,
         color: "var(--text-primary)",
         display: "flex",
@@ -668,13 +675,13 @@ const [todasModalidades, setTodasModalidades] = useState<Modalidade[]>([]);
         {filaDaTurma.length}
       </span>
     </p>
-    <table style={{ width: "100%", fontSize: 13, borderCollapse: "separate", borderSpacing: 0, borderRadius: 10, overflow: "hidden", border: "1px solid var(--border-default)" }}>
+    <table style={{ width: "100%", fontSize: 15, borderCollapse: "separate", borderSpacing: 0, borderRadius: 10, overflow: "hidden", border: "1px solid var(--border-default)" }}>
       <thead>
         <tr style={{ textAlign: "left", background: "var(--color-primary)" }}>
           <th style={{ padding: "8px" }}></th>
-          <th style={{ padding: "8px", color: "#fff", fontWeight: 700, fontSize: 14 }}>#</th>
-          <th style={{ padding: "8px", color: "#fff", fontWeight: 700, fontSize: 14 }}>Nome</th>
-          <th style={{ padding: "8px", color: "#fff", fontWeight: 700, fontSize: 14 }}>Obs.</th>
+          <th style={{ padding: "8px", color: "#fff", fontWeight: 700, fontSize: 16 }}>#</th>
+          <th style={{ padding: "8px", color: "#fff", fontWeight: 700, fontSize: 16 }}>Nome</th>
+          <th style={{ padding: "8px", color: "#fff", fontWeight: 700, fontSize: 16 }}>Obs.</th>
         </tr>
       </thead>
       <tbody>
@@ -687,7 +694,9 @@ const [todasModalidades, setTodasModalidades] = useState<Modalidade[]>([]);
                 onChange={() => toggleSelecionado(turma.id, entrada.id)}
               />
             </td>
-            <td style={{ padding: "8px" }}>{entrada.posicao}º</td>
+                        <td style={{ padding: "8px", fontSize: 18 }}>
+              {entrada.posicao === 1 ? "🥇" : entrada.posicao === 2 ? "🥈" : entrada.posicao === 3 ? "🥉" : `${entrada.posicao}º`}
+            </td>
             <td style={{ padding: "8px" }}>
   {entrada.associadoNome}
   {(() => {

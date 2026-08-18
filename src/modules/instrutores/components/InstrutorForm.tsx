@@ -81,7 +81,11 @@ export default function InstrutorForm({ valoresIniciais, onSubmit }: Props) {
       <label style={{ fontSize: 12, color: "var(--text-secondary)" }}>Nome</label>
       <input
         placeholder="Ex.: Maria Silva"
-        {...register("nome")}
+        {...register("nome", {
+          onChange: (e) => {
+            e.target.value = e.target.value.toUpperCase();
+          },
+        })}
         style={{
           width: "100%",
           margin: "4px 0 4px",

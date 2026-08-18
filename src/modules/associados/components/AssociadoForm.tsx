@@ -54,7 +54,14 @@ export default function AssociadoForm({ valoresIniciais, onSubmit }: Props) {
     <form onSubmit={handleSubmit(onSubmit)} className="apusm-card" style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       <div>
         <label style={labelStyle}>Nome completo</label>
-        <input {...register("nome")} style={inputStyle} />
+        <input
+          {...register("nome", {
+            onChange: (e) => {
+              e.target.value = e.target.value.toUpperCase();
+            },
+          })}
+          style={inputStyle}
+        />
         <p style={{ color: "var(--color-danger)", fontSize: 13, marginTop: 4 }}>{errors.nome?.message}</p>
       </div>
 
