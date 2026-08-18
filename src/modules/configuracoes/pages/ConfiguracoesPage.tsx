@@ -31,6 +31,31 @@ const TABELAS_HISTORICO = [
   { valor: "plantao", label: "Plantão" },
 ] as const;
 
+// Agrupa turmas por modalidade e ordena: modalidade (A-Z) -> horário
+function agruparTurmasPorModalidade<T extends { modalidadeId: string; dia: string; horario: string }>(
+  turmas: T[],
+  modalidades: { id: string; nome: string }[]
+): { modalidade: string; turmas: T[] }[] {
+  const grupos = new Map<string, { modalidade: string; turmas: T[] }>();
+
+  for (const t of turmas) {
+    const mod = modalidades.find((m) => m.id === t.modalidadeId);
+    const nomeModalidade = mod?.nome ?? "Sem modalidade";
+    if (!grupos.has(t.modalidadeId)) {
+      grupos.set(t.modalidadeId, { modalidade: nomeModalidade, turmas: [] });
+    }
+    grupos.get(t.modalidadeId)!.turmas.push(t);
+  }
+
+  const listaGrupos = Array.from(grupos.values());
+  listaGrupos.sort((a, b) => a.modalidade.localeCompare(b.modalidade, "pt-BR"));
+  for (const grupo of listaGrupos) {
+    grupo.turmas.sort((a, b) => a.horario.localeCompare(b.horario));
+  }
+
+  return listaGrupos;
+}
+
 export default function ConfiguracoesPage() {
   const inputRestaurarRef = useRef<HTMLInputElement>(null);
   const [tabelaHistorico, setTabelaHistorico] = useState<string>("associados");
@@ -42,13 +67,13 @@ export default function ConfiguracoesPage() {
 
   const { turmas } = useTurmas();
   const { modalidades } = useModalidades();
-  const [turmaSelecionadaId, setTurmaSelecionadaId] = useState("");
   const [mostrarExportacaoMassa, setMostrarExportacaoMassa] = useState(false);
+  const [mostrarExportarPresenca, setMostrarExportarPresenca] = useState(false);
 
-  async function handleExportarPresenca() {
-    if (!turmaSelecionadaId) { avisar("Selecione uma turma."); return; }
+  async function handleExportarPresenca(id: string) {
     const agora = new Date();
-    await pdfService.exportarFolhaPresenca(turmaSelecionadaId, agora.getMonth(), agora.getFullYear());
+    await pdfService.exportarFolhaPresenca(id, agora.getMonth(), agora.getFullYear());
+    setMostrarExportarPresenca(false);
     avisar("Folha de presença exportada.");
   }
 
@@ -281,22 +306,7 @@ function handleSalvarDadosNoProjeto() {
       </Section>
 
       <Section title="Folha de presença" desc="Selecione a turma e gere a folha do mês atual">
-        <select
-          value={turmaSelecionadaId}
-          onChange={(e) => setTurmaSelecionadaId(e.target.value)}
-          style={{ padding: 8, borderRadius: 6, border: "1px solid var(--border-default)", background: "var(--background-primary)", color: "var(--text-primary)" }}
-        >
-          <option value="">Selecione a turma</option>
-          {turmas.map((t) => {
-            const mod = modalidades.find((m) => m.id === t.modalidadeId);
-            return (
-              <option key={t.id} value={t.id}>
-                {mod?.nome ?? "-"} — {t.dia} {t.horario}
-              </option>
-            );
-          })}
-        </select>
-        <Btn onClick={handleExportarPresenca}>🖨️ Exportar folha de presença</Btn>
+        <Btn onClick={() => setMostrarExportarPresenca(true)}>🖨️ Exportar folha de presença</Btn>
         <Btn onClick={() => setMostrarExportacaoMassa(true)}>📤 Exportar presença em massa</Btn>
       </Section>
 
@@ -372,6 +382,15 @@ function handleSalvarDadosNoProjeto() {
           modalidades={modalidades}
           onFechar={() => setMostrarExportacaoMassa(false)}
           onConfirmar={handleExportarPresencaMassa}
+        />
+      )}
+
+      {mostrarExportarPresenca && (
+        <ModalExportarPresenca
+          turmas={turmas}
+          modalidades={modalidades}
+          onFechar={() => setMostrarExportarPresenca(false)}
+          onConfirmar={handleExportarPresenca}
         />
       )}
     </div>
@@ -473,38 +492,50 @@ function ModalExportacaoMassa({
           </button>
         </div>
 
-        <div style={{ overflowY: "auto", display: "flex", flexDirection: "column", gap: 6, marginBottom: 16 }}>
+        <div style={{ overflowY: "auto", display: "flex", flexDirection: "column", gap: 16, marginBottom: 16 }}>
           {turmas.length === 0 ? (
             <p style={{ color: "var(--text-muted)", fontSize: 14 }}>Nenhuma turma cadastrada.</p>
           ) : (
-            turmas.map((t) => {
-              const mod = modalidades.find((m) => m.id === t.modalidadeId);
-              return (
-                <label
-                  key={t.id}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    fontSize: 13,
-                    color: selecionadas.has(t.id) ? "#0B4F49" : "var(--text-primary)",
-                    border: `1.5px solid ${selecionadas.has(t.id) ? "#0F766E" : "var(--border-default)"}`,
-                    borderRadius: "var(--radius-md)",
-                    padding: "8px 10px",
-                    background: selecionadas.has(t.id) ? "#CCFBF1" : "var(--background-primary)",
-                    fontWeight: selecionadas.has(t.id) ? 600 : 400,
-                    transition: "all 0.15s ease",
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={selecionadas.has(t.id)}
-                    onChange={() => alternar(t.id)}
-                  />
-                  {mod?.nome ?? "-"} — {t.dia} {t.horario}
-                </label>
-              );
-            })
+            agruparTurmasPorModalidade(turmas, modalidades).map((grupo, idx, arr) => (
+              <div
+                key={grupo.modalidade}
+                style={{
+                  paddingBottom: idx < arr.length - 1 ? 16 : 0,
+                  borderBottom: idx < arr.length - 1 ? "1px solid var(--border-default)" : "none",
+                }}
+              >
+                <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.4, color: "var(--text-muted)", margin: "0 0 8px" }}>
+                  {grupo.modalidade}
+                </p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  {grupo.turmas.map((t) => (
+                    <label
+                      key={t.id}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                        fontSize: 13,
+                        color: selecionadas.has(t.id) ? "#0B4F49" : "var(--text-primary)",
+                        border: `1.5px solid ${selecionadas.has(t.id) ? "#0F766E" : "var(--border-default)"}`,
+                        borderRadius: "var(--radius-md)",
+                        padding: "8px 10px",
+                        background: selecionadas.has(t.id) ? "#CCFBF1" : "var(--background-primary)",
+                        fontWeight: selecionadas.has(t.id) ? 600 : 400,
+                        transition: "all 0.15s ease",
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selecionadas.has(t.id)}
+                        onChange={() => alternar(t.id)}
+                      />
+                      {t.dia} {t.horario}
+                    </label>
+                  ))}
+                </div>
+              </div>
+            ))
           )}
         </div>
 
@@ -531,6 +562,146 @@ function ModalExportacaoMassa({
             }}
           >
             {exportando ? "Exportando..." : `Exportar ${selecionadas.size} folha(s)`}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ==========================
+// MODAL DE EXPORTAR PRESENÇA (individual)
+// ==========================
+
+function ModalExportarPresenca({
+  turmas,
+  modalidades,
+  onFechar,
+  onConfirmar,
+}: {
+  turmas: { id: string; dia: string; horario: string; modalidadeId: string }[];
+  modalidades: { id: string; nome: string }[];
+  onFechar: () => void;
+  onConfirmar: (id: string) => void;
+}) {
+  const [selecionada, setSelecionada] = useState<string>("");
+  const [exportando, setExportando] = useState(false);
+
+  async function confirmar() {
+    if (!selecionada) return;
+    setExportando(true);
+    await onConfirmar(selecionada);
+    setExportando(false);
+  }
+
+  return (
+    <div
+      onClick={onFechar}
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(15, 23, 42, 0.55)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: "var(--z-modal)" as unknown as number,
+        padding: 16,
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="apusm-card"
+        style={{
+          width: "100%",
+          maxWidth: 680,
+          maxHeight: "82vh",
+          display: "flex",
+          flexDirection: "column",
+          padding: "var(--space-6)",
+        }}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+          <h2 style={{ fontWeight: 600, fontSize: 17, margin: 0, color: "var(--text-primary)" }}>
+            Exportar folha de presença
+          </h2>
+          <button
+            onClick={onFechar}
+            style={{ fontSize: 20, lineHeight: 1, color: "var(--text-muted)", background: "none", border: "none" }}
+          >
+            ×
+          </button>
+        </div>
+
+        <div style={{ overflowY: "auto", display: "flex", flexDirection: "column", gap: 16, marginBottom: 16 }}>
+          {turmas.length === 0 ? (
+            <p style={{ color: "var(--text-muted)", fontSize: 14 }}>Nenhuma turma cadastrada.</p>
+          ) : (
+            agruparTurmasPorModalidade(turmas, modalidades).map((grupo, idx, arr) => (
+              <div
+                key={grupo.modalidade}
+                style={{
+                  paddingBottom: idx < arr.length - 1 ? 16 : 0,
+                  borderBottom: idx < arr.length - 1 ? "1px solid var(--border-default)" : "none",
+                }}
+              >
+                <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.4, color: "var(--text-muted)", margin: "0 0 8px" }}>
+                  {grupo.modalidade}
+                </p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  {grupo.turmas.map((t) => {
+                    const ativo = selecionada === t.id;
+                    return (
+                      <button
+                        key={t.id}
+                        type="button"
+                        onClick={() => setSelecionada(t.id)}
+                        style={{
+                          textAlign: "left",
+                          fontSize: 13,
+                          padding: "9px 12px",
+                          borderRadius: 8,
+                          border: `1.5px solid ${ativo ? "#0F766E" : "var(--border-default)"}`,
+                          background: ativo ? "#CCFBF1" : "var(--background-primary)",
+                          color: ativo ? "#0B4F49" : "var(--text-primary)",
+                          fontWeight: ativo ? 700 : 400,
+                          cursor: "pointer",
+                          width: "100%",
+                          transition: "all 0.15s ease",
+                        }}
+                      >
+                        {t.dia} {t.horario}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+          <button
+            onClick={onFechar}
+            style={{ fontSize: 13, border: "1px solid var(--border-default)", borderRadius: 6, padding: "8px 14px", background: "var(--background-primary)", color: "var(--text-primary)" }}
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={confirmar}
+            disabled={!selecionada || exportando}
+            style={{
+              fontSize: 13,
+              border: "none",
+              borderRadius: 6,
+              padding: "8px 14px",
+              background: "var(--color-primary)",
+              color: "#ffffff",
+              fontWeight: 600,
+              cursor: !selecionada || exportando ? "not-allowed" : "pointer",
+              opacity: !selecionada || exportando ? 0.5 : 1,
+            }}
+          >
+            {exportando ? "Exportando..." : "Exportar"}
           </button>
         </div>
       </div>
