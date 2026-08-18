@@ -68,14 +68,6 @@ export default function ConfiguracoesPage() {
   const { turmas } = useTurmas();
   const { modalidades } = useModalidades();
   const [mostrarExportacaoMassa, setMostrarExportacaoMassa] = useState(false);
-  const [mostrarExportarPresenca, setMostrarExportarPresenca] = useState(false);
-
-  async function handleExportarPresenca(id: string) {
-    const agora = new Date();
-    await pdfService.exportarFolhaPresenca(id, agora.getMonth(), agora.getFullYear());
-    setMostrarExportarPresenca(false);
-    avisar("Folha de presença exportada.");
-  }
 
   async function handleExportarPresencaMassa(idsSelecionados: string[]) {
     const agora = new Date();
@@ -305,9 +297,8 @@ function handleSalvarDadosNoProjeto() {
         <Btn onClick={handleAbrirHistorico}>Histórico de exportações</Btn>
       </Section>
 
-      <Section title="Folha de presença" desc="Selecione a turma e gere a folha do mês atual">
-        <Btn onClick={() => setMostrarExportarPresenca(true)}>🖨️ Exportar folha de presença</Btn>
-        <Btn onClick={() => setMostrarExportacaoMassa(true)}>📤 Exportar presença em massa</Btn>
+      <Section title="Folha de presença" desc="Selecione uma ou mais turmas e gere as folhas do mês atual">
+        <Btn onClick={() => setMostrarExportacaoMassa(true)}>🖨️ Exportar folha de presença</Btn>
       </Section>
 
       <Section title="Dados de teste (sincronizado via Git)" desc="Salvar ou carregar dados de teste que ficam junto com o código do projeto">
@@ -385,14 +376,6 @@ function handleSalvarDadosNoProjeto() {
         />
       )}
 
-      {mostrarExportarPresenca && (
-        <ModalExportarPresenca
-          turmas={turmas}
-          modalidades={modalidades}
-          onFechar={() => setMostrarExportarPresenca(false)}
-          onConfirmar={handleExportarPresenca}
-        />
-      )}
     </div>
   );
 }
