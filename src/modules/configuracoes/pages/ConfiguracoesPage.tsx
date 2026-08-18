@@ -439,8 +439,8 @@ function ModalExportacaoMassa({
         className="apusm-card"
         style={{
           width: "100%",
-          maxWidth: 520,
-          maxHeight: "80vh",
+          maxWidth: 728,
+          maxHeight: "82vh",
           display: "flex",
           flexDirection: "column",
           padding: "var(--space-6)",
@@ -487,10 +487,13 @@ function ModalExportacaoMassa({
                     alignItems: "center",
                     gap: 8,
                     fontSize: 13,
-                    color: "var(--text-primary)",
-                    border: "1px solid var(--border-default)",
+                    color: selecionadas.has(t.id) ? "#0B4F49" : "var(--text-primary)",
+                    border: `1.5px solid ${selecionadas.has(t.id) ? "#0F766E" : "var(--border-default)"}`,
                     borderRadius: "var(--radius-md)",
                     padding: "8px 10px",
+                    background: selecionadas.has(t.id) ? "#CCFBF1" : "var(--background-primary)",
+                    fontWeight: selecionadas.has(t.id) ? 600 : 400,
+                    transition: "all 0.15s ease",
                   }}
                 >
                   <input
