@@ -434,20 +434,18 @@ class PdfService {
   }
 
   // ==========================
-  // FOLHA DE PRESEN�A (por turma, para imprimir e marcar � m�o)
+  // FOLHA DE PRESENÇA (por turma, para imprimir e marcar à mão)
   // ==========================
 
-  async exportarFolhaPresenca(turmaId: string, mes: number, ano: number): Promise<void> {
-    const [turmas, instrutores, modalidades, associados] = await Promise.all([
-      turmasService.listar(),
-      instrutoresService.listar(),
-      modalidadesService.listar(),
-      associadosService.listar(),
-    ]);
-
-    const turma = turmas.find((t: any) => t.id === turmaId);
-    if (!turma) throw new Error("Turma n�o encontrada");
-
+  private desenharFolhaPresenca(
+    doc: jsPDF,
+    turma: any,
+    mes: number,
+    ano: number,
+    instrutores: any[],
+    modalidades: any[],
+    associados: any[]
+  ): string {
     const modalidade = modalidades.find((m: any) => m.id === turma.modalidadeId);
     const instrutor = instrutores.find((i: any) => i.id === turma.instrutorId);
 
@@ -455,7 +453,7 @@ class PdfService {
     const infantil = /infantil|musicaliza/i.test(nomeModalidade);
 
     const matriculados = associados
-      .filter((a: any) => a.matriculas.some((m: any) => m.turmaId === turmaId && m.status !== "CANCELADA"))
+      .filter((a: any) => a.matriculas.some((m: any) => m.turmaId === turma.id && m.status !== "CANCELADA"))
       .map((a: any) => a.nome.toUpperCase());
 
     const datas = gerarDatasDoMes(turma.dia, mes, ano);
@@ -470,8 +468,6 @@ class PdfService {
     const compacto = totalLinhas > 22;
     const fontSize = compacto ? 7.5 : 9;
     const cellPadding = compacto ? 1.3 : 2;
-
-    const doc = new jsPDF("landscape");
 
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
@@ -510,7 +506,6 @@ class PdfService {
     }
 
     autoTable(doc, {
-      
       head: [cabecalhoPrincipal],
       body: linhasMatriculados.map((nome, i) =>
         infantil
@@ -526,7 +521,7 @@ class PdfService {
     });
 
     const finalY1 = (doc as any).lastAutoTable.finalY as number;
-    const larguraTotal = infantil ? 269 : 269;
+    const larguraTotal = 269;
 
     doc.setFillColor(230, 230, 230);
     doc.rect(14, finalY1, larguraTotal, 6, "F");
@@ -551,8 +546,50 @@ class PdfService {
       pageBreak: "avoid",
     });
 
+    return nomeModalidade;
+  }
+
+  async exportarFolhaPresenca(turmaId: string, mes: number, ano: number): Promise<void> {
+    const [turmas, instrutores, modalidades, associados] = await Promise.all([
+      turmasService.listar(),
+      instrutoresService.listar(),
+      modalidadesService.listar(),
+      associadosService.listar(),
+    ]);
+
+    const turma = turmas.find((t: any) => t.id === turmaId);
+    if (!turma) throw new Error("Turma não encontrada");
+
+    const doc = new jsPDF("landscape");
+    const nomeModalidade = this.desenharFolhaPresenca(doc, turma, mes, ano, instrutores, modalidades, associados);
+
     const nomeArquivo = `Lista de turmas - ${nomeModalidade} - ${MESES[mes]} ${ano}.pdf`;
     visualizarEregistrar(doc, nomeArquivo, "presenca");
+  }
+
+  async exportarFolhasPresencaEmMassa(turmaIds: string[], mes: number, ano: number): Promise<void> {
+    const [turmas, instrutores, modalidades, associados] = await Promise.all([
+      turmasService.listar(),
+      instrutoresService.listar(),
+      modalidadesService.listar(),
+      associadosService.listar(),
+    ]);
+
+    const doc = new jsPDF("landscape");
+    let primeiraPagina = true;
+
+    for (const turmaId of turmaIds) {
+      const turma = turmas.find((t: any) => t.id === turmaId);
+      if (!turma) continue;
+
+      if (!primeiraPagina) doc.addPage("a4", "landscape");
+      primeiraPagina = false;
+
+      this.desenharFolhaPresenca(doc, turma, mes, ano, instrutores, modalidades, associados);
+    }
+
+    const nomeArquivo = `Folhas de presença - ${MESES[mes]} ${ano}.pdf`;
+    baixarEregistrar(doc, nomeArquivo, "presenca");
   }
 
   // ==========================

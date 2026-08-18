@@ -72,11 +72,9 @@ export default function ConfiguracoesPage() {
 
   async function handleExportarPresencaMassa(idsSelecionados: string[]) {
     const agora = new Date();
-    for (const id of idsSelecionados) {
-      await pdfService.exportarFolhaPresenca(id, agora.getMonth(), agora.getFullYear());
-    }
+    await pdfService.exportarFolhasPresencaEmMassa(idsSelecionados, agora.getMonth(), agora.getFullYear());
     setMostrarExportacaoMassa(false);
-    avisar(`${idsSelecionados.length} folha(s) de presença exportada(s).`);
+    avisar(`${idsSelecionados.length} folha(s) de presença exportada(s) em um único PDF.`);
   }
 
   useEffect(() => {
