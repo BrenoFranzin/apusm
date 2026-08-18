@@ -410,7 +410,7 @@ function ModalPresenca({
 
   return (
     <div onClick={onFechar} style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.55)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: "var(--z-modal)" as unknown as number, padding: 16 }}>
-      <div onClick={(e) => e.stopPropagation()} className="apusm-card" style={{ width: "100%", maxWidth: 480, maxHeight: "82vh", display: "flex", flexDirection: "column", padding: "var(--space-6)" }}>
+      <div onClick={(e) => e.stopPropagation()} className="apusm-card" style={{ width: "100%", maxWidth: 680, maxHeight: "82vh", display: "flex", flexDirection: "column", padding: "var(--space-6)" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <h2 style={{ fontWeight: 600, fontSize: 17, margin: 0, color: "var(--text-primary)" }}>Folha de presença</h2>
           <button onClick={onFechar} style={{ fontSize: 20, lineHeight: 1, color: "var(--text-muted)", background: "none", border: "none", cursor: "pointer" }}>×</button>
@@ -431,10 +431,11 @@ function ModalPresenca({
                       onClick={() => setSelecionada(t.id)}
                       style={{
                         textAlign: "left", fontSize: 13, padding: "9px 12px", borderRadius: 8,
-                        border: `1.5px solid ${ativo ? "var(--color-primary)" : "var(--border-default)"}`,
-                        background: ativo ? "var(--color-primary-light, #e8f5e9)" : "var(--background-primary)",
-                        color: ativo ? "var(--color-primary)" : "var(--text-primary)",
-                        fontWeight: ativo ? 600 : 400, cursor: "pointer",
+                        border: `1.5px solid ${ativo ? "#0F766E" : "var(--border-default)"}`,
+                        background: ativo ? "#CCFBF1" : "var(--background-primary)",
+                        color: ativo ? "#0B4F49" : "var(--text-primary)",
+                        fontWeight: ativo ? 700 : 400, cursor: "pointer",
+                        transition: "all 0.15s ease",
                       }}
                     >
                       {DIA_LABEL[t.dia] ?? t.dia} · {t.horario}
@@ -511,7 +512,7 @@ function ModalExportacaoMassa({
 
   return (
     <div onClick={onFechar} style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.55)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: "var(--z-modal)" as unknown as number, padding: 16 }}>
-      <div onClick={(e) => e.stopPropagation()} className="apusm-card" style={{ width: "100%", maxWidth: 520, maxHeight: "82vh", display: "flex", flexDirection: "column", padding: "var(--space-6)" }}>
+      <div onClick={(e) => e.stopPropagation()} className="apusm-card" style={{ width: "100%", maxWidth: 728, maxHeight: "82vh", display: "flex", flexDirection: "column", padding: "var(--space-6)" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
           <h2 style={{ fontWeight: 600, fontSize: 17, margin: 0, color: "var(--text-primary)" }}>Exportar presença em massa</h2>
           <button onClick={onFechar} style={{ fontSize: 20, lineHeight: 1, color: "var(--text-muted)", background: "none", border: "none", cursor: "pointer" }}>×</button>
@@ -544,7 +545,7 @@ function ModalExportacaoMassa({
                   </div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                     {ts.map((t) => (
-                      <label key={t.id} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--text-primary)", border: "1px solid var(--border-default)", borderRadius: 8, padding: "8px 10px", cursor: "pointer" }}>
+                      <label key={t.id} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: selecionadas.has(t.id) ? "#0B4F49" : "var(--text-primary)", border: `1.5px solid ${selecionadas.has(t.id) ? "#0F766E" : "var(--border-default)"}`, borderRadius: 8, padding: "8px 10px", cursor: "pointer", background: selecionadas.has(t.id) ? "#CCFBF1" : "var(--background-primary)", transition: "all 0.15s ease", fontWeight: selecionadas.has(t.id) ? 600 : 400 }}>
                         <input type="checkbox" checked={selecionadas.has(t.id)} onChange={() => alternar(t.id)} />
                         {DIA_LABEL[t.dia] ?? t.dia} · {t.horario}
                       </label>
