@@ -34,15 +34,16 @@ const TABELAS_HISTORICO = [
 // Agrupa turmas por modalidade e ordena: modalidade (A-Z) -> horário
 function agruparTurmasPorModalidade<T extends { modalidadeId: string; dia: string; horario: string }>(
   turmas: T[],
-  modalidades: { id: string; nome: string }[]
-): { modalidade: string; turmas: T[] }[] {
-  const grupos = new Map<string, { modalidade: string; turmas: T[] }>();
+  modalidades: { id: string; nome: string; cor: string }[]
+): { modalidade: string; cor: string; turmas: T[] }[] {
+  const grupos = new Map<string, { modalidade: string; cor: string; turmas: T[] }>();
 
   for (const t of turmas) {
     const mod = modalidades.find((m) => m.id === t.modalidadeId);
     const nomeModalidade = mod?.nome ?? "Sem modalidade";
+    const corModalidade = mod?.cor ?? "var(--border-default)";
     if (!grupos.has(t.modalidadeId)) {
-      grupos.set(t.modalidadeId, { modalidade: nomeModalidade, turmas: [] });
+      grupos.set(t.modalidadeId, { modalidade: nomeModalidade, cor: corModalidade, turmas: [] });
     }
     grupos.get(t.modalidadeId)!.turmas.push(t);
   }
@@ -391,7 +392,7 @@ function ModalExportacaoMassa({
   onConfirmar,
 }: {
   turmas: { id: string; dia: string; horario: string; modalidadeId: string }[];
-  modalidades: { id: string; nome: string }[];
+  modalidades: { id: string; nome: string; cor: string }[];
   onFechar: () => void;
   onConfirmar: (idsSelecionados: string[]) => void;
 }) {
@@ -463,19 +464,28 @@ function ModalExportacaoMassa({
         <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
           <button
             onClick={marcarTodas}
-            style={{ fontSize: 12, border: "1px solid var(--border-default)", borderRadius: 6, padding: "5px 9px", background: "var(--background-primary)", color: "var(--text-primary)" }}
+            style={{ fontSize: 12, fontWeight: 700, border: "1.5px solid #0F766E", borderRadius: 6, padding: "6px 12px", background: "#0F766E", color: "#ffffff", cursor: "pointer" }}
           >
             Marcar todas
           </button>
           <button
             onClick={desmarcarTodas}
-            style={{ fontSize: 12, border: "1px solid var(--border-default)", borderRadius: 6, padding: "5px 9px", background: "var(--background-primary)", color: "var(--text-primary)" }}
+            style={{ fontSize: 12, fontWeight: 700, border: "1.5px solid var(--text-secondary)", borderRadius: 6, padding: "6px 12px", background: "var(--background-primary)", color: "var(--text-secondary)", cursor: "pointer" }}
           >
             Desmarcar todas
           </button>
         </div>
 
-        <div style={{ overflowY: "auto", display: "flex", flexDirection: "column", gap: 16, marginBottom: 16 }}>
+        <style>{`
+          .apusm-scroll-massa::-webkit-scrollbar { width: 10px; }
+          .apusm-scroll-massa::-webkit-scrollbar-track { background: var(--background-primary); border-radius: 8px; }
+          .apusm-scroll-massa::-webkit-scrollbar-thumb { background: #0F766E; border-radius: 8px; border: 2px solid var(--background-primary); }
+          .apusm-scroll-massa::-webkit-scrollbar-thumb:hover { background: #115E59; }
+        `}</style>
+        <div
+          className="apusm-scroll-massa"
+          style={{ overflowY: "auto", display: "flex", flexDirection: "column", gap: 16, marginBottom: 16, scrollbarWidth: "thin", scrollbarColor: "#0F766E var(--background-primary)" }}
+        >
           {turmas.length === 0 ? (
             <p style={{ color: "var(--text-muted)", fontSize: 14 }}>Nenhuma turma cadastrada.</p>
           ) : (
@@ -487,7 +497,8 @@ function ModalExportacaoMassa({
                   borderBottom: idx < arr.length - 1 ? "1px solid var(--border-default)" : "none",
                 }}
               >
-                <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.4, color: "var(--text-muted)", margin: "0 0 8px" }}>
+                <p style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.4, color: "var(--text-muted)", margin: "0 0 8px" }}>
+                  <span style={{ width: 10, height: 10, borderRadius: "50%", border: `2px solid ${grupo.cor}`, background: "var(--background-primary)", flexShrink: 0 }} />
                   {grupo.modalidade}
                 </p>
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -555,142 +566,6 @@ function ModalExportacaoMassa({
 // ==========================
 // MODAL DE EXPORTAR PRESENÇA (individual)
 // ==========================
-
-function ModalExportarPresenca({
-  turmas,
-  modalidades,
-  onFechar,
-  onConfirmar,
-}: {
-  turmas: { id: string; dia: string; horario: string; modalidadeId: string }[];
-  modalidades: { id: string; nome: string }[];
-  onFechar: () => void;
-  onConfirmar: (id: string) => void;
-}) {
-  const [selecionada, setSelecionada] = useState<string>("");
-  const [exportando, setExportando] = useState(false);
-
-  async function confirmar() {
-    if (!selecionada) return;
-    setExportando(true);
-    await onConfirmar(selecionada);
-    setExportando(false);
-  }
-
-  return (
-    <div
-      onClick={onFechar}
-      style={{
-        position: "fixed",
-        inset: 0,
-        background: "rgba(15, 23, 42, 0.55)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: "var(--z-modal)" as unknown as number,
-        padding: 16,
-      }}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="apusm-card"
-        style={{
-          width: "100%",
-          maxWidth: 680,
-          maxHeight: "82vh",
-          display: "flex",
-          flexDirection: "column",
-          padding: "var(--space-6)",
-        }}
-      >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-          <h2 style={{ fontWeight: 600, fontSize: 17, margin: 0, color: "var(--text-primary)" }}>
-            Exportar folha de presença
-          </h2>
-          <button
-            onClick={onFechar}
-            style={{ fontSize: 20, lineHeight: 1, color: "var(--text-muted)", background: "none", border: "none" }}
-          >
-            ×
-          </button>
-        </div>
-
-        <div style={{ overflowY: "auto", display: "flex", flexDirection: "column", gap: 16, marginBottom: 16 }}>
-          {turmas.length === 0 ? (
-            <p style={{ color: "var(--text-muted)", fontSize: 14 }}>Nenhuma turma cadastrada.</p>
-          ) : (
-            agruparTurmasPorModalidade(turmas, modalidades).map((grupo, idx, arr) => (
-              <div
-                key={grupo.modalidade}
-                style={{
-                  paddingBottom: idx < arr.length - 1 ? 16 : 0,
-                  borderBottom: idx < arr.length - 1 ? "1px solid var(--border-default)" : "none",
-                }}
-              >
-                <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.4, color: "var(--text-muted)", margin: "0 0 8px" }}>
-                  {grupo.modalidade}
-                </p>
-                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                  {grupo.turmas.map((t) => {
-                    const ativo = selecionada === t.id;
-                    return (
-                      <button
-                        key={t.id}
-                        type="button"
-                        onClick={() => setSelecionada(t.id)}
-                        style={{
-                          textAlign: "left",
-                          fontSize: 13,
-                          padding: "9px 12px",
-                          borderRadius: 8,
-                          border: `1.5px solid ${ativo ? "#0F766E" : "var(--border-default)"}`,
-                          background: ativo ? "#CCFBF1" : "var(--background-primary)",
-                          color: ativo ? "#0B4F49" : "var(--text-primary)",
-                          fontWeight: ativo ? 700 : 400,
-                          cursor: "pointer",
-                          width: "100%",
-                          transition: "all 0.15s ease",
-                        }}
-                      >
-                        {t.dia} {t.horario}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
-          <button
-            onClick={onFechar}
-            style={{ fontSize: 13, border: "1px solid var(--border-default)", borderRadius: 6, padding: "8px 14px", background: "var(--background-primary)", color: "var(--text-primary)" }}
-          >
-            Cancelar
-          </button>
-          <button
-            onClick={confirmar}
-            disabled={!selecionada || exportando}
-            style={{
-              fontSize: 13,
-              border: "none",
-              borderRadius: 6,
-              padding: "8px 14px",
-              background: "var(--color-primary)",
-              color: "#ffffff",
-              fontWeight: 600,
-              cursor: !selecionada || exportando ? "not-allowed" : "pointer",
-              opacity: !selecionada || exportando ? 0.5 : 1,
-            }}
-          >
-            {exportando ? "Exportando..." : "Exportar"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 // ==========================
 // MODAL DE HISTÓRICO
