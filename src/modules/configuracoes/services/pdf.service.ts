@@ -474,9 +474,21 @@ class PdfService {
     const larguraTotal = pageWidth - margem * 2;
     const tituloX = pageWidth - margem;
 
+    const FAIXA_ETARIA_MUSICALIZACAO: Record<string, string> = {
+      seg: "Até 3 anos",
+      ter: "4 até 6 anos",
+      qua: "Até 4 anos",
+      qui: "6 aos 8 anos",
+    };
+    const ehMusicalizacao = /musicaliza/i.test(nomeModalidade);
+    const faixaEtaria = ehMusicalizacao ? FAIXA_ETARIA_MUSICALIZACAO[turma.dia] : undefined;
+    const tituloModalidade = faixaEtaria
+      ? `${nomeModalidade.toUpperCase()} (${faixaEtaria.toUpperCase()})`
+      : nomeModalidade.toUpperCase();
+
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
-    doc.text(`MODALIDADE: ${nomeModalidade.toUpperCase()}`, margem, 14);
+    doc.text(`MODALIDADE: ${tituloModalidade}`, margem, 14);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.text(`PROFESSOR(A): ${instrutor?.nome.toUpperCase() ?? "-"}`, margem, 20);
@@ -507,8 +519,12 @@ class PdfService {
 
     const numDatas = datas.length;
     const colNumero = 10;
-    const colResponsavel = infantil ? 40 : 0;
-    const colNome = (larguraTotal - colNumero - colResponsavel) / 2;
+    let colResponsavel = infantil ? 40 : 0;
+    let colNome = (larguraTotal - colNumero - colResponsavel) / 2;
+    if (infantil) {
+      colNome = colNome * 0.8;
+      colResponsavel = colResponsavel * 1.2;
+    }
     const colData = (larguraTotal - colNumero - colResponsavel - colNome) / numDatas;
 
     const maiorNome = linhasMatriculados.reduce((a, b) => (b.length > a.length ? b : a), "");
