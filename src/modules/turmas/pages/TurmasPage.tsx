@@ -299,9 +299,9 @@ export default function TurmasPage() {
 
                             if (!capacidade.cabe) {
                               window.alert(
-                                `Essa turma comporta no máximo ${capacidade.maxLinhas} linhas na folha de presença (vagas + linhas extras).\n` +
-                                `Com ${valor} vagas + ${turma.limiteNovosAlunos ?? 0} linhas extras = ${capacidade.linhasConfiguradas}.\n` +
-                                `Reduza em ${capacidade.excedente} para caber.`
+                                `Limite da folha: ${capacidade.maxLinhas} linhas.\n` +
+                                `Você configurou ${capacidade.linhasConfiguradas} (${valor} vagas + ${turma.limiteNovosAlunos ?? 0} extras).\n` +
+                                `Reduza ${capacidade.excedente} para caber.`
                               );
                               e.target.value = String(turma.limiteVagas ?? "");
                               return;
@@ -348,9 +348,9 @@ export default function TurmasPage() {
 
                             if (!capacidade.cabe) {
                               window.alert(
-                                `Essa turma comporta no máximo ${capacidade.maxLinhas} linhas na folha de presença (vagas + linhas extras).\n` +
-                                `Com ${turma.limiteVagas} vagas + ${valor} linhas extras = ${capacidade.linhasConfiguradas}.\n` +
-                                `Reduza em ${capacidade.excedente} para caber.`
+                                `Limite da folha: ${capacidade.maxLinhas} linhas.\n` +
+                                `Você configurou ${capacidade.linhasConfiguradas} (${turma.limiteVagas} vagas + ${valor} extras).\n` +
+                                `Reduza ${capacidade.excedente} para caber.`
                               );
                               e.target.value = String(turma.limiteNovosAlunos ?? 0);
                               return;
