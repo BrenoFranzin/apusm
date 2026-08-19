@@ -8,6 +8,28 @@ import { plantaoService } from "@/modules/plantao/services/plantao.service";
 import { associadosService } from "@/modules/associados/services/associados.service";
 
 
+// Altura mínima legível por linha (mm), com margem de segurança.
+// Calculada a partir dos pisos já existentes de fonte (5.5pt) e padding (0.6mm):
+// fonte 5.5pt ≈ 1.94mm de texto + 2×0.6mm de padding + 0.3mm de borda ≈ 3.44mm físico mínimo.
+// Usamos 5.2mm (folga de ~1.7mm/linha) para absorver variação real do autoTable.
+const ALTURA_MINIMA_LINHA_MM = 5.2;
+const MARGEM_SEGURANCA_RODAPE = 10;
+
+interface CapacidadePagina {
+  alturaDisponivel: number;
+  maxLinhas: number;
+}
+
+/** Capacidade máxima de linhas (matriculados + novos) que cabem em UMA página, sem chute. */
+function calcularCapacidadePagina(orientacao: "portrait" | "landscape", temObs: boolean): CapacidadePagina {
+  const alturaPagina = orientacao === "landscape" ? 210 : 297;
+  const alturaReservadaTopo = 26 + (temObs ? 4 : 0) + 8;
+  const alturaReservadaRodape = 6 + MARGEM_SEGURANCA_RODAPE;
+  const alturaDisponivel = alturaPagina - alturaReservadaTopo - alturaReservadaRodape;
+  const maxLinhas = Math.floor(alturaDisponivel / ALTURA_MINIMA_LINHA_MM);
+  return { alturaDisponivel, maxLinhas };
+}
+
 const NOME_DIA: Record<string, string> = {
   seg: "Segunda",
   ter: "Terça",
@@ -466,6 +488,19 @@ class PdfService {
 
     const totalLinhas = linhasMatriculados.length + limiteNovos;
 
+    const orientacaoAtual: "portrait" | "landscape" = infantil ? "landscape" : "portrait";
+    const { alturaDisponivel: alturaDisponivelCheck, maxLinhas } = calcularCapacidadePagina(
+      orientacaoAtual,
+      Boolean(modalidade?.descricao)
+    );
+    if (totalLinhas > maxLinhas) {
+      throw new Error(
+        `A turma "${nomeModalidade.toUpperCase()}" (${NOME_DIA[turma.dia] ?? turma.dia} ${turma.horario}) tem ${totalLinhas} linhas ` +
+        `(${linhasMatriculados.length} vagas + ${limiteNovos} novos), mas a folha só comporta ${maxLinhas} linhas sem quebrar página. ` +
+        `Reduza "Limite vagas" e/ou "Linhas extras" em ${totalLinhas - maxLinhas} para essa turma na aba Turmas.`
+      );
+    }
+
     // "Ajustar à página" em DUAS FASES: a 1ª tabela usa uma estimativa inicial pra
     // não ficar espremida; depois de desenhada, lemos a posição REAL onde ela terminou
     // (finalY1, calculada pelo próprio jsPDF, sem chute) e usamos o espaço que
@@ -654,6 +689,17 @@ class PdfService {
   apagarDoHistorico(id: string): void {
     const lista = this.listarHistorico().filter((r) => r.id !== id);
     localStorage.setItem(HISTORICO_KEY, JSON.stringify(lista));
+  }
+
+  calcularCapacidadeTurma(dia: string, infantil: boolean, temObs: boolean, limiteVagas: number, limiteNovos: number) {
+    const { maxLinhas } = calcularCapacidadePagina(infantil ? "landscape" : "portrait", temObs);
+    const linhasConfiguradas = limiteVagas + limiteNovos;
+    return {
+      maxLinhas,
+      linhasConfiguradas,
+      cabe: linhasConfiguradas <= maxLinhas,
+      excedente: Math.max(0, linhasConfiguradas - maxLinhas),
+    };
   }
 }
 
