@@ -466,21 +466,28 @@ class PdfService {
 
     const totalLinhas = linhasMatriculados.length + limiteNovos;
 
-    // "Ajustar à página" (como no Excel): calcula a altura disponível e distribui
-    // igualmente entre as linhas, esticando ou encolhendo conforme necessário.
+    // "Ajustar à página" em DUAS FASES: a 1ª tabela usa uma estimativa inicial pra
+    // não ficar espremida; depois de desenhada, lemos a posição REAL onde ela terminou
+    // (finalY1, calculada pelo próprio jsPDF, sem chute) e usamos o espaço que
+    // sobrou de verdade pra dimensionar a 2ª tabela — isso elimina qualquer erro de
+    // estimativa de altura de cabeçalho, fonte etc.
     const alturaPagina = doc.internal.pageSize.getHeight();
-    const alturaReservadaTopo = 26 + (modalidade?.descricao ? 4 : 0) + 8; // texto topo + OBS + linha de cabeçalho da tabela
-    const alturaReservadaRodape = 6 + 6; // barra "NOVOS ALUNOS" + margem inferior de segurança
+    const MARGEM_SEGURANCA_RODAPE = 10; // nunca deixa a tabela encostar na borda da folha
+    const alturaReservadaTopo = 26 + (modalidade?.descricao ? 4 : 0) + 8; // texto topo + OBS + cabeçalho da tabela (estimativa p/ 1ª fase)
+    const alturaReservadaRodape = 6 + MARGEM_SEGURANCA_RODAPE; // barra "NOVOS ALUNOS" + margem de segurança
     const alturaDisponivel = alturaPagina - alturaReservadaTopo - alturaReservadaRodape;
     const alturaLinhaIdeal = alturaDisponivel / totalLinhas;
 
-    // A fonte tem um teto de legibilidade (não pode crescer indefinidamente, senão
-    // quebra texto em colunas estreitas como "Nº"). Quem estica pra preencher a
-    // página é o PADDING (espaço vazio dentro da célula) e a altura mínima da linha —
-    // isso nunca quebra o texto, só afasta as linhas.
-    let fontSize = Math.min(10, Math.max(5.5, alturaLinhaIdeal * 1.4));
-    let cellPadding = Math.min(6, Math.max(0.6, (alturaLinhaIdeal - fontSize * 0.5) * 0.4));
-    const minCellHeight = alturaLinhaIdeal;
+    // Fórmula pra converter altura de linha em fonte/padding, reaproveitada nas 2 fases.
+    // Fonte tem teto de legibilidade (não quebra texto em colunas estreitas como "Nº");
+    // quem estica pra preencher o espaço é o padding e a altura mínima da linha.
+    const calcularEstilo = (alturaLinha: number) => {
+      const fs = Math.min(10, Math.max(5.5, alturaLinha * 1.4));
+      const cp = Math.min(6, Math.max(0.6, (alturaLinha - fs * 0.5) * 0.4));
+      return { fontSize: fs, cellPadding: cp, minCellHeight: alturaLinha };
+    };
+
+    let { fontSize, cellPadding, minCellHeight } = calcularEstilo(alturaLinhaIdeal);
 
     const MARGEM = 12.7; // 1,27cm — margem estreita padrão
     const larguraPagina = doc.internal.pageSize.getWidth();
@@ -540,10 +547,16 @@ class PdfService {
 
     const finalY1 = (doc as any).lastAutoTable.finalY as number;
 
+    // FASE 2: recalcula o estilo da 2ª tabela com base no espaço REAL que sobrou,
+    // não numa estimativa — garante que "Novos Alunos" sempre caiba na mesma página.
+    const alturaRestanteReal = alturaPagina - finalY1 - 6 - MARGEM_SEGURANCA_RODAPE;
+    const alturaLinhaNovos = Math.max(alturaRestanteReal / limiteNovos, 3); // nunca menor que 3mm (piso de legibilidade)
+    const estiloNovos = calcularEstilo(alturaLinhaNovos);
+
     doc.setFillColor(230, 230, 230);
     doc.rect(MARGEM, finalY1, larguraUtil, 6, "F");
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(fontSize);
+    doc.setFontSize(Math.min(estiloNovos.fontSize, fontSize));
     doc.setTextColor(0);
     doc.text("NOVOS ALUNOS", MARGEM + larguraUtil / 2, finalY1 + 4.2, { align: "center" });
 
@@ -557,7 +570,7 @@ class PdfService {
       ),
       startY: finalY1 + 6,
       theme: "grid",
-      styles: { fontSize, cellPadding, minCellHeight, halign: "center", valign: "middle", lineWidth: 0.3, lineColor: [0, 0, 0] },
+      styles: { fontSize: estiloNovos.fontSize, cellPadding: estiloNovos.cellPadding, minCellHeight: estiloNovos.minCellHeight, halign: "center", valign: "middle", lineWidth: 0.3, lineColor: [0, 0, 0] },
       columnStyles: columnStylesNovos,
       margin: { left: MARGEM, right: MARGEM },
       pageBreak: "avoid",
