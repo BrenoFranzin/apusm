@@ -516,7 +516,9 @@ class PdfService {
     // Fórmula pra converter altura de linha em fonte/padding, reaproveitada nas 2 fases.
     // Fonte tem teto de legibilidade (não quebra texto em colunas estreitas como "Nº");
     // quem estica pra preencher o espaço é o padding e a altura mínima da linha.
-    const calcularEstilo = (alturaLinha: number) => {
+    const ALTURA_MAXIMA_LINHA_MM = 8; // teto — turmas com poucas pessoas não esticam além disso
+    const calcularEstilo = (alturaLinhaBruta: number) => {
+      const alturaLinha = Math.min(alturaLinhaBruta, ALTURA_MAXIMA_LINHA_MM);
       const fs = Math.min(10, Math.max(5.5, alturaLinha * 1.4));
       const cp = Math.min(6, Math.max(0.6, (alturaLinha - fs * 0.5) * 0.4));
       return { fontSize: fs, cellPadding: cp, minCellHeight: alturaLinha };
