@@ -465,22 +465,29 @@ class PdfService {
     while (linhasMatriculados.length < limiteVagas) linhasMatriculados.push("");
 
     const totalLinhas = linhasMatriculados.length + limiteNovos;
-    const compacto = totalLinhas > 22;
-    const fontSize = compacto ? 7.5 : 9;
-    const cellPadding = compacto ? 1.3 : 2;
+    let fontSize = 9;
+    let cellPadding = 2;
+    if (totalLinhas > 40) { fontSize = 6; cellPadding = 0.8; }
+    else if (totalLinhas > 30) { fontSize = 6.8; cellPadding = 1; }
+    else if (totalLinhas > 22) { fontSize = 7.5; cellPadding = 1.3; }
+
+    const MARGEM = 12.7; // 1,27cm — margem estreita padrão
+    const larguraPagina = doc.internal.pageSize.getWidth();
+    const larguraUtil = larguraPagina - MARGEM * 2;
+    const bordaDireita = larguraPagina - MARGEM;
 
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
-    doc.text(`MODALIDADE: ${nomeModalidade.toUpperCase()}`, 14, 14);
+    doc.text(`MODALIDADE: ${nomeModalidade.toUpperCase()}`, MARGEM, 14);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
-    doc.text(`PROFESSOR(A): ${instrutor?.nome.toUpperCase() ?? "-"}`, 14, 20);
+    doc.text(`PROFESSOR(A): ${instrutor?.nome.toUpperCase() ?? "-"}`, MARGEM, 20);
 
     let linhaExtra = 0;
     if (modalidade?.descricao) {
       doc.setFontSize(8);
       doc.setFont("helvetica", "italic");
-      doc.text(`OBS: ${modalidade.descricao}`, 14, 25);
+      doc.text(`OBS: ${modalidade.descricao}`, MARGEM, 25);
       doc.setFont("helvetica", "normal");
       linhaExtra = 4;
     }
@@ -490,10 +497,10 @@ class PdfService {
     };
     doc.setFont("helvetica", "bold");
     doc.setFontSize(12);
-    doc.text(`MÊS: ${MESES[mes].toUpperCase()}/${ano}`, 280, 14, { align: "right" });
+    doc.text(`MÊS: ${MESES[mes].toUpperCase()}/${ano}`, bordaDireita, 14, { align: "right" });
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
-    doc.text(`DIA/HORÁRIO: ${nomeDiaCurto[turma.dia] ?? turma.dia} ${turma.horario}`, 280, 20, { align: "right" });
+    doc.text(`DIA/HORÁRIO: ${nomeDiaCurto[turma.dia] ?? turma.dia} ${turma.horario}`, bordaDireita, 20, { align: "right" });
 
     const colunaAluno = infantil ? "Nome do Aluno (Criança)" : "Nome do Aluno";
     const cabecalhoPrincipal = infantil
@@ -517,18 +524,17 @@ class PdfService {
       styles: { fontSize, cellPadding, halign: "center", valign: "middle", lineWidth: 0.3, lineColor: [0, 0, 0], fontStyle: "bold" },
       headStyles: { fillColor: [20, 83, 45], textColor: [255, 255, 255], fontStyle: "bold" },
       columnStyles: columnStylesPrincipal,
-      margin: { left: 14, right: 14 },
+      margin: { left: MARGEM, right: MARGEM },
     });
 
     const finalY1 = (doc as any).lastAutoTable.finalY as number;
-    const larguraTotal = 269;
 
     doc.setFillColor(230, 230, 230);
-    doc.rect(14, finalY1, larguraTotal, 6, "F");
+    doc.rect(MARGEM, finalY1, larguraUtil, 6, "F");
     doc.setFont("helvetica", "bold");
     doc.setFontSize(fontSize);
     doc.setTextColor(0);
-    doc.text("NOVOS ALUNOS", 14 + larguraTotal / 2, finalY1 + 4.2, { align: "center" });
+    doc.text("NOVOS ALUNOS", MARGEM + larguraUtil / 2, finalY1 + 4.2, { align: "center" });
 
     const columnStylesNovos: any = infantil
       ? { 0: { cellWidth: 65, halign: "left" }, [datas.length + 1]: { cellWidth: 45, halign: "left" } }
@@ -542,7 +548,7 @@ class PdfService {
       theme: "grid",
       styles: { fontSize, cellPadding, halign: "center", valign: "middle", lineWidth: 0.3, lineColor: [0, 0, 0] },
       columnStyles: columnStylesNovos,
-      margin: { left: 14, right: 14 },
+      margin: { left: MARGEM, right: MARGEM },
       pageBreak: "avoid",
     });
 
@@ -560,7 +566,10 @@ class PdfService {
     const turma = turmas.find((t: any) => t.id === turmaId);
     if (!turma) throw new Error("Turma não encontrada");
 
-    const doc = new jsPDF("landscape");
+    const nomeModTurma = modalidades.find((m: any) => m.id === turma.modalidadeId)?.nome ?? "";
+    const orientacao = /infantil|musicaliza/i.test(nomeModTurma) ? "landscape" : "portrait";
+
+    const doc = new jsPDF(orientacao);
     const nomeModalidade = this.desenharFolhaPresenca(doc, turma, mes, ano, instrutores, modalidades, associados);
 
     const nomeArquivo = `Lista de turmas - ${nomeModalidade} - ${MESES[mes]} ${ano}.pdf`;
@@ -590,11 +599,16 @@ class PdfService {
         return a.horario.localeCompare(b.horario);
       });
 
-    const doc = new jsPDF("landscape");
+    const orientacaoDa = (t: any) => {
+      const nome = modalidades.find((m: any) => m.id === t.modalidadeId)?.nome ?? "";
+      return /infantil|musicaliza/i.test(nome) ? "landscape" : "portrait";
+    };
+
+    const doc = new jsPDF(turmasOrdenadas.length > 0 ? orientacaoDa(turmasOrdenadas[0]) : "portrait");
     let primeiraPagina = true;
 
     for (const turma of turmasOrdenadas) {
-      if (!primeiraPagina) doc.addPage("a4", "landscape");
+      if (!primeiraPagina) doc.addPage("a4", orientacaoDa(turma));
       primeiraPagina = false;
 
       this.desenharFolhaPresenca(doc, turma, mes, ano, instrutores, modalidades, associados);
