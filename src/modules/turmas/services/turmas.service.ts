@@ -21,6 +21,7 @@ function toTurma(row: any): Turma {
     sala: row.sala,
     limiteVagas: row.limite_vagas,
     limiteNovosAlunos: row.limite_novos_alunos,
+    observacao: row.observacao ?? undefined,
   };
 }
 
@@ -63,6 +64,7 @@ class TurmasService {
       sala: dados.sala,
       limite_vagas: dados.limiteVagas ?? 10,
       limite_novos_alunos: dados.limiteNovosAlunos ?? 9,
+      observacao: dados.observacao ?? null,
     };
 
     await syncQueueService.gravar("turmas", "insert", nova);
@@ -107,6 +109,7 @@ class TurmasService {
     if (dados.sala !== undefined) payload.sala = dados.sala;
     if (dados.limiteVagas !== undefined) payload.limite_vagas = dados.limiteVagas;
     if (dados.limiteNovosAlunos !== undefined) payload.limite_novos_alunos = dados.limiteNovosAlunos;
+    if (dados.observacao !== undefined) payload.observacao = dados.observacao;
 
     payload.id = id;
     const antes: Record<string, unknown> = { id };

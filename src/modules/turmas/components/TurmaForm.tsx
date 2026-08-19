@@ -53,6 +53,7 @@ export default function TurmaForm({ modalidades, instrutores, salas, onSubmit, m
       sala: "",
       limiteVagas: 10,
       limiteNovosAlunos: 9,
+      observacao: "",
     },
   });
 
@@ -112,7 +113,12 @@ export default function TurmaForm({ modalidades, instrutores, salas, onSubmit, m
         ))}
       </select>
 
+
+      <label style={{ fontSize: 12, color: "var(--text-secondary)" }}>Observação (opcional, aparece entre parênteses ao lado da modalidade na folha de presença)</label>
+      <input type="text" placeholder="Ex: Até 3 anos" {...register("observacao")} style={selectStyle} />
+
       {mostrarLimites && (
+        
         <>
           <label style={{ fontSize: 12, color: "var(--text-secondary)" }}>Limite de vagas na turma</label>
           <input type="number" min={1} {...register("limiteVagas")} style={selectStyle} />

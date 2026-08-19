@@ -465,25 +465,13 @@ class PdfService {
     const linhasMatriculados: string[] = [...matriculados];
     while (linhasMatriculados.length < limiteVagas) linhasMatriculados.push("");
 
-    const totalLinhas = linhasMatriculados.length + limiteNovos;
-    const compacto = totalLinhas > 22;
-    const cellPadding = compacto ? 1.3 : 2;
-
     const pageWidth = orientacao === "portrait" ? 210 : 297;
     const margem = 14;
     const larguraTotal = pageWidth - margem * 2;
     const tituloX = pageWidth - margem;
 
-    const FAIXA_ETARIA_MUSICALIZACAO: Record<string, string> = {
-      seg: "Até 3 anos",
-      ter: "4 até 6 anos",
-      qua: "Até 4 anos",
-      qui: "6 aos 8 anos",
-    };
-    const ehMusicalizacao = /musicaliza/i.test(nomeModalidade);
-    const faixaEtaria = ehMusicalizacao ? FAIXA_ETARIA_MUSICALIZACAO[turma.dia] : undefined;
-    const tituloModalidade = faixaEtaria
-      ? `${nomeModalidade.toUpperCase()} (${faixaEtaria.toUpperCase()})`
+    const tituloModalidade = turma.observacao
+      ? `${nomeModalidade.toUpperCase()} (${turma.observacao.toUpperCase()})`
       : nomeModalidade.toUpperCase();
 
     doc.setFontSize(12);
@@ -512,6 +500,16 @@ class PdfService {
     doc.setFontSize(10);
     doc.text(`DIA/HORÁRIO: ${nomeDiaCurto[turma.dia] ?? turma.dia} ${turma.horario}`, tituloX, 20, { align: "right" });
 
+    const totalLinhasDados = linhasMatriculados.length + limiteNovos;
+    const pageHeight = orientacao === "portrait" ? 297 : 210;
+    const startYTabela = 36 + linhaExtra;
+    const alturaDisponivel = pageHeight - startYTabela - 12 - 8 - 6;
+    let alturaLinha = totalLinhasDados > 0 ? alturaDisponivel / totalLinhasDados : 8;
+    alturaLinha = Math.max(3.2, Math.min(alturaLinha, 8));
+    const escala = alturaLinha / 8;
+    const fontSizeBase = Math.max(5, Math.min(9, 9 * escala));
+    const cellPadding = Math.max(0.6, Math.min(2, 2 * escala));
+
     const colunaAluno = infantil ? "Nome do Aluno (Criança)" : "Nome do Aluno";
     const cabecalhoPrincipal = infantil
       ? ["Nº", colunaAluno, ...datas, "Responsável"]
@@ -529,9 +527,9 @@ class PdfService {
 
     const maiorNome = linhasMatriculados.reduce((a, b) => (b.length > a.length ? b : a), "");
     const fontSizeNome = maiorNome
-      ? fitFontSize(doc, maiorNome, colNome - 4, compacto ? 8 : 9, 5)
-      : (compacto ? 7.5 : 9);
-    const fontSize = Math.min(fontSizeNome, compacto ? 7.5 : 9);
+      ? fitFontSize(doc, maiorNome, colNome - 4, fontSizeBase, 5)
+      : fontSizeBase;
+    const fontSize = Math.min(fontSizeNome, fontSizeBase);
 
     const columnStylesPrincipal: any = {
       0: { cellWidth: colNumero },
@@ -548,10 +546,10 @@ class PdfService {
           ? [String(i + 1).padStart(2, "0"), nome, ...datas.map(() => ""), ""]
           : [String(i + 1).padStart(2, "0"), nome, ...datas.map(() => "")]
       ),
-      startY: 26 + linhaExtra,
+      startY: startYTabela,
       theme: "grid",
       styles: { fontSize, cellPadding, halign: "center", valign: "middle", lineWidth: 0.3, lineColor: [0, 0, 0], fontStyle: "bold" },
-      headStyles: { fillColor: [20, 83, 45], textColor: [255, 255, 255], fontStyle: "bold", fontSize: 8, cellPadding: 1.5 },
+      headStyles: { fillColor: [20, 83, 45], textColor: [255, 255, 255], fontStyle: "bold", fontSize: Math.min(9.5, fontSizeBase + 1.5), cellPadding: Math.max(0.8, cellPadding) },
       columnStyles: columnStylesPrincipal,
       margin: { left: margem, right: margem },
     });
@@ -566,7 +564,7 @@ class PdfService {
     doc.text("NOVOS ALUNOS", margem + larguraTotal / 2, finalY1 + 4.2, { align: "center" });
 
     const columnStylesNovos: any = infantil
-      ? { 0: { cellWidth: colNome, halign: "left" }, [datas.length + 1]: { cellWidth: colResponsavel, halign: "left" } }
+      ? { 0: { cellWidth: colNumero + colNome, halign: "left" }, [datas.length + 1]: { cellWidth: colResponsavel, halign: "left" } }
       : { 0: { cellWidth: colNumero + colNome, halign: "left" } };
 
     autoTable(doc, {
@@ -580,6 +578,12 @@ class PdfService {
       margin: { left: margem, right: margem },
       pageBreak: "avoid",
     });
+
+    const finalY2 = (doc as any).lastAutoTable.finalY as number;
+    doc.setDrawColor(0);
+    doc.setLineWidth(0.9);
+    doc.line(margem, finalY1, margem, finalY2);
+    doc.line(margem + larguraTotal, finalY1, margem + larguraTotal, finalY2);
 
     return nomeModalidade;
   }
