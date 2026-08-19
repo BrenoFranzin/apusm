@@ -15,6 +15,7 @@ import { useSalas } from "@/modules/salas/hooks/useSalas";
 import { useAssociados } from "@/modules/associados/hooks/useAssociados";
 import { associadosService } from "@/modules/associados/services/associados.service";
 import type { Turma } from "../types/turma.types";
+import { pdfService } from "@/modules/configuracoes/services/pdf.service";
 
 const DIAS_ORDEM: Turma["dia"][] = ["seg", "ter", "qua", "qui", "sex", "sab"];
 
@@ -291,6 +292,21 @@ export default function TurmasPage() {
                             const valor = Number(e.target.value);
                             if (valor <= 0 || valor === turma.limiteVagas) return;
 
+                            const nomeModalidade = modalidades.find((m) => m.id === turma.modalidadeId)?.nome ?? "";
+                            const infantil = /infantil|musicaliza/i.test(nomeModalidade);
+                            const temObs = Boolean(modalidades.find((m) => m.id === turma.modalidadeId)?.descricao);
+                            const capacidade = pdfService.calcularCapacidadeTurma(turma.dia, infantil, temObs, valor, turma.limiteNovosAlunos ?? 0);
+
+                            if (!capacidade.cabe) {
+                              window.alert(
+                                `Essa turma comporta no máximo ${capacidade.maxLinhas} linhas na folha de presença (vagas + linhas extras).\n` +
+                                `Com ${valor} vagas + ${turma.limiteNovosAlunos ?? 0} linhas extras = ${capacidade.linhasConfiguradas}.\n` +
+                                `Reduza em ${capacidade.excedente} para caber.`
+                              );
+                              e.target.value = String(turma.limiteVagas ?? "");
+                              return;
+                            }
+
                             const matriculadosDaTurma = associados
                               .map((a) => ({
                                 associado: a,
@@ -324,6 +340,22 @@ export default function TurmasPage() {
                           onBlur={(e) => {
                             const valor = Number(e.target.value);
                             if (valor < 0 || valor === (turma.limiteNovosAlunos ?? 0)) return;
+
+                            const nomeModalidade = modalidades.find((m) => m.id === turma.modalidadeId)?.nome ?? "";
+                            const infantil = /infantil|musicaliza/i.test(nomeModalidade);
+                            const temObs = Boolean(modalidades.find((m) => m.id === turma.modalidadeId)?.descricao);
+                            const capacidade = pdfService.calcularCapacidadeTurma(turma.dia, infantil, temObs, turma.limiteVagas ?? 10, valor);
+
+                            if (!capacidade.cabe) {
+                              window.alert(
+                                `Essa turma comporta no máximo ${capacidade.maxLinhas} linhas na folha de presença (vagas + linhas extras).\n` +
+                                `Com ${turma.limiteVagas} vagas + ${valor} linhas extras = ${capacidade.linhasConfiguradas}.\n` +
+                                `Reduza em ${capacidade.excedente} para caber.`
+                              );
+                              e.target.value = String(turma.limiteNovosAlunos ?? 0);
+                              return;
+                            }
+
                             editar(turma.id, { limiteNovosAlunos: valor });
                           }}
                           style={{ width: 60, padding: 4, textAlign: "center", background: "var(--background-secondary)", color: "var(--text-primary)", border: "1px solid var(--border-default)", borderRadius: 6 }}
