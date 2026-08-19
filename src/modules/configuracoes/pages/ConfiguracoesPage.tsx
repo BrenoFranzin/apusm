@@ -414,11 +414,19 @@ function ModalExportacaoMassa({
   function marcarTodas() { setSelecionadas(new Set(turmas.map((t) => t.id))); }
   function desmarcarTodas() { setSelecionadas(new Set()); }
 
+  const [erro, setErro] = useState<string | null>(null);
+
   async function confirmar() {
     if (selecionadas.size === 0 || exportando) return;
+    setErro(null);
     setExportando(true);
-    await onConfirmar(Array.from(selecionadas));
-    setExportando(false);
+    try {
+      await onConfirmar(Array.from(selecionadas));
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : "Erro ao gerar o PDF.");
+    } finally {
+      setExportando(false);
+    }
   }
 
   return (
@@ -468,6 +476,11 @@ function ModalExportacaoMassa({
           )}
         </div>
 
+        {erro && (
+          <div style={{ marginBottom: 10, fontSize: 13, color: "var(--color-danger)", background: "#FEE2E2", border: "1px solid var(--color-danger)", borderRadius: 6, padding: "8px 12px" }}>
+            {erro}
+          </div>
+        )}
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
           <button onClick={onFechar} style={{ fontSize: 13, border: "1px solid var(--border-default)", borderRadius: 6, padding: "8px 14px", background: "var(--background-primary)", color: "var(--text-primary)", cursor: "pointer" }}>Cancelar</button>
           <button onClick={confirmar} disabled={selecionadas.size === 0 || exportando} style={{ fontSize: 13, border: "none", borderRadius: 6, padding: "8px 16px", background: "var(--color-primary)", color: "#fff", fontWeight: 600, cursor: selecionadas.size === 0 || exportando ? "not-allowed" : "pointer", opacity: selecionadas.size === 0 || exportando ? 0.5 : 1 }}>
