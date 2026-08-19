@@ -533,7 +533,7 @@ class PdfService {
       startY: 26 + linhaExtra,
       theme: "grid",
       styles: { fontSize, cellPadding, minCellHeight, halign: "center", valign: "middle", lineWidth: 0.3, lineColor: [0, 0, 0], fontStyle: "bold" },
-      headStyles: { fillColor: [20, 83, 45], textColor: [255, 255, 255], fontStyle: "bold" },
+      headStyles: { fillColor: [20, 83, 45], textColor: [255, 255, 255], fontStyle: "bold", minCellHeight: Math.min(minCellHeight, 8), fontSize: Math.min(fontSize, 9) },
       columnStyles: columnStylesPrincipal,
       margin: { left: MARGEM, right: MARGEM },
     });
