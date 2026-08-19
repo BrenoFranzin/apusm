@@ -129,22 +129,26 @@ class AssociadosService {
       throw new Error(`${associado.nome} já está matriculado(a) em ${dadosMatricula.modalidadeNome} (${dadosMatricula.turmaNome}).`);
     }
 
-    const limiteModalidade = await limitesService.obterLimiteDaModalidade(dadosMatricula.modalidadeId);
-    const turmasNaModalidade = associado.matriculas.filter(
-      (m) => m.modalidadeId === dadosMatricula.modalidadeId && m.status !== "CANCELADA"
-    ).length;
-
-    if (turmasNaModalidade >= limiteModalidade) {
-      throw new Error(
-        `Limite atingido: essa pessoa já está em ${turmasNaModalidade} turma(s) de ${dadosMatricula.modalidadeNome} (limite: ${limiteModalidade}).`
-      );
-    }
-
     const turma = await turmasService.buscarPorId(dadosMatricula.turmaId);
     const limiteVagasTurma = turma?.limiteVagas ?? 10;
     const vagasOcupadas = await this.contarMatriculasPorTurma(dadosMatricula.turmaId);
+    const turmaCheia = vagasOcupadas >= limiteVagasTurma;
 
-    if (vagasOcupadas >= limiteVagasTurma) {
+    if (!turmaCheia) {
+      // Limite de modalidade só se aplica a matrícula direta — lista de espera é livre.
+      const limiteModalidade = await limitesService.obterLimiteDaModalidade(dadosMatricula.modalidadeId);
+      const turmasNaModalidade = associado.matriculas.filter(
+        (m) => m.modalidadeId === dadosMatricula.modalidadeId && m.status !== "CANCELADA"
+      ).length;
+
+      if (turmasNaModalidade >= limiteModalidade) {
+        throw new Error(
+          `Limite atingido: essa pessoa já está em ${turmasNaModalidade} turma(s) de ${dadosMatricula.modalidadeNome} (limite: ${limiteModalidade}).`
+        );
+      }
+    }
+
+    if (turmaCheia) {
       const entrada = await listaEsperaService.entrarNaFila({
         associadoId: associado.id,
         associadoNome: associado.nome,

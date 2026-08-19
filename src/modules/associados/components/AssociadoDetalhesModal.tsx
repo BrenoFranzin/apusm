@@ -35,7 +35,7 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
   const [modalidades, setModalidades] = useState<Modalidade[]>([]);
   const [turmasEscolhidas, setTurmasEscolhidas] = useState<string[]>([]);
   const [grupoAberto, setGrupoAberto] = useState<string | null>(null);
-  const [aviso, setAviso] = useState<string | null>(null);
+  const [aviso, setAviso] = useState<string[]>([]);
   const [inserindo, setInserindo] = useState(false);
   const [nomeParaCadastrar, setNomeParaCadastrar] = useState("");
   const [telefoneParaCadastrar, setTelefoneParaCadastrar] = useState("");
@@ -112,7 +112,7 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
       setTelefoneParaCadastrar("");
       await handleSelecionar(novo);
     } catch (e) {
-      setAviso(e instanceof Error ? e.message : "Erro ao cadastrar associado");
+      setAviso([e instanceof Error ? e.message : "Erro ao cadastrar associado"]);
     } finally {
       setCadastrando(false);
     }
@@ -124,7 +124,7 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
     setBusca(associado.nome);
     const entradas = await listaEsperaService.listarPorAssociado(associado.id);
     setFilas(entradas);
-    setAviso(null);
+    setAviso([]);
     setTurmasEscolhidas([]);
   }
 
@@ -206,7 +206,7 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
     if (naFila > 0) partes.push(`${naFila} na lista de espera`);
     if (errosDetalhados.length > 0) partes.push(...errosDetalhados);
 
-    setAviso(partes.join(" · "));
+    setAviso(partes);
     setTurmasEscolhidas([]);
     setInserindo(false);
     await recarregarSelecionado();
@@ -429,7 +429,13 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
                   {inserindo ? "Inserindo..." : `Inserir em ${turmasEscolhidas.length} turma(s)`}
                 </button>
 
-                {aviso && <p style={{ fontSize: 13, color: "var(--color-primary)", marginTop: 8 }}>{aviso}</p>}
+                {aviso.length > 0 && (
+  <div style={{ marginTop: 8 }}>
+    {aviso.map((linha, i) => (
+      <p key={i} style={{ fontSize: 13, color: "var(--color-primary)", margin: "2px 0" }}>{linha}</p>
+    ))}
+  </div>
+)}
               </div>
 
               <div style={{ border: "1px solid var(--border-default)", borderRadius: 8, padding: 12 }}>
