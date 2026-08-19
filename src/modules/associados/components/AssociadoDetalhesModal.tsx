@@ -176,7 +176,7 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
 
     let matriculados = 0;
     let naFila = 0;
-    let erros = 0;
+    const errosDetalhados: string[] = [];
 
     for (const turmaId of turmasEscolhidas) {
       const turma = turmas.find((t) => t.id === turmaId);
@@ -196,15 +196,15 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
         } else {
           matriculados++;
         }
-      } catch {
-        erros++;
+      } catch (e) {
+        errosDetalhados.push(e instanceof Error ? e.message : "Erro desconhecido");
       }
     }
 
     const partes: string[] = [];
     if (matriculados > 0) partes.push(`${matriculados} matrícula(s) confirmada(s)`);
     if (naFila > 0) partes.push(`${naFila} na lista de espera`);
-    if (erros > 0) partes.push(`${erros} não puderam ser inseridas (limite atingido)`);
+    if (errosDetalhados.length > 0) partes.push(...errosDetalhados);
 
     setAviso(partes.join(" · "));
     setTurmasEscolhidas([]);
