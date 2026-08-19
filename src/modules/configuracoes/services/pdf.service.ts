@@ -474,10 +474,12 @@ class PdfService {
     const alturaDisponivel = alturaPagina - alturaReservadaTopo - alturaReservadaRodape;
     const alturaLinhaIdeal = alturaDisponivel / totalLinhas;
 
-    // Converte a altura de linha ideal em fonte/padding proporcionais, com limites de legibilidade
-    let fontSize = Math.min(10, Math.max(5.5, alturaLinhaIdeal * 2.1));
-    let cellPadding = Math.min(2.5, Math.max(0.6, alturaLinhaIdeal * 0.35));
-    const minCellHeight = Math.max(alturaLinhaIdeal, 4);
+    // Converte a altura de linha ideal em fonte/padding proporcionais, com limites de legibilidade.
+    // Sem teto artificial: se sobra espaço vertical (poucas linhas), a fonte e o padding
+    // crescem pra ocupar a página inteira, igual ao "ajustar à página" do Excel.
+    let fontSize = Math.min(16, Math.max(5.5, alturaLinhaIdeal * 2.3));
+    let cellPadding = Math.min(5, Math.max(0.6, alturaLinhaIdeal * 0.45));
+    const minCellHeight = alturaLinhaIdeal;
 
     const MARGEM = 12.7; // 1,27cm — margem estreita padrão
     const larguraPagina = doc.internal.pageSize.getWidth();
