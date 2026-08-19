@@ -465,11 +465,19 @@ class PdfService {
     while (linhasMatriculados.length < limiteVagas) linhasMatriculados.push("");
 
     const totalLinhas = linhasMatriculados.length + limiteNovos;
-    let fontSize = 9;
-    let cellPadding = 2;
-    if (totalLinhas > 40) { fontSize = 6; cellPadding = 0.8; }
-    else if (totalLinhas > 30) { fontSize = 6.8; cellPadding = 1; }
-    else if (totalLinhas > 22) { fontSize = 7.5; cellPadding = 1.3; }
+
+    // "Ajustar à página" (como no Excel): calcula a altura disponível e distribui
+    // igualmente entre as linhas, esticando ou encolhendo conforme necessário.
+    const alturaPagina = doc.internal.pageSize.getHeight();
+    const alturaReservadaTopo = 26 + (modalidade?.descricao ? 4 : 0); // cabeçalho + OBS
+    const alturaReservadaRodape = 6 + 8; // barra "NOVOS ALUNOS" + margem inferior
+    const alturaDisponivel = alturaPagina - alturaReservadaTopo - alturaReservadaRodape;
+    const alturaLinhaIdeal = alturaDisponivel / totalLinhas;
+
+    // Converte a altura de linha ideal em fonte/padding proporcionais, com limites de legibilidade
+    let fontSize = Math.min(10, Math.max(5.5, alturaLinhaIdeal * 2.1));
+    let cellPadding = Math.min(2.5, Math.max(0.6, alturaLinhaIdeal * 0.35));
+    const minCellHeight = Math.max(alturaLinhaIdeal, 4);
 
     const MARGEM = 12.7; // 1,27cm — margem estreita padrão
     const larguraPagina = doc.internal.pageSize.getWidth();
@@ -521,7 +529,7 @@ class PdfService {
       ),
       startY: 26 + linhaExtra,
       theme: "grid",
-      styles: { fontSize, cellPadding, halign: "center", valign: "middle", lineWidth: 0.3, lineColor: [0, 0, 0], fontStyle: "bold" },
+      styles: { fontSize, cellPadding, minCellHeight, halign: "center", valign: "middle", lineWidth: 0.3, lineColor: [0, 0, 0], fontStyle: "bold" },
       headStyles: { fillColor: [20, 83, 45], textColor: [255, 255, 255], fontStyle: "bold" },
       columnStyles: columnStylesPrincipal,
       margin: { left: MARGEM, right: MARGEM },
@@ -546,7 +554,7 @@ class PdfService {
       ),
       startY: finalY1 + 6,
       theme: "grid",
-      styles: { fontSize, cellPadding, halign: "center", valign: "middle", lineWidth: 0.3, lineColor: [0, 0, 0] },
+      styles: { fontSize, cellPadding, minCellHeight, halign: "center", valign: "middle", lineWidth: 0.3, lineColor: [0, 0, 0] },
       columnStyles: columnStylesNovos,
       margin: { left: MARGEM, right: MARGEM },
       pageBreak: "avoid",
