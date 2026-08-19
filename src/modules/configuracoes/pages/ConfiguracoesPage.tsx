@@ -38,7 +38,6 @@ export default function ConfiguracoesPage() {
   const [historico, setHistorico] = useState<RegistroExportacao[]>([]);
   const [, forcarAtualizacao] = useState(0);
   const [mostrarSalas, setMostrarSalas] = useState(false);
-  const [mostrarPresenca, setMostrarPresenca] = useState(false);
   const [mostrarExportacaoMassa, setMostrarExportacaoMassa] = useState(false);
 
   const { turmas } = useTurmas();
@@ -46,11 +45,9 @@ export default function ConfiguracoesPage() {
 
   async function handleExportarPresencaMassa(idsSelecionados: string[]) {
     const agora = new Date();
-    for (const id of idsSelecionados) {
-      await pdfService.exportarFolhaPresenca(id, agora.getMonth(), agora.getFullYear());
-    }
+    await pdfService.exportarFolhasPresencaEmMassa(idsSelecionados, agora.getMonth(), agora.getFullYear());
     setMostrarExportacaoMassa(false);
-    avisar(`${idsSelecionados.length} folha(s) de presença exportada(s).`);
+    avisar(`${idsSelecionados.length} folha(s) de presença exportada(s) em um único PDF.`);
   }
 
   useEffect(() => {
@@ -262,9 +259,8 @@ export default function ConfiguracoesPage() {
         <Btn onClick={handleAbrirHistorico}>Histórico de exportações</Btn>
       </Section>
 
-      <Section title="Folha de presença" desc="Selecione a turma e gere a folha do mês atual">
-        <Btn onClick={() => setMostrarPresenca(true)}>🖨️ Exportar folha de presença</Btn>
-        <Btn onClick={() => setMostrarExportacaoMassa(true)}>📋 Exportar presença em massa</Btn>
+      <Section title="Folha de presença" desc="Selecione uma ou mais turmas e gere as folhas do mês atual">
+        <Btn onClick={() => setMostrarExportacaoMassa(true)}>🖨️ Exportar folha de presença</Btn>
       </Section>
 
       <Section title="Dados de teste (sincronizado via Git)" desc="Salvar ou carregar dados de teste que ficam junto com o código do projeto">
@@ -333,20 +329,6 @@ export default function ConfiguracoesPage() {
 
       {mostrarSalas && <SalasModal onFechar={() => setMostrarSalas(false)} />}
 
-      {mostrarPresenca && (
-        <ModalPresenca
-          turmas={turmas}
-          modalidades={modalidades}
-          onFechar={() => setMostrarPresenca(false)}
-          onConfirmar={async (id: string) => {
-            const agora = new Date();
-            await pdfService.exportarFolhaPresenca(id, agora.getMonth(), agora.getFullYear());
-            setMostrarPresenca(false);
-            avisar("Folha de presença exportada.");
-          }}
-        />
-      )}
-
       {mostrarExportacaoMassa && (
         <ModalExportacaoMassa
           turmas={turmas}
@@ -385,77 +367,6 @@ function agruparPorModalidade(
 // ==========================
 // MODAL PRESENÇA (seleção única)
 // ==========================
-
-function ModalPresenca({
-  turmas,
-  modalidades,
-  onFechar,
-  onConfirmar,
-}: {
-  turmas: { id: string; dia: string; horario: string; modalidadeId: string }[];
-  modalidades: { id: string; nome: string }[];
-  onFechar: () => void;
-  onConfirmar: (id: string) => Promise<void>;
-}) {
-  const [selecionada, setSelecionada] = useState("");
-  const [exportando, setExportando] = useState(false);
-  const grupos = agruparPorModalidade(turmas, modalidades);
-
-  async function confirmar() {
-    if (!selecionada || exportando) return;
-    setExportando(true);
-    await onConfirmar(selecionada);
-    setExportando(false);
-  }
-
-  return (
-    <div onClick={onFechar} style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.55)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: "var(--z-modal)" as unknown as number, padding: 16 }}>
-      <div onClick={(e) => e.stopPropagation()} className="apusm-card" style={{ width: "100%", maxWidth: 680, maxHeight: "82vh", display: "flex", flexDirection: "column", padding: "var(--space-6)" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-          <h2 style={{ fontWeight: 600, fontSize: 17, margin: 0, color: "var(--text-primary)" }}>Folha de presença</h2>
-          <button onClick={onFechar} style={{ fontSize: 20, lineHeight: 1, color: "var(--text-muted)", background: "none", border: "none", cursor: "pointer" }}>×</button>
-        </div>
-        <p style={{ fontSize: 13, color: "var(--text-secondary)", margin: "0 0 12px" }}>Selecione a turma para gerar a folha do mês atual.</p>
-        <div style={{ overflowY: "auto", flex: 1, display: "flex", flexDirection: "column", gap: 16, marginBottom: 16 }}>
-          {grupos.map(({ modalidade, turmas: ts }) => (
-            <div key={modalidade.id}>
-              <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "var(--text-muted)", margin: "0 0 6px" }}>
-                {modalidade.nome}
-              </p>
-              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                {ts.map((t) => {
-                  const ativo = selecionada === t.id;
-                  return (
-                    <button
-                      key={t.id}
-                      onClick={() => setSelecionada(t.id)}
-                      style={{
-                        textAlign: "left", fontSize: 13, padding: "9px 12px", borderRadius: 8,
-                        border: `1.5px solid ${ativo ? "#0F766E" : "var(--border-default)"}`,
-                        background: ativo ? "#CCFBF1" : "var(--background-primary)",
-                        color: ativo ? "#0B4F49" : "var(--text-primary)",
-                        fontWeight: ativo ? 700 : 400, cursor: "pointer",
-                        transition: "all 0.15s ease",
-                      }}
-                    >
-                      {DIA_LABEL[t.dia] ?? t.dia} · {t.horario}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
-          <button onClick={onFechar} style={{ fontSize: 13, border: "1px solid var(--border-default)", borderRadius: 6, padding: "8px 14px", background: "var(--background-primary)", color: "var(--text-primary)", cursor: "pointer" }}>Cancelar</button>
-          <button onClick={confirmar} disabled={!selecionada || exportando} style={{ fontSize: 13, border: "none", borderRadius: 6, padding: "8px 16px", background: "var(--color-primary)", color: "#fff", fontWeight: 600, cursor: !selecionada || exportando ? "not-allowed" : "pointer", opacity: !selecionada || exportando ? 0.5 : 1 }}>
-            {exportando ? "Exportando..." : "Exportar"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 // ==========================
 // MODAL DE EXPORTAÇÃO EM MASSA
