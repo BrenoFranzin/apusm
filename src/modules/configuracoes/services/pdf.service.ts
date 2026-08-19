@@ -584,7 +584,8 @@ class PdfService {
 
     // FASE 2: recalcula o estilo da 2ª tabela com base no espaço REAL que sobrou,
     // não numa estimativa — garante que "Novos Alunos" sempre caiba na mesma página.
-    const alturaRestanteReal = alturaPagina - finalY1 - 6 - MARGEM_SEGURANCA_RODAPE;
+    const BUFFER_ARREDONDAMENTO = 3; // mm extra pra absorver bordas/arredondamento do autoTable — sem isso, a última linha estoura por fração de mm
+    const alturaRestanteReal = alturaPagina - finalY1 - 6 - MARGEM_SEGURANCA_RODAPE - BUFFER_ARREDONDAMENTO;
     const alturaLinhaNovos = Math.max(alturaRestanteReal / limiteNovos, 3); // nunca menor que 3mm (piso de legibilidade)
     const estiloNovos = calcularEstilo(alturaLinhaNovos);
 
