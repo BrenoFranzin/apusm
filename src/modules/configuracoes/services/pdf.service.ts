@@ -592,7 +592,9 @@ class PdfService {
     const estiloNovos = calcularEstilo(alturaLinhaNovos);
 
     doc.setFillColor(230, 230, 230);
-    doc.rect(MARGEM, finalY1, larguraUtil, 6, "F");
+    doc.setDrawColor(0);
+    doc.setLineWidth(0.3);
+    doc.rect(MARGEM, finalY1, larguraUtil, 6, "FD");
     doc.setFont("helvetica", "bold");
     doc.setFontSize(Math.min(estiloNovos.fontSize, fontSize));
     doc.setTextColor(0);
