@@ -577,7 +577,7 @@ class PdfService {
       styles: { fontSize, cellPadding, minCellHeight, halign: "center", valign: "middle", lineWidth: 0.3, lineColor: [0, 0, 0], fontStyle: "bold" },
       headStyles: { fillColor: [20, 83, 45], textColor: [255, 255, 255], fontStyle: "bold", minCellHeight: Math.min(minCellHeight, 8), fontSize: Math.min(fontSize, 9) },
       columnStyles: columnStylesPrincipal,
-      margin: { left: MARGEM, right: MARGEM },
+      margin: { left: MARGEM, right: MARGEM, bottom: MARGEM_SEGURANCA_RODAPE },
     });
 
     const finalY1 = (doc as any).lastAutoTable.finalY as number;
@@ -607,7 +607,7 @@ class PdfService {
       theme: "grid",
       styles: { fontSize: estiloNovos.fontSize, cellPadding: estiloNovos.cellPadding, minCellHeight: estiloNovos.minCellHeight, halign: "center", valign: "middle", lineWidth: 0.3, lineColor: [0, 0, 0] },
       columnStyles: columnStylesNovos,
-      margin: { left: MARGEM, right: MARGEM },
+      margin: { left: MARGEM, right: MARGEM, bottom: MARGEM_SEGURANCA_RODAPE },
       pageBreak: "avoid",
     });
 
