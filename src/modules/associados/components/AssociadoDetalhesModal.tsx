@@ -4,7 +4,7 @@
 // Busca, matricula em lote, historico e posicao na fila
 // ======================================================
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { associadosService } from "../services/associados.service";
 import { buscaAproximada } from "@/utils/textoBusca";
 import { turmasService } from "@/modules/turmas/services/turmas.service";
@@ -71,22 +71,37 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
     })();
   }, [turmas]);
 
-  async function handleBuscar(texto: string) {
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [buscando, setBuscando] = useState(false);
+  const todosAssociadosRef = useRef<Associado[] | null>(null);
+
+  function handleBuscar(texto: string) {
     setBusca(texto);
     setNomeParaCadastrar("");
     setErroCadastro(null);
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
     if (texto.trim().length < 2) {
       setResultados([]);
+      setBuscando(false);
       return;
     }
-    const todos = await associadosService.listar();
-    const lista = todos.filter(
-      (a) => buscaAproximada(texto, a.nome) || a.telefone.includes(texto)
-    );
-    setResultados(lista);
-    if (lista.length === 0) {
-      setNomeParaCadastrar(texto.toUpperCase());
-    }
+
+    setBuscando(true);
+    debounceRef.current = setTimeout(async () => {
+      if (!todosAssociadosRef.current) {
+        todosAssociadosRef.current = await associadosService.listar();
+      }
+      const lista = todosAssociadosRef.current.filter(
+        (a) => buscaAproximada(texto, a.nome) || a.telefone.includes(texto)
+      );
+      setResultados(lista);
+      setBuscando(false);
+      if (lista.length === 0) {
+        setNomeParaCadastrar(texto.toUpperCase());
+      }
+    }, 300);
   }
 
   async function handleCadastrarRapido() {
@@ -108,6 +123,7 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
         telefone: telefoneParaCadastrar.trim(),
         status: "ATIVO",
       });
+      todosAssociadosRef.current = null; // invalida cache, novo associado precisa aparecer em buscas futuras
       setNomeParaCadastrar("");
       setTelefoneParaCadastrar("");
       await handleSelecionar(novo);
@@ -283,7 +299,7 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
                 ))}
               </div>
             )}
-            {busca.trim().length >= 2 && resultados.length === 0 && !nomeParaCadastrar && (
+            {busca.trim().length >= 2 && buscando && (
               <p style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 4 }}>
                 Buscando...
               </p>
