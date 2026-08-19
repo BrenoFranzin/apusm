@@ -15,6 +15,7 @@ import type { Turma } from "@/modules/turmas/types/turma.types";
 import type { Modalidade } from "@/modules/modalidades/types/modalidade.types";
 import { listaEsperaService } from "@/modules/lista-espera/services/listaEspera.service";
 import { buscarComCache } from "@/lib/cacheOffline";
+import { associadosService as associadosServiceContagem } from "../services/associados.service";
 
 interface Props {
   aberto: boolean;
@@ -41,6 +42,7 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
   const [cadastrando, setCadastrando] = useState(false);
   const [erroCadastro, setErroCadastro] = useState<string | null>(null);
   const [filasContagem, setFilasContagem] = useState<Record<string, number>>({});
+  const [matriculasContagem, setMatriculasContagem] = useState<Record<string, number>>({});
 
   useEffect(() => {
     if (!aberto) return;
@@ -57,6 +59,16 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
   useEffect(() => {
     if (turmas.length === 0) return;
     buscarComCache("lista_espera", () => listaEsperaService.listarTudo(), aplicarContagens).then(aplicarContagens);
+
+    (async () => {
+      const contagens: Record<string, number> = {};
+      await Promise.all(
+        turmas.map(async (t) => {
+          contagens[t.id] = await associadosServiceContagem.contarMatriculasPorTurma(t.id);
+        })
+      );
+      setMatriculasContagem(contagens);
+    })();
   }, [turmas]);
 
   async function handleBuscar(texto: string) {
@@ -130,15 +142,14 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
     );
   }
 
-  function turmasQueVaoParaFila(): { turma: Turma; modalidadeNome: string }[] {
+    function turmasQueVaoParaFila(): { turma: Turma; modalidadeNome: string }[] {
     return turmasEscolhidas
       .map((turmaId) => {
         const turma = turmas.find((t) => t.id === turmaId);
         if (!turma) return null;
-        const jaOcupadas = filasContagem[turma.id] ?? 0;
-        // aproximação: se já tem fila, ou está perto do limite, avisamos; a confirmação real de "cheio" só sabemos no momento do matricular,
-        // então aqui avisamos sempre que a turma já tiver fila (indício forte de que vai continuar na fila)
-        if (jaOcupadas > 0) {
+        const matriculadas = matriculasContagem[turma.id] ?? 0;
+        const limite = turma.limiteVagas ?? 10;
+        if (matriculadas >= limite) {
           const modalidade = modalidades.find((m) => m.id === turma.modalidadeId);
           return { turma, modalidadeNome: modalidade?.nome ?? "" };
         }
@@ -378,8 +389,18 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
                                   }}
                                 >
                                   <input type="checkbox" checked={marcada} onChange={() => toggleTurmaEscolhida(t.id)} />
-                                  <span>
-                                    {DIA_LABEL[t.dia]} — {t.horario}
+                                                                    <span>
+                                    {DIA_LABEL[t.dia]} â€” {t.horario}
+                                    {(() => {
+                                      const matriculadas = matriculasContagem[t.id] ?? 0;
+                                      const limite = t.limiteVagas ?? 10;
+                                      const cheia = matriculadas >= limite;
+                                      return (
+                                        <span style={{ fontSize: 11, marginLeft: 4, fontWeight: 700, color: cheia ? "#9a3412" : "var(--text-secondary)" }}>
+                                          ({matriculadas}/{limite}{cheia ? " — TURMA CHEIA" : ""})
+                                        </span>
+                                      );
+                                    })()}
                                     {(filasContagem[t.id] ?? 0) > 0 && (
                                       <span style={{ fontSize: 11, color: "var(--color-warning)", marginLeft: 4 }}>
                                         ({filasContagem[t.id]} na fila de espera)
