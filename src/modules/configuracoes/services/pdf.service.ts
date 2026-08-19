@@ -469,8 +469,8 @@ class PdfService {
     // "Ajustar à página" (como no Excel): calcula a altura disponível e distribui
     // igualmente entre as linhas, esticando ou encolhendo conforme necessário.
     const alturaPagina = doc.internal.pageSize.getHeight();
-    const alturaReservadaTopo = 26 + (modalidade?.descricao ? 4 : 0); // cabeçalho + OBS
-    const alturaReservadaRodape = 6 + 8; // barra "NOVOS ALUNOS" + margem inferior
+    const alturaReservadaTopo = 26 + (modalidade?.descricao ? 4 : 0) + 8; // texto topo + OBS + linha de cabeçalho da tabela
+    const alturaReservadaRodape = 6 + 6; // barra "NOVOS ALUNOS" + margem inferior de segurança
     const alturaDisponivel = alturaPagina - alturaReservadaTopo - alturaReservadaRodape;
     const alturaLinhaIdeal = alturaDisponivel / totalLinhas;
 
