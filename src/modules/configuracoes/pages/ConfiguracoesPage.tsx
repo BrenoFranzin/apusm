@@ -457,7 +457,7 @@ function ModalExportacaoMassa({
                     </p>
                     <button
                       onClick={() => todasMarcadas ? desmarcarModalidade(ids) : marcarModalidade(ids)}
-                      style={{ fontSize: 11, border: "1px solid var(--border-default)", borderRadius: 6, padding: "3px 8px", background: "var(--background-primary)", color: "var(--text-primary)", cursor: "pointer" }}
+                      style={{ fontSize: 12, fontWeight: 600, border: "1.5px solid var(--color-primary)", borderRadius: 6, padding: "5px 12px", background: todasMarcadas ? "var(--background-primary)" : "var(--color-primary)", color: todasMarcadas ? "var(--color-primary)" : "#fff", cursor: "pointer" }}
                     >
                       {todasMarcadas ? "Desmarcar" : "Marcar todas"}
                     </button>
