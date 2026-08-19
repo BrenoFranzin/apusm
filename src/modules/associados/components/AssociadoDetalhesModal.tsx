@@ -390,7 +390,7 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
                                 >
                                   <input type="checkbox" checked={marcada} onChange={() => toggleTurmaEscolhida(t.id)} />
                                                                     <span>
-                                    {DIA_LABEL[t.dia]} â€” {t.horario}
+                                    {DIA_LABEL[t.dia]} — {t.horario}
                                     {(() => {
                                       const matriculadas = matriculasContagem[t.id] ?? 0;
                                       const limite = t.limiteVagas ?? 10;
