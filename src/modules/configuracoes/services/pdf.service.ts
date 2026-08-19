@@ -507,9 +507,9 @@ class PdfService {
 
     const numDatas = datas.length;
     const colNumero = 10;
-    const colResponsavel = infantil ? 32 : 0;
-    const colData = orientacao === "portrait" ? 9 : 11;
-    const colNome = Math.max(larguraTotal - colNumero - colResponsavel - numDatas * colData, 40);
+    const colResponsavel = infantil ? 40 : 0;
+    const colNome = (larguraTotal - colNumero - colResponsavel) / 2;
+    const colData = (larguraTotal - colNumero - colResponsavel - colNome) / numDatas;
 
     const maiorNome = linhasMatriculados.reduce((a, b) => (b.length > a.length ? b : a), "");
     const fontSizeNome = maiorNome
@@ -519,7 +519,7 @@ class PdfService {
 
     const columnStylesPrincipal: any = {
       0: { cellWidth: colNumero },
-      1: { cellWidth: colNome, halign: "left", fontSize, overflow: "visible" },
+      1: { cellWidth: colNome, halign: "left", fontSize, overflow: "visible", textColor: [0, 0, 0] },
     };
     if (infantil) {
       columnStylesPrincipal[cabecalhoPrincipal.length - 1] = { cellWidth: colResponsavel, halign: "left" };
@@ -535,7 +535,7 @@ class PdfService {
       startY: 26 + linhaExtra,
       theme: "grid",
       styles: { fontSize, cellPadding, halign: "center", valign: "middle", lineWidth: 0.3, lineColor: [0, 0, 0], fontStyle: "bold" },
-      headStyles: { fillColor: [20, 83, 45], textColor: [255, 255, 255], fontStyle: "bold" },
+      headStyles: { fillColor: [20, 83, 45], textColor: [255, 255, 255], fontStyle: "bold", fontSize: 8, cellPadding: 1.5 },
       columnStyles: columnStylesPrincipal,
       margin: { left: margem, right: margem },
     });
