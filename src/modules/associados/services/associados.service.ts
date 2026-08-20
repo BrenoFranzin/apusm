@@ -1,4 +1,4 @@
-// ======================================================
+﻿// ======================================================
 // APUSM SaaS
 // Módulo: Associados
 // Arquivo: associados.service.ts
@@ -169,6 +169,12 @@ class AssociadosService {
       await supabase.from("associados").update({ historico }).eq("id", associadoId);
 
       return { status: "LISTA_ESPERA", posicaoFila: entrada.posicao };
+    }
+
+    const filasDoAssociado = await listaEsperaService.listarPorAssociado(associadoId);
+    const entradaNestaTurma = filasDoAssociado.find((f) => f.turmaId === dadosMatricula.turmaId);
+    if (entradaNestaTurma) {
+      await listaEsperaService.sairDaFila(entradaNestaTurma.id);
     }
 
     const novaMatricula = {
