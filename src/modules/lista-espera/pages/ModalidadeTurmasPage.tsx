@@ -1,5 +1,5 @@
 // ======================================================
-// APUSM SaaS — Módulo Lista de Espera
+// APUSM SaaS â€” MÃ³dulo Lista de Espera
 // Arquivo: ModalidadeTurmasPage.tsx
 // ======================================================
 
@@ -24,11 +24,11 @@ import type { EntradaListaEspera } from "../types/listaEspera.types";
 
 const DIA_LABEL: Record<string, string> = {
   seg: "Segunda-feira",
-  ter: "Terça-feira",
+  ter: "TerÃ§a-feira",
   qua: "Quarta-feira",
   qui: "Quinta-feira",
   sex: "Sexta-feira",
-  sab: "Sábado",
+  sab: "SÃ¡bado",
 };
 
 const ORDEM_DIA = ["seg", "ter", "qua", "qui", "sex", "sab"];
@@ -84,7 +84,7 @@ const [todasModalidades, setTodasModalidades] = useState<Modalidade[]>([]);
   );
 
     function instrutorNome(id: string) {
-    return instrutores.find((i) => i.id === id)?.nome ?? "â€”";
+    return instrutores.find((i) => i.id === id)?.nome ?? "Ã¢â‚¬â€";
   }
 
   function instrutorCor(id: string) {
@@ -103,7 +103,7 @@ const [todasModalidades, setTodasModalidades] = useState<Modalidade[]>([]);
     matriculaId: string,
     valorAtual: string
   ) {
-    const novo = window.prompt("Observação:", valorAtual);
+    const novo = window.prompt("ObservaÃ§Ã£o:", valorAtual);
     if (novo === null) return;
     await associadosService.atualizarObservacaoMatricula(associadoId, matriculaId, novo);
     await recarregarAssociados();
@@ -116,7 +116,7 @@ const [todasModalidades, setTodasModalidades] = useState<Modalidade[]>([]);
 }
 
 async function handleEditarObservacaoFila(entradaId: string, valorAtual: string) {
-    const novo = window.prompt("Observa��o:", valorAtual);
+    const novo = window.prompt("Observação:", valorAtual);
     if (novo === null) return;
     await listaEsperaService.atualizarObservacao(entradaId, novo);
     await recarregarFilas();
@@ -188,7 +188,7 @@ async function handleEditarObservacaoFila(entradaId: string, valorAtual: string)
             fontSize: 14,
           }}
         >
-          ← Voltar
+          â† Voltar
         </button>
         <h1
           className="text-2xl font-bold"
@@ -240,7 +240,7 @@ async function handleEditarObservacaoFila(entradaId: string, valorAtual: string)
             }}
           >
             <p style={{ fontWeight: 600, fontSize: 15, margin: "0 0 4px", color: "var(--text-primary)", display: "flex", alignItems: "center", gap: 10 }}>
-              {DIA_LABEL[turma.dia]} — {turma.horario} — {turma.sala}
+              {DIA_LABEL[turma.dia]} â€” {turma.horario} â€” {turma.sala}
               <span
                 style={{
                   fontSize: 12,
@@ -275,7 +275,7 @@ async function handleEditarObservacaoFila(entradaId: string, valorAtual: string)
                 gap: 8,
               }}
             >
-              🖨️ Imprimir folha de presença
+              ðŸ–¨ï¸ Imprimir folha de presenÃ§a
             </button>
 
 
@@ -306,7 +306,7 @@ async function handleEditarObservacaoFila(entradaId: string, valorAtual: string)
         gap: 6,
       }}
     >
-      ✅ Matriculados
+      âœ… Matriculados
       <span
         style={{
           fontSize: 11,
@@ -317,7 +317,7 @@ async function handleEditarObservacaoFila(entradaId: string, valorAtual: string)
           borderRadius: 999,
         }}
       >
-        {matriculados.length}/{turma.limiteVagas ?? 10} — {(turma.limiteVagas ?? 10) - matriculados.length <= 0 ? "TURMA CHEIA" : `${(turma.limiteVagas ?? 10) - matriculados.length} vaga(s)`}
+        {matriculados.length}/{turma.limiteVagas ?? 10} â€” {(turma.limiteVagas ?? 10) - matriculados.length <= 0 ? "TURMA CHEIA" : `${(turma.limiteVagas ?? 10) - matriculados.length} vaga(s)`}
       </span>
     </p>
     <table style={{ width: "100%", fontSize: 16, borderCollapse: "separate", borderSpacing: 0, borderRadius: 10, overflow: "hidden", border: "1px solid var(--border-default)" }}>
@@ -337,7 +337,7 @@ async function handleEditarObservacaoFila(entradaId: string, valorAtual: string)
                 onClick={() => handleRemoverAluno(associado.id, matricula!.id, associado.nome)}
                 style={{ fontSize: 12, border: "none", borderRadius: 6, padding: "2px 8px", background: "var(--color-danger)", color: "#fff", cursor: "pointer" }}
                 title="Remover da turma"
-              >✕</button>
+              >âœ•</button>
             </td>
             <td style={{ padding: "8px" }}>
               <button
@@ -356,9 +356,9 @@ async function handleEditarObservacaoFila(entradaId: string, valorAtual: string)
                   background: "transparent",
                   cursor: "pointer",
                 }}
-                title={matricula!.observacao || "Adicionar observação"}
+                title={matricula!.observacao || "Adicionar observaÃ§Ã£o"}
               >
-                {matricula!.observacao ? "📝" : "+"}
+                {matricula!.observacao ? "ðŸ“" : "+"}
               </button>
             </td>
           </tr>
@@ -405,7 +405,7 @@ async function handleEditarObservacaoFila(entradaId: string, valorAtual: string)
               {associadoFilasAberto.nome}
             </p>
             <p style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 14 }}>
-              Está em fila de espera em:
+              EstÃ¡ em fila de espera em:
             </p>
 
 <div style={{ marginTop: 4, columnCount: 3, columnGap: 12, maxHeight: "30vh", overflowY: "auto", flexShrink: 0, paddingRight: 4 }}>
@@ -444,7 +444,7 @@ async function handleEditarObservacaoFila(entradaId: string, valorAtual: string)
                     </div>
                     {entradas.map((f) => (
                       <p key={f.id} style={{ fontSize: 12, margin: "2px 0 0 16px", color: "var(--text-secondary)" }}>
-                        {f.turmaNome} — {f.posicao}º na fila
+                        {f.turmaNome} â€” {f.posicao}Âº na fila
                       </p>
                     ))}
                   </div>
@@ -468,7 +468,7 @@ async function handleEditarObservacaoFila(entradaId: string, valorAtual: string)
                 cursor: "pointer",
               }}
             >
-              {outrasTurmasAberto ? "▲ Ocultar outras turmas" : "+ Inserir em outras turmas"}
+              {outrasTurmasAberto ? "â–² Ocultar outras turmas" : "+ Inserir em outras turmas"}
             </button>
 
             {outrasTurmasAberto && (() => {
@@ -487,7 +487,7 @@ async function handleEditarObservacaoFila(entradaId: string, valorAtual: string)
               if (outrasTurmas.length === 0) {
                 return (
                   <p style={{ fontSize: 13, color: "var(--text-secondary)", marginTop: 10, textAlign: "center" }}>
-                    Já está inserido(a) em todas as turmas disponíveis.
+                    JÃ¡ estÃ¡ inserido(a) em todas as turmas disponÃ­veis.
                   </p>
                 );
               }
@@ -589,7 +589,7 @@ async function handleEditarObservacaoFila(entradaId: string, valorAtual: string)
                                   }}
                                 >
                                   <p style={{ fontSize: 12, margin: 0, color: "var(--text-primary)", fontWeight: 500 }}>
-                                    {DIA_LABEL[t.dia]} — {t.horario}
+                                    {DIA_LABEL[t.dia]} â€” {t.horario}
                                   </p>
                                   <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
                                     <span
@@ -676,7 +676,7 @@ async function handleEditarObservacaoFila(entradaId: string, valorAtual: string)
         gap: 6,
       }}
     >
-      ⏳ Lista de espera
+      â³ Lista de espera
       <span
         style={{
           fontSize: 11,
@@ -710,7 +710,7 @@ async function handleEditarObservacaoFila(entradaId: string, valorAtual: string)
               />
             </td>
                         <td style={{ padding: "8px", fontSize: 18 }}>
-              {entrada.posicao === 1 ? "🥇" : entrada.posicao === 2 ? "🥈" : entrada.posicao === 3 ? "🥉" : `${entrada.posicao}º`}
+              {entrada.posicao === 1 ? "ðŸ¥‡" : entrada.posicao === 2 ? "ðŸ¥ˆ" : entrada.posicao === 3 ? "ðŸ¥‰" : `${entrada.posicao}Âº`}
             </td>
             <td style={{ padding: "8px" }}>
   {entrada.associadoNome.toUpperCase()}
@@ -749,9 +749,9 @@ async function handleEditarObservacaoFila(entradaId: string, valorAtual: string)
                   background: "transparent",
                   cursor: "pointer",
                 }}
-                title={entrada.observacao || "Adicionar observação"}
+                title={entrada.observacao || "Adicionar observaÃ§Ã£o"}
               >
-                {entrada.observacao ? "📝" : "+"}
+                {entrada.observacao ? "ðŸ“" : "+"}
               </button>
             </td>
           </tr>
@@ -759,7 +759,7 @@ async function handleEditarObservacaoFila(entradaId: string, valorAtual: string)
         {filaDaTurma.length === 0 && (
           <tr>
             <td colSpan={4} style={{ padding: "10px 8px", color: "var(--text-secondary)", textAlign: "center" }}>
-              Ninguém na fila.
+              NinguÃ©m na fila.
             </td>
           </tr>
         )}
