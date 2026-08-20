@@ -4,7 +4,7 @@
 // Busca, matricula em lote, historico e posicao na fila
 // ======================================================
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { associadosService } from "../services/associados.service";
 import { buscaAproximada } from "@/utils/textoBusca";
 import { turmasService } from "@/modules/turmas/services/turmas.service";
@@ -15,6 +15,7 @@ import type { Turma } from "@/modules/turmas/types/turma.types";
 import type { Modalidade } from "@/modules/modalidades/types/modalidade.types";
 import { listaEsperaService } from "@/modules/lista-espera/services/listaEspera.service";
 import { buscarComCache } from "@/lib/cacheOffline";
+import { associadosService as associadosServiceContagem } from "../services/associados.service";
 
 interface Props {
   aberto: boolean;
@@ -34,13 +35,14 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
   const [modalidades, setModalidades] = useState<Modalidade[]>([]);
   const [turmasEscolhidas, setTurmasEscolhidas] = useState<string[]>([]);
   const [grupoAberto, setGrupoAberto] = useState<string | null>(null);
-  const [aviso, setAviso] = useState<string | null>(null);
+  const [aviso, setAviso] = useState<string[]>([]);
   const [inserindo, setInserindo] = useState(false);
   const [nomeParaCadastrar, setNomeParaCadastrar] = useState("");
   const [telefoneParaCadastrar, setTelefoneParaCadastrar] = useState("");
   const [cadastrando, setCadastrando] = useState(false);
   const [erroCadastro, setErroCadastro] = useState<string | null>(null);
   const [filasContagem, setFilasContagem] = useState<Record<string, number>>({});
+  const [matriculasContagem, setMatriculasContagem] = useState<Record<string, number>>({});
 
   useEffect(() => {
     if (!aberto) return;
@@ -57,24 +59,49 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
   useEffect(() => {
     if (turmas.length === 0) return;
     buscarComCache("lista_espera", () => listaEsperaService.listarTudo(), aplicarContagens).then(aplicarContagens);
+
+    (async () => {
+      const contagens: Record<string, number> = {};
+      await Promise.all(
+        turmas.map(async (t) => {
+          contagens[t.id] = await associadosServiceContagem.contarMatriculasPorTurma(t.id);
+        })
+      );
+      setMatriculasContagem(contagens);
+    })();
   }, [turmas]);
 
-  async function handleBuscar(texto: string) {
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [buscando, setBuscando] = useState(false);
+  const todosAssociadosRef = useRef<Associado[] | null>(null);
+
+  function handleBuscar(texto: string) {
     setBusca(texto);
     setNomeParaCadastrar("");
     setErroCadastro(null);
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
     if (texto.trim().length < 2) {
       setResultados([]);
+      setBuscando(false);
       return;
     }
-    const todos = await associadosService.listar();
-    const lista = todos.filter(
-      (a) => buscaAproximada(texto, a.nome) || a.telefone.includes(texto)
-    );
-    setResultados(lista);
-    if (lista.length === 0) {
-      setNomeParaCadastrar(texto.toUpperCase());
-    }
+
+    setBuscando(true);
+    debounceRef.current = setTimeout(async () => {
+      if (!todosAssociadosRef.current) {
+        todosAssociadosRef.current = await associadosService.listar();
+      }
+      const lista = todosAssociadosRef.current.filter(
+        (a) => buscaAproximada(texto, a.nome) || a.telefone.includes(texto)
+      );
+      setResultados(lista);
+      setBuscando(false);
+      if (lista.length === 0) {
+        setNomeParaCadastrar(texto.toUpperCase());
+      }
+    }, 300);
   }
 
   async function handleCadastrarRapido() {
@@ -96,11 +123,12 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
         telefone: telefoneParaCadastrar.trim(),
         status: "ATIVO",
       });
+      todosAssociadosRef.current = null; // invalida cache, novo associado precisa aparecer em buscas futuras
       setNomeParaCadastrar("");
       setTelefoneParaCadastrar("");
       await handleSelecionar(novo);
     } catch (e) {
-      setAviso(e instanceof Error ? e.message : "Erro ao cadastrar associado");
+      setAviso([e instanceof Error ? e.message : "Erro ao cadastrar associado"]);
     } finally {
       setCadastrando(false);
     }
@@ -112,7 +140,7 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
     setBusca(associado.nome);
     const entradas = await listaEsperaService.listarPorAssociado(associado.id);
     setFilas(entradas);
-    setAviso(null);
+    setAviso([]);
     setTurmasEscolhidas([]);
   }
 
@@ -130,15 +158,14 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
     );
   }
 
-  function turmasQueVaoParaFila(): { turma: Turma; modalidadeNome: string }[] {
+    function turmasQueVaoParaFila(): { turma: Turma; modalidadeNome: string }[] {
     return turmasEscolhidas
       .map((turmaId) => {
         const turma = turmas.find((t) => t.id === turmaId);
         if (!turma) return null;
-        const jaOcupadas = filasContagem[turma.id] ?? 0;
-        // aproximação: se já tem fila, ou está perto do limite, avisamos; a confirmação real de "cheio" só sabemos no momento do matricular,
-        // então aqui avisamos sempre que a turma já tiver fila (indício forte de que vai continuar na fila)
-        if (jaOcupadas > 0) {
+        const matriculadas = matriculasContagem[turma.id] ?? 0;
+        const limite = turma.limiteVagas ?? 10;
+        if (matriculadas >= limite) {
           const modalidade = modalidades.find((m) => m.id === turma.modalidadeId);
           return { turma, modalidadeNome: modalidade?.nome ?? "" };
         }
@@ -165,7 +192,7 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
 
     let matriculados = 0;
     let naFila = 0;
-    let erros = 0;
+    const errosDetalhados: string[] = [];
 
     for (const turmaId of turmasEscolhidas) {
       const turma = turmas.find((t) => t.id === turmaId);
@@ -185,17 +212,17 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
         } else {
           matriculados++;
         }
-      } catch {
-        erros++;
+      } catch (e) {
+        errosDetalhados.push(e instanceof Error ? e.message : "Erro desconhecido");
       }
     }
 
     const partes: string[] = [];
     if (matriculados > 0) partes.push(`${matriculados} matrícula(s) confirmada(s)`);
     if (naFila > 0) partes.push(`${naFila} na lista de espera`);
-    if (erros > 0) partes.push(`${erros} não puderam ser inseridas (limite atingido)`);
+    if (errosDetalhados.length > 0) partes.push(...errosDetalhados);
 
-    setAviso(partes.join(" · "));
+    setAviso(partes);
     setTurmasEscolhidas([]);
     setInserindo(false);
     await recarregarSelecionado();
@@ -272,7 +299,7 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
                 ))}
               </div>
             )}
-            {busca.trim().length >= 2 && resultados.length === 0 && !nomeParaCadastrar && (
+            {busca.trim().length >= 2 && buscando && (
               <p style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 4 }}>
                 Buscando...
               </p>
@@ -378,8 +405,18 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
                                   }}
                                 >
                                   <input type="checkbox" checked={marcada} onChange={() => toggleTurmaEscolhida(t.id)} />
-                                  <span>
+                                                                    <span>
                                     {DIA_LABEL[t.dia]} — {t.horario}
+                                    {(() => {
+                                      const matriculadas = matriculasContagem[t.id] ?? 0;
+                                      const limite = t.limiteVagas ?? 10;
+                                      const cheia = matriculadas >= limite;
+                                      return (
+                                        <span style={{ fontSize: 11, marginLeft: 4, fontWeight: 700, color: cheia ? "#9a3412" : "var(--text-secondary)" }}>
+                                          ({matriculadas}/{limite}{cheia ? " — TURMA CHEIA" : ""})
+                                        </span>
+                                      );
+                                    })()}
                                     {(filasContagem[t.id] ?? 0) > 0 && (
                                       <span style={{ fontSize: 11, color: "var(--color-warning)", marginLeft: 4 }}>
                                         ({filasContagem[t.id]} na fila de espera)
@@ -408,7 +445,13 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
                   {inserindo ? "Inserindo..." : `Inserir em ${turmasEscolhidas.length} turma(s)`}
                 </button>
 
-                {aviso && <p style={{ fontSize: 13, color: "var(--color-primary)", marginTop: 8 }}>{aviso}</p>}
+                {aviso.length > 0 && (
+  <div style={{ marginTop: 8 }}>
+    {aviso.map((linha, i) => (
+      <p key={i} style={{ fontSize: 13, color: "var(--color-primary)", margin: "2px 0" }}>{linha}</p>
+    ))}
+  </div>
+)}
               </div>
 
               <div style={{ border: "1px solid var(--border-default)", borderRadius: 8, padding: 12 }}>

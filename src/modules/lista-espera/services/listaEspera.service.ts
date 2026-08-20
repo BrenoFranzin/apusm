@@ -77,9 +77,11 @@ class ListaEsperaService {
       modalidade_id: dados.modalidadeId,
       modalidade_nome: dados.modalidadeNome,
       posicao: proximaPosicao,
+      data_entrada: new Date().toISOString(),
     };
 
-    await syncQueueService.gravar("lista_espera", "insert", nova);
+    const { error } = await supabase.from("lista_espera").insert(nova);
+    if (error) throw new Error(error.message);
     return toEntrada(nova);
   }
 

@@ -109,13 +109,20 @@ const [todasModalidades, setTodasModalidades] = useState<Modalidade[]>([]);
     await recarregarAssociados();
   }
 
-  async function handleEditarObservacaoFila(entradaId: string, valorAtual: string) {
-    const novo = window.prompt("Observação:", valorAtual);
+  async function handleRemoverAluno(associadoId: string, matriculaId: string, nome: string) {
+  if (!window.confirm(`Remover ${nome.toUpperCase()} da turma?`)) return;
+  await associadosService.cancelarMatricula(associadoId, matriculaId);
+  await recarregarAssociados();
+}
+
+async function handleEditarObservacaoFila(entradaId: string, valorAtual: string) {
+    const novo = window.prompt("Observa��o:", valorAtual);
     if (novo === null) return;
     await listaEsperaService.atualizarObservacao(entradaId, novo);
     await recarregarFilas();
   }
 
+  
   function toggleSelecionado(turmaId: string, entradaId: string) {
     setSelecionados((prev) => {
       const atual = prev[turmaId] ?? [];
@@ -313,17 +320,25 @@ const [todasModalidades, setTodasModalidades] = useState<Modalidade[]>([]);
         {matriculados.length}/{turma.limiteVagas ?? 10} — {(turma.limiteVagas ?? 10) - matriculados.length <= 0 ? "TURMA CHEIA" : `${(turma.limiteVagas ?? 10) - matriculados.length} vaga(s)`}
       </span>
     </p>
-    <table style={{ width: "100%", fontSize: 15, borderCollapse: "separate", borderSpacing: 0, borderRadius: 10, overflow: "hidden", border: "1px solid var(--border-default)" }}>
+    <table style={{ width: "100%", fontSize: 16, borderCollapse: "separate", borderSpacing: 0, borderRadius: 10, overflow: "hidden", border: "1px solid var(--border-default)" }}>
       <thead>
         <tr style={{ textAlign: "left", background: "var(--color-primary)" }}>
           <th style={{ padding: "8px", color: "#fff", fontWeight: 700, fontSize: 16 }}>Nome</th>
           <th style={{ padding: "8px", color: "#fff", fontWeight: 700, fontSize: 16 }}>Obs.</th>
+          <th style={{ padding: "8px" }}></th>
         </tr>
       </thead>
       <tbody>
         {matriculados.map(({ associado, matricula }) => (
           <tr key={associado.id} style={{ borderTop: "1px solid var(--border-default)" }}>
-            <td style={{ padding: "8px" }}>{associado.nome}</td>
+            <td style={{ padding: "8px" }}>{associado.nome.toUpperCase()}</td>
+            <td style={{ padding: "8px" }}>
+              <button
+                onClick={() => handleRemoverAluno(associado.id, matricula!.id, associado.nome)}
+                style={{ fontSize: 12, border: "none", borderRadius: 6, padding: "2px 8px", background: "var(--color-danger)", color: "#fff", cursor: "pointer" }}
+                title="Remover da turma"
+              >✕</button>
+            </td>
             <td style={{ padding: "8px" }}>
               <button
                 onClick={() =>
@@ -675,7 +690,7 @@ const [todasModalidades, setTodasModalidades] = useState<Modalidade[]>([]);
         {filaDaTurma.length}
       </span>
     </p>
-    <table style={{ width: "100%", fontSize: 15, borderCollapse: "separate", borderSpacing: 0, borderRadius: 10, overflow: "hidden", border: "1px solid var(--border-default)" }}>
+    <table style={{ width: "100%", fontSize: 16, borderCollapse: "separate", borderSpacing: 0, borderRadius: 10, overflow: "hidden", border: "1px solid var(--border-default)" }}>
       <thead>
         <tr style={{ textAlign: "left", background: "var(--color-primary)" }}>
           <th style={{ padding: "8px" }}></th>
@@ -698,7 +713,7 @@ const [todasModalidades, setTodasModalidades] = useState<Modalidade[]>([]);
               {entrada.posicao === 1 ? "🥇" : entrada.posicao === 2 ? "🥈" : entrada.posicao === 3 ? "🥉" : `${entrada.posicao}º`}
             </td>
             <td style={{ padding: "8px" }}>
-  {entrada.associadoNome}
+  {entrada.associadoNome.toUpperCase()}
   {(() => {
   const qtdFilas = filas.filter((f) => f.associadoId === entrada.associadoId).length;
   return qtdFilas > 1 ? (

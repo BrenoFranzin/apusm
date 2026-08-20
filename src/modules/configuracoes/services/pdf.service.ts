@@ -8,6 +8,28 @@ import { plantaoService } from "@/modules/plantao/services/plantao.service";
 import { associadosService } from "@/modules/associados/services/associados.service";
 
 
+// Altura mínima legível por linha (mm), com margem de segurança.
+// Calculada a partir dos pisos já existentes de fonte (5.5pt) e padding (0.6mm):
+// fonte 5.5pt ≈ 1.94mm de texto + 2×0.6mm de padding + 0.3mm de borda ≈ 3.44mm físico mínimo.
+// Usamos 5.2mm (folga de ~1.7mm/linha) para absorver variação real do autoTable.
+const ALTURA_MINIMA_LINHA_MM = 5.2;
+const MARGEM_SEGURANCA_RODAPE = 10;
+
+interface CapacidadePagina {
+  alturaDisponivel: number;
+  maxLinhas: number;
+}
+
+/** Capacidade máxima de linhas (matriculados + novos) que cabem em UMA página, sem chute. */
+function calcularCapacidadePagina(orientacao: "portrait" | "landscape", temObs: boolean): CapacidadePagina {
+  const alturaPagina = orientacao === "landscape" ? 210 : 297;
+  const alturaReservadaTopo = 26 + (temObs ? 4 : 0) + 8;
+  const alturaReservadaRodape = 6 + MARGEM_SEGURANCA_RODAPE;
+  const alturaDisponivel = alturaPagina - alturaReservadaTopo - alturaReservadaRodape;
+  const maxLinhas = Math.floor(alturaDisponivel / ALTURA_MINIMA_LINHA_MM);
+  return { alturaDisponivel, maxLinhas };
+}
+
 const NOME_DIA: Record<string, string> = {
   seg: "Segunda",
   ter: "Terça",
@@ -436,7 +458,6 @@ class PdfService {
   // ==========================
   // FOLHA DE PRESENÇA (por turma, para imprimir e marcar à mão)
   // ==========================
-
   private desenharFolhaPresenca(
     doc: jsPDF,
     turma: any,
@@ -444,8 +465,7 @@ class PdfService {
     ano: number,
     instrutores: any[],
     modalidades: any[],
-    associados: any[],
-    orientacao: "portrait" | "landscape" = "landscape"
+    associados: any[]
   ): string {
     const modalidade = modalidades.find((m: any) => m.id === turma.modalidadeId);
     const instrutor = instrutores.find((i: any) => i.id === turma.instrutorId);
@@ -465,10 +485,39 @@ class PdfService {
     const linhasMatriculados: string[] = [...matriculados];
     while (linhasMatriculados.length < limiteVagas) linhasMatriculados.push("");
 
-    const pageWidth = orientacao === "portrait" ? 210 : 297;
-    const margem = 14;
-    const larguraTotal = pageWidth - margem * 2;
-    const tituloX = pageWidth - margem;
+    const totalLinhas = linhasMatriculados.length + limiteNovos;
+
+    const orientacaoAtual: "portrait" | "landscape" = infantil ? "landscape" : "portrait";
+    const { maxLinhas } = calcularCapacidadePagina(orientacaoAtual, Boolean(modalidade?.descricao));
+    if (totalLinhas > maxLinhas) {
+      throw new Error(
+        `A turma "${nomeModalidade.toUpperCase()}" (${NOME_DIA[turma.dia] ?? turma.dia} ${turma.horario}) tem ${totalLinhas} linhas ` +
+        `(${linhasMatriculados.length} vagas + ${limiteNovos} novos), mas a folha só comporta ${maxLinhas} linhas sem quebrar página. ` +
+        `Reduza "Limite vagas" e/ou "Linhas extras" em ${totalLinhas - maxLinhas} para essa turma na aba Turmas.`
+      );
+    }
+
+    const alturaPagina = doc.internal.pageSize.getHeight();
+    const MARGEM_SEGURANCA_RODAPE = 10;
+    const alturaReservadaTopo = 26 + (modalidade?.descricao ? 4 : 0) + 8;
+    const alturaReservadaRodape = 6 + MARGEM_SEGURANCA_RODAPE;
+    const alturaDisponivel = alturaPagina - alturaReservadaTopo - alturaReservadaRodape;
+    const alturaLinhaIdeal = alturaDisponivel / totalLinhas;
+
+    const ALTURA_MAXIMA_LINHA_MM = 8;
+    const calcularEstilo = (alturaLinhaBruta: number) => {
+      const alturaLinha = Math.min(alturaLinhaBruta, ALTURA_MAXIMA_LINHA_MM);
+      const fs = Math.min(10, Math.max(5.5, alturaLinha * 1.4));
+      const cp = Math.min(6, Math.max(0.6, (alturaLinha - fs * 0.5) * 0.4));
+      return { fontSize: fs, cellPadding: cp, minCellHeight: alturaLinha };
+    };
+
+    const { fontSize: fontSizeBase, cellPadding, minCellHeight } = calcularEstilo(alturaLinhaIdeal);
+
+    const MARGEM = 12.7;
+    const larguraPagina = doc.internal.pageSize.getWidth();
+    const larguraUtil = larguraPagina - MARGEM * 2;
+    const bordaDireita = larguraPagina - MARGEM;
 
     const tituloModalidade = turma.observacao
       ? `${nomeModalidade.toUpperCase()} (${turma.observacao.toUpperCase()})`
@@ -476,16 +525,16 @@ class PdfService {
 
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
-    doc.text(`MODALIDADE: ${tituloModalidade}`, margem, 14);
+    doc.text(`MODALIDADE: ${tituloModalidade}`, MARGEM, 14);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
-    doc.text(`PROFESSOR(A): ${instrutor?.nome.toUpperCase() ?? "-"}`, margem, 20);
+    doc.text(`PROFESSOR(A): ${instrutor?.nome.toUpperCase() ?? "-"}`, MARGEM, 20);
 
     let linhaExtra = 0;
     if (modalidade?.descricao) {
       doc.setFontSize(8);
       doc.setFont("helvetica", "italic");
-      doc.text(`OBS: ${modalidade.descricao}`, margem, 25);
+      doc.text(`OBS: ${modalidade.descricao}`, MARGEM, 25);
       doc.setFont("helvetica", "normal");
       linhaExtra = 4;
     }
@@ -495,40 +544,26 @@ class PdfService {
     };
     doc.setFont("helvetica", "bold");
     doc.setFontSize(12);
-    doc.text(`MÊS: ${MESES[mes].toUpperCase()}/${ano}`, tituloX, 14, { align: "right" });
+    doc.text(`MÊS: ${MESES[mes].toUpperCase()}/${ano}`, bordaDireita, 14, { align: "right" });
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
-    doc.text(`DIA/HORÁRIO: ${nomeDiaCurto[turma.dia] ?? turma.dia} ${turma.horario}`, tituloX, 20, { align: "right" });
-
-    const totalLinhasDados = linhasMatriculados.length + limiteNovos;
-    const pageHeight = orientacao === "portrait" ? 297 : 210;
-    const startYTabela = 36 + linhaExtra;
-    const alturaDisponivel = pageHeight - startYTabela - 12 - 8 - 6;
-    let alturaLinha = totalLinhasDados > 0 ? alturaDisponivel / totalLinhasDados : 8;
-    alturaLinha = Math.max(3.2, Math.min(alturaLinha, 8));
-    const escala = alturaLinha / 8;
-    const fontSizeBase = Math.max(5, Math.min(9, 9 * escala));
-    const cellPadding = Math.max(0.6, Math.min(2, 2 * escala));
+    doc.text(`DIA/HORÁRIO: ${nomeDiaCurto[turma.dia] ?? turma.dia} ${turma.horario}`, bordaDireita, 20, { align: "right" });
 
     const colunaAluno = infantil ? "Nome do Aluno (Criança)" : "Nome do Aluno";
     const cabecalhoPrincipal = infantil
       ? ["Nº", colunaAluno, ...datas, "Responsável"]
       : ["Nº", colunaAluno, ...datas];
 
-    const numDatas = datas.length;
     const colNumero = 10;
     let colResponsavel = infantil ? 40 : 0;
-    let colNome = (larguraTotal - colNumero - colResponsavel) / 2;
+    let colNome = (larguraUtil - colNumero - colResponsavel) / 2;
     if (infantil) {
       colNome = colNome * 0.8;
       colResponsavel = colResponsavel * 1.2;
     }
-    const colData = (larguraTotal - colNumero - colResponsavel - colNome) / numDatas;
 
     const maiorNome = linhasMatriculados.reduce((a, b) => (b.length > a.length ? b : a), "");
-    const fontSizeNome = maiorNome
-      ? fitFontSize(doc, maiorNome, colNome - 4, fontSizeBase, 5)
-      : fontSizeBase;
+    const fontSizeNome = maiorNome ? fitFontSize(doc, maiorNome, colNome - 4, fontSizeBase, 5) : fontSizeBase;
     const fontSize = Math.min(fontSizeNome, fontSizeBase);
 
     const columnStylesPrincipal: any = {
@@ -546,22 +581,29 @@ class PdfService {
           ? [String(i + 1).padStart(2, "0"), nome, ...datas.map(() => ""), ""]
           : [String(i + 1).padStart(2, "0"), nome, ...datas.map(() => "")]
       ),
-      startY: startYTabela,
+      startY: 36 + linhaExtra,
       theme: "grid",
-      styles: { fontSize, cellPadding, halign: "center", valign: "middle", lineWidth: 0.3, lineColor: [0, 0, 0], fontStyle: "bold" },
-      headStyles: { fillColor: [20, 83, 45], textColor: [255, 255, 255], fontStyle: "bold", fontSize: Math.min(9.5, fontSizeBase + 1.5), cellPadding: Math.max(0.8, cellPadding) },
+      styles: { fontSize, cellPadding, minCellHeight, halign: "center", valign: "middle", lineWidth: 0.3, lineColor: [0, 0, 0], fontStyle: "bold", textColor: [0, 0, 0] },
+      headStyles: { fillColor: [20, 83, 45], textColor: [255, 255, 255], fontStyle: "bold", minCellHeight: Math.min(minCellHeight, 9), fontSize: Math.min(fontSize + 2, 11) },
       columnStyles: columnStylesPrincipal,
-      margin: { left: margem, right: margem },
+      margin: { left: MARGEM, right: MARGEM, bottom: MARGEM_SEGURANCA_RODAPE },
     });
 
     const finalY1 = (doc as any).lastAutoTable.finalY as number;
 
+    const BUFFER_ARREDONDAMENTO = 3;
+    const alturaRestanteReal = alturaPagina - finalY1 - 6 - MARGEM_SEGURANCA_RODAPE - BUFFER_ARREDONDAMENTO;
+    const alturaLinhaNovos = Math.max(alturaRestanteReal / limiteNovos, 3);
+    const estiloNovos = calcularEstilo(alturaLinhaNovos);
+
     doc.setFillColor(230, 230, 230);
-    doc.rect(margem, finalY1, larguraTotal, 6, "F");
+    doc.setDrawColor(0);
+    doc.setLineWidth(0.3);
+    doc.rect(MARGEM, finalY1, larguraUtil, 6, "FD");
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(fontSize);
+    doc.setFontSize(Math.min(estiloNovos.fontSize, fontSize));
     doc.setTextColor(0);
-    doc.text("NOVOS ALUNOS", margem + larguraTotal / 2, finalY1 + 4.2, { align: "center" });
+    doc.text("NOVOS ALUNOS", MARGEM + larguraUtil / 2, finalY1 + 4.2, { align: "center" });
 
     const columnStylesNovos: any = infantil
       ? { 0: { cellWidth: colNumero + colNome, halign: "left" }, [datas.length + 1]: { cellWidth: colResponsavel, halign: "left" } }
@@ -573,17 +615,11 @@ class PdfService {
       ),
       startY: finalY1 + 6,
       theme: "grid",
-      styles: { fontSize, cellPadding, halign: "center", valign: "middle", lineWidth: 0.3, lineColor: [0, 0, 0] },
+      styles: { fontSize: estiloNovos.fontSize, cellPadding: estiloNovos.cellPadding, minCellHeight: estiloNovos.minCellHeight, halign: "center", valign: "middle", lineWidth: 0.3, lineColor: [0, 0, 0] },
       columnStyles: columnStylesNovos,
-      margin: { left: margem, right: margem },
+      margin: { left: MARGEM, right: MARGEM, bottom: MARGEM_SEGURANCA_RODAPE },
       pageBreak: "avoid",
     });
-
-    const finalY2 = (doc as any).lastAutoTable.finalY as number;
-    doc.setDrawColor(0);
-    doc.setLineWidth(0.9);
-    doc.line(margem, finalY1, margem, finalY2);
-    doc.line(margem + larguraTotal, finalY1, margem + larguraTotal, finalY2);
 
     return nomeModalidade;
   }
@@ -599,11 +635,11 @@ class PdfService {
     const turma = turmas.find((t: any) => t.id === turmaId);
     if (!turma) throw new Error("Turma não encontrada");
 
-    const modalidade = modalidades.find((m: any) => m.id === turma.modalidadeId);
-    const orientacao = /musicaliza/i.test(modalidade?.nome ?? "") ? "landscape" : "portrait";
+    const nomeModTurma = modalidades.find((m: any) => m.id === turma.modalidadeId)?.nome ?? "";
+    const orientacao = /infantil|musicaliza/i.test(nomeModTurma) ? "landscape" : "portrait";
 
     const doc = new jsPDF(orientacao);
-    const nomeModalidade = this.desenharFolhaPresenca(doc, turma, mes, ano, instrutores, modalidades, associados, orientacao);
+    const nomeModalidade = this.desenharFolhaPresenca(doc, turma, mes, ano, instrutores, modalidades, associados);
 
     const nomeArquivo = `Lista de turmas - ${nomeModalidade} - ${MESES[mes]} ${ano}.pdf`;
     visualizarEregistrar(doc, nomeArquivo, "presenca");
@@ -617,8 +653,10 @@ class PdfService {
       associadosService.listar(),
     ]);
 
-    const ordenar = (lista: any[]) =>
-      lista.slice().sort((a: any, b: any) => {
+    const turmasOrdenadas = turmaIds
+      .map((id) => turmas.find((t: any) => t.id === id))
+      .filter((t): t is NonNullable<typeof t> => Boolean(t))
+      .sort((a: any, b: any) => {
         const nomeModA = modalidades.find((m: any) => m.id === a.modalidadeId)?.nome ?? "";
         const nomeModB = modalidades.find((m: any) => m.id === b.modalidadeId)?.nome ?? "";
         const cmpModalidade = nomeModA.localeCompare(nomeModB, "pt-BR");
@@ -630,36 +668,23 @@ class PdfService {
         return a.horario.localeCompare(b.horario);
       });
 
-    const turmasSelecionadas = turmaIds
-      .map((id) => turmas.find((t: any) => t.id === id))
-      .filter((t): t is NonNullable<typeof t> => Boolean(t));
-
-    const ehMusicalizacao = (t: any) =>
-      /musicaliza/i.test(modalidades.find((m: any) => m.id === t.modalidadeId)?.nome ?? "");
-
-    const turmasRetrato = ordenar(turmasSelecionadas.filter((t) => !ehMusicalizacao(t)));
-    const turmasPaisagem = ordenar(turmasSelecionadas.filter((t) => ehMusicalizacao(t)));
-
-    const desenharGrupo = (lista: any[], orientacao: "portrait" | "landscape") => {
-      const doc = new jsPDF(orientacao);
-      let primeiraPagina = true;
-      for (const turma of lista) {
-        if (!primeiraPagina) doc.addPage("a4", orientacao);
-        primeiraPagina = false;
-        this.desenharFolhaPresenca(doc, turma, mes, ano, instrutores, modalidades, associados, orientacao);
-      }
-      return doc;
+    const orientacaoDa = (t: any) => {
+      const nome = modalidades.find((m: any) => m.id === t.modalidadeId)?.nome ?? "";
+      return /infantil|musicaliza/i.test(nome) ? "landscape" : "portrait";
     };
 
-    if (turmasRetrato.length) {
-      const doc = desenharGrupo(turmasRetrato, "portrait");
-      baixarEregistrar(doc, `Folhas de presença - ${MESES[mes]} ${ano}.pdf`, "presenca");
+    const doc = new jsPDF(turmasOrdenadas.length > 0 ? orientacaoDa(turmasOrdenadas[0]) : "portrait");
+    let primeiraPagina = true;
+
+    for (const turma of turmasOrdenadas) {
+      if (!primeiraPagina) doc.addPage("a4", orientacaoDa(turma));
+      primeiraPagina = false;
+
+      this.desenharFolhaPresenca(doc, turma, mes, ano, instrutores, modalidades, associados);
     }
 
-    if (turmasPaisagem.length) {
-      const doc = desenharGrupo(turmasPaisagem, "landscape");
-      baixarEregistrar(doc, `Folhas de presença Musicalização - ${MESES[mes]} ${ano}.pdf`, "presenca");
-    }
+    const nomeArquivo = `Folhas de presença - ${MESES[mes]} ${ano}.pdf`;
+    baixarEregistrar(doc, nomeArquivo, "presenca");
   }
 
   // ==========================
@@ -674,6 +699,17 @@ class PdfService {
   apagarDoHistorico(id: string): void {
     const lista = this.listarHistorico().filter((r) => r.id !== id);
     localStorage.setItem(HISTORICO_KEY, JSON.stringify(lista));
+  }
+
+  calcularCapacidadeTurma(dia: string, infantil: boolean, temObs: boolean, limiteVagas: number, limiteNovos: number) {
+    const { maxLinhas } = calcularCapacidadePagina(infantil ? "landscape" : "portrait", temObs);
+    const linhasConfiguradas = limiteVagas + limiteNovos;
+    return {
+      maxLinhas,
+      linhasConfiguradas,
+      cabe: linhasConfiguradas <= maxLinhas,
+      excedente: Math.max(0, linhasConfiguradas - maxLinhas),
+    };
   }
 }
 
