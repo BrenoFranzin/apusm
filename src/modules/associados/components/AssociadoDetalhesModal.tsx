@@ -78,6 +78,25 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
     associadosServiceContagem.contarMatriculasPorTurmaEmLote().then(setMatriculasContagem);
   }, [turmas]);
 
+  const inputBuscaRef = useRef<HTMLInputElement | null>(null);
+  const [ranking, setRanking] = useState<Associado[]>([]);
+
+  useEffect(() => {
+    if (!aberto) return;
+    inputBuscaRef.current?.focus();
+    associadosService.listar().then((lista) => {
+      const ordenado = [...lista]
+        .filter((a) => a.matriculas.some((m) => m.status !== "CANCELADA"))
+        .sort((a, b) => {
+          const qa = a.matriculas.filter((m) => m.status !== "CANCELADA").length;
+          const qb = b.matriculas.filter((m) => m.status !== "CANCELADA").length;
+          return qb - qa;
+        })
+        .slice(0, 5);
+      setRanking(ordenado);
+    });
+  }, [aberto]);
+
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [buscando, setBuscando] = useState(false);
   const todosAssociadosRef = useRef<Associado[] | null>(null);
@@ -288,6 +307,7 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
         <div style={{ padding: 24, overflowY: "auto", flex: 1 }}>
           <div style={{ position: "relative", marginBottom: 20 }}>
             <input
+              ref={inputBuscaRef}
               value={busca}
               onChange={(e) => handleBuscar(e.target.value)}
               placeholder="🔍 Buscar por nome ou telefone..."
@@ -295,15 +315,38 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
                 width: "100%",
                 padding: "14px 16px",
                 borderRadius: 10,
-                border: "2px solid var(--color-primary)",
+                border: "1px solid var(--border-default)",
                 fontSize: 16,
                 fontWeight: 500,
                 background: "var(--background-primary)",
                 color: "var(--text-primary)",
-                boxShadow: "0 0 0 3px var(--color-primary-light)",
                 boxSizing: "border-box",
               }}
             />
+            {busca.trim().length === 0 && ranking.length > 0 && (
+              <div style={{ marginTop: 12, border: "1px solid var(--color-primary)", borderRadius: 10, padding: 12, background: "var(--color-primary-light)" }}>
+                <p style={{ fontSize: 12, fontWeight: 700, color: "var(--color-primary)", textTransform: "uppercase", letterSpacing: 0.4, margin: "0 0 10px" }}>
+                  🏆 Ranking - mais turmas ativas
+                </p>
+                {ranking.map((a, i) => {
+                  const qtd = a.matriculas.filter((m) => m.status !== "CANCELADA").length;
+                  const corMedalha = i === 0 ? "#f59e0b" : i === 1 ? "#94a3b8" : i === 2 ? "#b45309" : "var(--color-primary)";
+                  return (
+                    <button
+                      key={a.id}
+                      onClick={() => handleSelecionar(a)}
+                      style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 12px", marginBottom: 6, background: "var(--background-primary)", border: "1px solid var(--border-default)", borderRadius: 8, cursor: "pointer", textAlign: "left" }}
+                    >
+                      <span style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, fontWeight: 600, color: "var(--text-primary)" }}>
+                        <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 20, height: 20, borderRadius: "50%", background: corMedalha, color: "#fff", fontSize: 11, fontWeight: 700 }}>{i + 1}</span>
+                        {a.nome}
+                      </span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: "#fff", background: "var(--color-primary)", padding: "3px 10px", borderRadius: 999 }}>{qtd} turma(s)</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
             {busca.trim().length >= 2 && resultados.length > 0 && (
               <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "var(--background-primary)", border: "1px solid var(--border-default)", borderRadius: 8, marginTop: 4, zIndex: 10, maxHeight: 240, overflowY: "auto" }}>
                 <p style={{ fontSize: 12, color: "var(--color-success)", padding: "6px 14px", margin: 0 }}>
