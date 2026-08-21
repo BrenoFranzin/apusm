@@ -29,7 +29,7 @@ const DIA_LABEL: Record<string, string> = {
 };
 
 export default function TurmasPage() {
-  const { turmas, criar, editar, erro } = useTurmas();
+  const { turmas, criar, editar, excluir, erro } = useTurmas();
   const { modalidades } = useModalidades();
   const { instrutores } = useInstrutores();
   const { salas } = useSalas();
@@ -232,6 +232,7 @@ export default function TurmasPage() {
                   <th style={{ textAlign: "left", padding: "10px 8px", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--text-secondary)" }}>Sala</th>
                   <th style={{ textAlign: "left", padding: "10px 8px", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--text-secondary)" }}>Limite vagas</th>
                   <th style={{ textAlign: "left", padding: "10px 8px", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--text-secondary)" }}>Linhas extras</th>
+                  <th style={{ textAlign: "left", padding: "10px 8px", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--text-secondary)" }}>Ações</th>
                 </tr>
               </thead>
               <tbody>
@@ -360,6 +361,19 @@ export default function TurmasPage() {
                           }}
                           style={{ width: 60, padding: 4, textAlign: "center", background: "var(--background-secondary)", color: "var(--text-primary)", border: "1px solid var(--border-default)", borderRadius: 6 }}
                         />
+                      </td>
+                      <td style={{ padding: "12px 8px" }}>
+                        <button
+                          onClick={() => {
+                            const confirmar = window.confirm(
+                              `Excluir esta turma (${DIA_LABEL[turma.dia]} ${turma.horario})? Essa acao nao pode ser desfeita.`
+                            );
+                            if (confirmar) excluir(turma.id);
+                          }}
+                          style={{ fontSize: 12, fontWeight: 600, border: "none", borderRadius: 6, padding: "6px 12px", background: "var(--color-danger)", color: "#fff", cursor: "pointer" }}
+                        >
+                          Excluir
+                        </button>
                       </td>
                     </tr>
                   );
