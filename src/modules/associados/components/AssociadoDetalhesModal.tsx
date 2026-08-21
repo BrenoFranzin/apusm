@@ -438,7 +438,9 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
                         {estaAberto && (
                           <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 6, padding: "8px 12px 12px", background: "var(--background-tertiary)" }}>
                             {turmasDaModalidade.map((t) => {
-                              const marcada = turmasEscolhidas.includes(t.id);
+                              const jaMatriculado = selecionado?.matriculas.some((m) => m.turmaId === t.id && m.status !== "CANCELADA") ?? false;
+                              const jaNaFila = filas.some((f) => f.turmaId === t.id);
+                              const marcada = jaMatriculado || jaNaFila || turmasEscolhidas.includes(t.id);
                               return (
                                 <label
                                   key={t.id}
@@ -450,7 +452,7 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
                                     color: "var(--text-primary)",
                                   }}
                                 >
-                                  <input type="checkbox" checked={marcada} onChange={() => toggleTurmaEscolhida(t.id)} />
+                                  <input type="checkbox" checked={marcada} disabled={jaMatriculado || jaNaFila} onChange={() => toggleTurmaEscolhida(t.id)} />
                                                                     <span>
                                     {DIA_LABEL[t.dia]} — {t.horario}
                                     {(() => {
