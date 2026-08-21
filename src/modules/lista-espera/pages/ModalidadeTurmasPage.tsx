@@ -84,7 +84,7 @@ const [todasModalidades, setTodasModalidades] = useState<Modalidade[]>([]);
   );
 
     function instrutorNome(id: string) {
-    return instrutores.find((i) => i.id === id)?.nome ?? "—";
+    return instrutores.find((i) => i.id === id)?.nome ?? "—";
   }
 
   function instrutorCor(id: string) {
@@ -358,7 +358,7 @@ async function handleEditarObservacaoFila(entradaId: string, valorAtual: string)
                 }}
                 title={matricula!.observacao || "Adicionar observação"}
               >
-                {matricula!.observacao ? "📝" : "+"}
+                {matricula!.observacao ? "📝" : "+"}
               </button>
             </td>
           </tr>
@@ -444,7 +444,7 @@ async function handleEditarObservacaoFila(entradaId: string, valorAtual: string)
                     </div>
                     {entradas.map((f) => (
                       <p key={f.id} style={{ fontSize: 12, margin: "2px 0 0 16px", color: "var(--text-secondary)" }}>
-                        {f.turmaNome} — {f.posicao}Âº na fila
+                        {f.turmaNome} — {f.posicao}º na fila
                       </p>
                     ))}
                   </div>
@@ -751,7 +751,7 @@ async function handleEditarObservacaoFila(entradaId: string, valorAtual: string)
                 }}
                 title={entrada.observacao || "Adicionar observação"}
               >
-                {entrada.observacao ? "📝" : "+"}
+                {entrada.observacao ? "📝" : "+"}
               </button>
             </td>
           </tr>
