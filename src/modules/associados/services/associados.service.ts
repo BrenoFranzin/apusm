@@ -134,21 +134,13 @@ class AssociadosService {
     const vagasOcupadas = await this.contarMatriculasPorTurma(dadosMatricula.turmaId);
     const turmaCheia = vagasOcupadas >= limiteVagasTurma;
 
-    if (!turmaCheia) {
-      // Limite de modalidade só se aplica a matrícula direta — lista de espera é livre.
-      const limiteModalidade = await limitesService.obterLimiteDaModalidade(dadosMatricula.modalidadeId);
-      const turmasNaModalidade = associado.matriculas.filter(
-        (m) => m.modalidadeId === dadosMatricula.modalidadeId && m.status !== "CANCELADA"
-      ).length;
+    const limiteModalidade = await limitesService.obterLimiteDaModalidade(dadosMatricula.modalidadeId);
+    const turmasNaModalidade = associado.matriculas.filter(
+      (m) => m.modalidadeId === dadosMatricula.modalidadeId && m.status !== "CANCELADA"
+    ).length;
+    const atingiuLimiteModalidade = turmasNaModalidade >= limiteModalidade;
 
-      if (turmasNaModalidade >= limiteModalidade) {
-        throw new Error(
-          `Limite atingido: essa pessoa já está em ${turmasNaModalidade} turma(s) de ${dadosMatricula.modalidadeNome} (limite: ${limiteModalidade}).`
-        );
-      }
-    }
-
-    if (turmaCheia) {
+    if (turmaCheia || atingiuLimiteModalidade) {
       const entrada = await listaEsperaService.entrarNaFila({
         associadoId: associado.id,
         associadoNome: associado.nome,
@@ -251,9 +243,12 @@ class AssociadosService {
   }
 
   async pesquisar(texto: string): Promise<Associado[]> {
-    const lista = await this.listar();
-    const busca = texto.toLowerCase();
-    return lista.filter((a) => a.nome.toLowerCase().includes(busca) || a.telefone.includes(busca));
+    const busca = texto.trim();
+    if (!busca) return [];
+
+    const { data, error } = await supabase.rpc("buscar_associados", { termo: busca });
+    if (error) { console.error(error); return []; }
+    return (data ?? []).map(toAssociado);
   }
 
   async dashboard() {

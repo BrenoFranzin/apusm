@@ -14,6 +14,7 @@ import type { EntradaListaEspera } from "@/modules/lista-espera/types/listaEsper
 import type { Turma } from "@/modules/turmas/types/turma.types";
 import type { Modalidade } from "@/modules/modalidades/types/modalidade.types";
 import { listaEsperaService } from "@/modules/lista-espera/services/listaEspera.service";
+import { limitesService } from "@/modules/limites/services/limites.service";
 import { buscarComCache } from "@/lib/cacheOffline";
 import { associadosService as associadosServiceContagem } from "../services/associados.service";
 
@@ -43,12 +44,26 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
   const [erroCadastro, setErroCadastro] = useState<string | null>(null);
   const [filasContagem, setFilasContagem] = useState<Record<string, number>>({});
   const [matriculasContagem, setMatriculasContagem] = useState<Record<string, number>>({});
+  const [limitesPorModalidade, setLimitesPorModalidade] = useState<Record<string, number>>({});
 
   useEffect(() => {
     if (!aberto) return;
     buscarComCache("turmas", () => turmasService.listar(), setTurmas);
     buscarComCache("modalidades", () => modalidadesService.listar(), setModalidades);
   }, [aberto]);
+
+  useEffect(() => {
+    if (modalidades.length === 0) return;
+    (async () => {
+      const limites: Record<string, number> = {};
+      await Promise.all(
+        modalidades.map(async (mod) => {
+          limites[mod.id] = await limitesService.obterLimiteDaModalidade(mod.id);
+        })
+      );
+      setLimitesPorModalidade(limites);
+    })();
+  }, [modalidades]);
 
   function aplicarContagens(todasEntradas: EntradaListaEspera[]) {
     const contagens: Record<string, number> = {};
@@ -90,12 +105,7 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
 
     setBuscando(true);
     debounceRef.current = setTimeout(async () => {
-      if (!todosAssociadosRef.current) {
-        todosAssociadosRef.current = await associadosService.listar();
-      }
-      const lista = todosAssociadosRef.current.filter(
-        (a) => buscaAproximada(texto, a.nome) || a.telefone.includes(texto)
-      );
+      const lista = await associadosService.pesquisar(texto);
       setResultados(lista);
       setBuscando(false);
       if (lista.length === 0) {
@@ -226,6 +236,21 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
     setTurmasEscolhidas([]);
     setInserindo(false);
     await recarregarSelecionado();
+  }
+
+  async function handleMatricularDaFila(entrada: EntradaListaEspera) {
+    try {
+      await associadosService.matricular(selecionado!.id, {
+        turmaId: entrada.turmaId,
+        turmaNome: entrada.turmaNome,
+        modalidadeId: entrada.modalidadeId,
+        modalidadeNome: entrada.modalidadeNome,
+      });
+      await listaEsperaService.sairDaFila(entrada.id);
+      await recarregarSelecionado();
+    } catch (e) {
+      setAviso([e instanceof Error ? e.message : "Erro ao matricular"]);
+    }
   }
 
   async function handleCancelar(matriculaId: string) {
@@ -378,6 +403,25 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
                             <span>{mod.icone}</span>
                             <span style={{ fontWeight: 500 }}>{mod.nome}</span>
                             <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>({turmasDaModalidade.length})</span>
+                            {(() => {
+                              const limite = limitesPorModalidade[mod.id] ?? 2;
+                              const matriculadasNaModalidade = selecionado?.matriculas.filter(
+                                (m) => m.modalidadeId === mod.id && m.status !== "CANCELADA"
+                              ).length ?? 0;
+                              const atingiuLimite = matriculadasNaModalidade >= limite;
+                              return (
+                                <span
+                                  style={{
+                                    fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 999,
+                                    background: atingiuLimite ? "var(--color-warning-light)" : "var(--color-success-light)",
+                                    color: atingiuLimite ? "var(--color-warning)" : "var(--color-success)",
+                                  }}
+                                >
+                                  {matriculadasNaModalidade}/{limite} turmas
+                                  {atingiuLimite ? " (só entra na fila)" : " (pode entrar direto)"}
+                                </span>
+                              );
+                            })()}
                           </span>
                           <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
                             {qtdEscolhidas > 0 && (
@@ -474,11 +518,34 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
                   Listas de espera ({filas.length})
                 </p>
                 {filas.length === 0 && <p style={{ fontSize: 13, color: "var(--text-secondary)" }}>Não está em nenhuma fila.</p>}
-                {filas.map((f) => (
-                  <div key={f.id} style={{ fontSize: 13, padding: "8px 0", borderTop: "1px solid var(--border-light)", color: "var(--text-primary)" }}>
-                    {f.modalidadeNome} — {f.turmaNome} — <strong>{f.posicao}º lugar</strong>
-                  </div>
-                ))}
+                {filas.map((f) => {
+                  const turma = turmas.find((t) => t.id === f.turmaId);
+                  const limiteVagasTurma = turma?.limiteVagas ?? 10;
+                  const vagasOcupadas = matriculasContagem[f.turmaId] ?? 0;
+                  const temVagaNaTurma = vagasOcupadas < limiteVagasTurma;
+
+                  const limiteModalidade = limitesPorModalidade[f.modalidadeId] ?? 2;
+                  const matriculadasNaModalidade = selecionado?.matriculas.filter(
+                    (m) => m.modalidadeId === f.modalidadeId && m.status !== "CANCELADA"
+                  ).length ?? 0;
+                  const temVagaNaModalidade = matriculadasNaModalidade < limiteModalidade;
+
+                  const podeMatricular = temVagaNaTurma && temVagaNaModalidade;
+
+                  return (
+                    <div key={f.id} style={{ fontSize: 13, padding: "8px 0", borderTop: "1px solid var(--border-light)", color: "var(--text-primary)" }}>
+                      <div>{f.modalidadeNome} — {f.turmaNome} — <strong>{f.posicao}º lugar</strong></div>
+                      {podeMatricular && (
+                        <button
+                          onClick={() => handleMatricularDaFila(f)}
+                          style={{ marginTop: 4, fontSize: 12, fontWeight: 700, border: "none", background: "var(--color-success)", color: "#fff", borderRadius: 6, padding: "4px 10px", cursor: "pointer" }}
+                        >
+                          Vaga disponível! Matricular
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
 
               <div style={{ gridColumn: "1 / -1" }}>

@@ -33,6 +33,48 @@ const DIA_LABEL: Record<string, string> = {
 
 const ORDEM_DIA = ["seg", "ter", "qua", "qui", "sex", "sab"];
 
+function ModalAviso({
+  titulo,
+  children,
+  onFechar,
+}: {
+  titulo: string;
+  children: React.ReactNode;
+  onFechar: () => void;
+}) {
+  return (
+    <div
+      onClick={onFechar}
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(0,0,0,0.5)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 4000,
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: "var(--background-primary)",
+          borderRadius: 12,
+          padding: 24,
+          width: "90vw",
+          maxWidth: 420,
+          boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
+        }}
+      >
+        <p style={{ fontWeight: 700, fontSize: 16, marginBottom: 16, color: "var(--text-primary)" }}>
+          {titulo}
+        </p>
+        {children}
+      </div>
+    </div>
+  );
+}
+
 export default function ModalidadeTurmasPage() {
   const { modalidadeId } = useParams<{ modalidadeId: string }>();
   const navigate = useNavigate();
@@ -47,6 +89,15 @@ const [todasModalidades, setTodasModalidades] = useState<Modalidade[]>([]);
   const [selecionados, setSelecionados] = useState<Record<string, string[]>>({});
   const [associadoFilasAberto, setAssociadoFilasAberto] = useState<{ id: string; nome: string } | null>(null);
   const [decisaoTurmaId, setDecisaoTurmaId] = useState<string | null>(null);
+  const [modalRemocao, setModalRemocao] = useState<{
+    associadoId: string;
+    matriculaId: string;
+    associadoNome: string;
+    turmaId: string;
+    turmaNome: string;
+    modalidadeId: string;
+    modalidadeNome: string;
+  } | null>(null);
   const [outrasTurmasAberto, setOutrasTurmasAberto] = useState(false);
   const [inserindoTurmaId, setInserindoTurmaId] = useState<string | null>(null);
   const [processandoDecisao, setProcessandoDecisao] = useState(false);
@@ -109,14 +160,31 @@ const [todasModalidades, setTodasModalidades] = useState<Modalidade[]>([]);
     await recarregarAssociados();
   }
 
-  async function handleRemoverAluno(associadoId: string, matriculaId: string, nome: string) {
-  if (!window.confirm(`Remover ${nome.toUpperCase()} da turma?`)) return;
-  await associadosService.cancelarMatricula(associadoId, matriculaId);
+  async function handleRetirarDefinitivamente() {
+  if (!modalRemocao) return;
+  await associadosService.cancelarMatricula(modalRemocao.associadoId, modalRemocao.matriculaId);
   await recarregarAssociados();
+  setModalRemocao(null);
+}
+
+async function handleVoltarParaFila() {
+  if (!modalRemocao) return;
+  await associadosService.cancelarMatricula(modalRemocao.associadoId, modalRemocao.matriculaId);
+  await listaEsperaService.entrarNaFila({
+    associadoId: modalRemocao.associadoId,
+    associadoNome: modalRemocao.associadoNome,
+    turmaId: modalRemocao.turmaId,
+    turmaNome: modalRemocao.turmaNome,
+    modalidadeId: modalRemocao.modalidadeId,
+    modalidadeNome: modalRemocao.modalidadeNome,
+  });
+  await recarregarAssociados();
+  await recarregarFilas();
+  setModalRemocao(null);
 }
 
 async function handleEditarObservacaoFila(entradaId: string, valorAtual: string) {
-    const novo = window.prompt("Observa��o:", valorAtual);
+    const novo = window.prompt("Observa��o:", valorAtual);
     if (novo === null) return;
     await listaEsperaService.atualizarObservacao(entradaId, novo);
     await recarregarFilas();
@@ -334,7 +402,17 @@ async function handleEditarObservacaoFila(entradaId: string, valorAtual: string)
             <td style={{ padding: "8px" }}>{associado.nome.toUpperCase()}</td>
             <td style={{ padding: "8px" }}>
               <button
-                onClick={() => handleRemoverAluno(associado.id, matricula!.id, associado.nome)}
+                onClick={() =>
+                  setModalRemocao({
+                    associadoId: associado.id,
+                    matriculaId: matricula!.id,
+                    associadoNome: associado.nome,
+                    turmaId: turma.id,
+                    turmaNome: `${DIA_LABEL[turma.dia]} ${turma.horario}`,
+                    modalidadeId: turma.modalidadeId,
+                    modalidadeNome: modalidade.nome,
+                  })
+                }
                 style={{ fontSize: 12, border: "none", borderRadius: 6, padding: "2px 8px", background: "var(--color-danger)", color: "#fff", cursor: "pointer" }}
                 title="Remover da turma"
               >✕</button>
@@ -714,6 +792,21 @@ async function handleEditarObservacaoFila(entradaId: string, valorAtual: string)
             </td>
             <td style={{ padding: "8px" }}>
   {entrada.associadoNome.toUpperCase()}
+  {(turma.limiteVagas ?? 10) - matriculados.length > 0 && (
+    <span
+      style={{
+        marginLeft: 6,
+        fontSize: 11,
+        fontWeight: 700,
+        color: "#166534",
+        background: "#dcfce7",
+        padding: "1px 6px",
+        borderRadius: 999,
+      }}
+    >
+      vaga disponível!
+    </span>
+  )}
   {(() => {
   const qtdFilas = filas.filter((f) => f.associadoId === entrada.associadoId).length;
   return qtdFilas > 1 ? (
@@ -771,42 +864,115 @@ async function handleEditarObservacaoFila(entradaId: string, valorAtual: string)
         onClick={() => setDecisaoTurmaId(turma.id)}
         style={{ marginTop: 10, fontSize: 12, fontWeight: 600, border: "none", borderRadius: 6, padding: "6px 12px", background: "var(--color-primary)", color: "#fff", cursor: "pointer" }}
       >
-        Liberar vaga para selecionado(s)
+        Confirmar matrícula
       </button>
     )}
 
-    {decisaoTurmaId === turma.id && (
-      <div style={{ marginTop: 10, border: "1px solid var(--color-primary)", borderRadius: 8, padding: 12, background: "var(--background-tertiary)" }}>
-        <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, color: "var(--text-primary)" }}>
-          Colocar quem na vaga?
-        </p>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
-          {filaDaTurma
-            .filter((e) => (selecionados[turma.id] ?? []).includes(e.id))
-            .map((e) => (
-              <button
-                key={e.id}
-                disabled={processandoDecisao}
-                onClick={() => handleEscolherParaVaga(turma.id, e)}
-                style={{ fontSize: 12, border: "1px solid var(--color-primary)", borderRadius: 6, padding: "6px 12px", background: "var(--background-primary)", color: "var(--color-primary)", cursor: "pointer" }}
-              >
-                {e.associadoNome}
-              </button>
-            ))}
-        </div>
-        <button
-          onClick={() => setDecisaoTurmaId(null)}
-          style={{ fontSize: 12, border: "1px solid var(--border-default)", borderRadius: 6, padding: "6px 12px", background: "transparent", color: "var(--text-secondary)", cursor: "pointer" }}
+    {decisaoTurmaId === turma.id && (() => {
+      const vagasDisponiveis = (turma.limiteVagas ?? 10) - matriculados.length;
+      const selecionadosDaTurma = filaDaTurma.filter((e) => (selecionados[turma.id] ?? []).includes(e.id));
+      const cabeTodosDeUmaVez = selecionadosDaTurma.length <= vagasDisponiveis;
+
+      return (
+        <ModalAviso
+          titulo={
+            cabeTodosDeUmaVez
+              ? `Matricular ${selecionadosDaTurma.length} pessoa(s) na turma?`
+              : `Só há ${vagasDisponiveis} vaga(s) para ${selecionadosDaTurma.length} selecionados. Quem vai para a turma?`
+          }
+          onFechar={() => setDecisaoTurmaId(null)}
         >
-          Cancelar
-        </button>
-      </div>
-    )}
+          {cabeTodosDeUmaVez ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <button
+                disabled={processandoDecisao}
+                onClick={async () => {
+                  setProcessandoDecisao(true);
+                  try {
+                    for (const entrada of selecionadosDaTurma) {
+                      await associadosService.matricular(entrada.associadoId, {
+                        turmaId: entrada.turmaId,
+                        turmaNome: entrada.turmaNome,
+                        modalidadeId: entrada.modalidadeId,
+                        modalidadeNome: entrada.modalidadeNome,
+                      });
+                      await listaEsperaService.sairDaFila(entrada.id);
+                    }
+                    await recarregarAssociados();
+                    await recarregarFilas();
+                    setSelecionados((prev) => ({ ...prev, [turma.id]: [] }));
+                    setDecisaoTurmaId(null);
+                  } finally {
+                    setProcessandoDecisao(false);
+                  }
+                }}
+                style={{ fontSize: 13, fontWeight: 600, border: "none", borderRadius: 8, padding: "10px 14px", background: "var(--color-primary)", color: "#fff", cursor: "pointer" }}
+              >
+                Confirmar
+              </button>
+              <button
+                onClick={() => setDecisaoTurmaId(null)}
+                style={{ fontSize: 13, fontWeight: 600, border: "1px solid var(--border-default)", borderRadius: 8, padding: "10px 14px", background: "transparent", color: "var(--text-secondary)", cursor: "pointer" }}
+              >
+                Cancelar
+              </button>
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {selecionadosDaTurma.map((e) => (
+                <button
+                  key={e.id}
+                  disabled={processandoDecisao}
+                  onClick={() => handleEscolherParaVaga(turma.id, e)}
+                  style={{ fontSize: 13, fontWeight: 600, border: "1px solid var(--color-primary)", borderRadius: 8, padding: "10px 14px", background: "var(--background-primary)", color: "var(--color-primary)", cursor: "pointer" }}
+                >
+                  {e.associadoNome}
+                </button>
+              ))}
+              <button
+                onClick={() => setDecisaoTurmaId(null)}
+                style={{ fontSize: 13, fontWeight: 600, border: "1px solid var(--border-default)", borderRadius: 8, padding: "10px 14px", background: "transparent", color: "var(--text-secondary)", cursor: "pointer" }}
+              >
+                Cancelar
+              </button>
+            </div>
+          )}
+        </ModalAviso>
+      );
+    })()}
   </div>
 </div>
           </div>
         );
       })}
+
+      {modalRemocao && (
+        <ModalAviso
+          titulo={`O que fazer com ${modalRemocao.associadoNome.toUpperCase()}?`}
+          onFechar={() => setModalRemocao(null)}
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <button
+              onClick={handleRetirarDefinitivamente}
+              style={{ fontSize: 13, fontWeight: 600, border: "none", borderRadius: 8, padding: "10px 14px", background: "var(--color-danger)", color: "#fff", cursor: "pointer" }}
+            >
+              Retirar da turma definitivamente
+            </button>
+            <button
+              onClick={handleVoltarParaFila}
+              style={{ fontSize: 13, fontWeight: 600, border: "none", borderRadius: 8, padding: "10px 14px", background: "var(--color-primary)", color: "#fff", cursor: "pointer" }}
+            >
+              Voltar para a lista de espera
+            </button>
+            <button
+              onClick={() => setModalRemocao(null)}
+              style={{ fontSize: 13, fontWeight: 600, border: "1px solid var(--border-default)", borderRadius: 8, padding: "10px 14px", background: "transparent", color: "var(--text-secondary)", cursor: "pointer" }}
+            >
+              Cancelar
+            </button>
+          </div>
+        </ModalAviso>
+      )}
     </div>
   );
 }
