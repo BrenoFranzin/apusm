@@ -272,7 +272,7 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
         onClick={(e) => e.stopPropagation()}
         style={{
           background: "var(--background-primary)", borderRadius: 16,
-          width: "95vw", maxWidth: 1100, height: "90vh",
+          width: "95vw", maxWidth: 1200, height: "92vh",
           display: "flex", flexDirection: "column", overflow: "hidden",
         }}
       >
@@ -360,13 +360,23 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
           {selecionado && (
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
               <div style={{ gridColumn: "1 / -1" }}>
-                <p style={{ fontWeight: 700, fontSize: 18, margin: 0, color: "var(--text-primary)" }}>{selecionado.nome}</p>
-                <p style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 12 }}>
-                  {selecionado.telefone || "Sem telefone"} — Status: {selecionado.status}
-                </p>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+                  <div>
+                    <p style={{ fontWeight: 700, fontSize: 18, margin: 0, color: "var(--text-primary)" }}>{selecionado.nome}</p>
+                    <p style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 12 }}>
+                      {selecionado.telefone || "Sem telefone"} - Status: {selecionado.status}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setModalHistoricoAberto(true)}
+                    style={{ flexShrink: 0, fontSize: 13, fontWeight: 600, color: "var(--color-primary)", border: "1px solid var(--color-primary)", background: "transparent", borderRadius: 6, padding: "6px 12px", cursor: "pointer" }}
+                  >
+                    Historico ({historicoOrdenado.length})
+                  </button>
+                </div>
 
                 <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", marginBottom: 8 }}>
-                  Inserir em várias turmas de uma vez
+                  Inserir em varias turmas de uma vez
                 </p>
 
                 <div style={{ border: "1px solid var(--border-default)", borderRadius: 8, maxHeight: 260, overflowY: "auto", marginBottom: 8 }}>
@@ -469,25 +479,27 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
                   })}
                 </div>
 
-                <button
-                  onClick={handleInserirEmLote}
-                  disabled={turmasEscolhidas.length === 0 || inserindo}
-                  style={{
-                    padding: "10px 18px", borderRadius: 8, border: "none",
-                    background: turmasEscolhidas.length === 0 ? "var(--text-disabled)" : "var(--color-primary)",
-                    color: "#fff", cursor: turmasEscolhidas.length === 0 ? "not-allowed" : "pointer", fontWeight: 600,
-                  }}
-                >
-                  {inserindo ? "Inserindo..." : `Inserir em ${turmasEscolhidas.length} turma(s)`}
-                </button>
+                <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                  <button
+                    onClick={handleInserirEmLote}
+                    disabled={turmasEscolhidas.length === 0 || inserindo}
+                    style={{
+                      padding: "10px 18px", borderRadius: 8, border: "none", flexShrink: 0,
+                      background: turmasEscolhidas.length === 0 ? "var(--text-disabled)" : "var(--color-primary)",
+                      color: "#fff", cursor: turmasEscolhidas.length === 0 ? "not-allowed" : "pointer", fontWeight: 600,
+                    }}
+                  >
+                    {inserindo ? "Inserindo..." : `Inserir em ${turmasEscolhidas.length} turma(s)`}
+                  </button>
 
-                {aviso.length > 0 && (
-  <div style={{ marginTop: 8 }}>
-    {aviso.map((linha, i) => (
-      <p key={i} style={{ fontSize: 13, color: "var(--color-primary)", margin: "2px 0" }}>{linha}</p>
-    ))}
-  </div>
-)}
+                  {aviso.length > 0 && (
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      {aviso.map((linha, i) => (
+                        <p key={i} style={{ fontSize: 13, color: "var(--color-primary)", margin: "2px 0" }}>{linha}</p>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div style={{ border: "1px solid var(--border-default)", borderRadius: 8, padding: 12 }}>
@@ -540,14 +552,6 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
                 })}
               </div>
 
-              <div style={{ gridColumn: "1 / -1" }}>
-                <button
-                  onClick={() => setModalHistoricoAberto(true)}
-                  style={{ fontSize: 13, fontWeight: 600, color: "var(--color-primary)", border: "1px solid var(--color-primary)", background: "transparent", borderRadius: 6, padding: "6px 12px", cursor: "pointer" }}
-                >
-                  📋 Ver histórico de modificações ({historicoOrdenado.length})
-                </button>
-              </div>
             </div>
           )}
         </div>
@@ -556,31 +560,59 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
       {modalHistoricoAberto && (
         <div
           onClick={() => setModalHistoricoAberto(false)}
-          style={{ fontSize: 13, fontWeight: 700, color: "#fff", border: "none", background: "var(--color-success)", borderRadius: 8, padding: "10px 16px", cursor: "pointer" }}
+          style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 4000, padding: 16 }}
         >
           <div
             onClick={(e) => e.stopPropagation()}
             style={{
               background: "var(--background-primary)", borderRadius: 12, padding: 20,
-              width: "90vw", maxWidth: 560, maxHeight: "75vh", overflowY: "auto",
+              width: "90vw", maxWidth: 672, maxHeight: "80vh", display: "flex", flexDirection: "column",
             }}
           >
             <p style={{ fontWeight: 700, fontSize: 16, marginBottom: 12, color: "var(--text-primary)" }}>
-              Histórico de modificações
+              Historico de modificacoes
             </p>
 
             {historicoOrdenado.length === 0 && (
-              <p style={{ fontSize: 13, color: "var(--text-secondary)" }}>Nenhuma modificação registrada.</p>
+              <p style={{ fontSize: 13, color: "var(--text-secondary)" }}>Nenhuma modificacao registrada.</p>
             )}
 
-            {historicoOrdenado.map((h: any, i: number) => (
-              <div key={i} style={{ fontSize: 13, padding: "8px 0", borderTop: i > 0 ? "1px solid var(--border-light)" : "none", color: "var(--text-primary)" }}>
-                <p style={{ margin: 0, fontWeight: 500 }}>{h.descricao ?? h.acao ?? "Modificação"}</p>
-                <p style={{ margin: 0, fontSize: 12, color: "var(--text-secondary)" }}>
-                  {new Date(h.data).toLocaleString("pt-BR")}
-                </p>
-              </div>
-            ))}
+            <div style={{ overflowY: "auto", display: "flex", flexDirection: "column", gap: 6 }}>
+              {historicoOrdenado.map((h: any, i: number) => {
+                const desc = h.descricao ?? h.acao ?? "Modificacao";
+                const corModalidade = modalidades.find((m) => desc.includes(m.nome))?.cor ?? "var(--border-default)";
+
+                let rotulo = "Atualizacao";
+                let corTexto = "var(--text-secondary)";
+                let corFundo = "var(--background-tertiary)";
+                if (desc.includes("Cancelou")) {
+                  rotulo = "Cancelado"; corTexto = "#dc2626"; corFundo = "rgba(220,38,38,0.12)";
+                } else if (desc.includes("lista de espera")) {
+                  rotulo = "Entrou na fila"; corTexto = "#d97706"; corFundo = "rgba(217,119,6,0.15)";
+                } else if (desc.includes("Matriculado")) {
+                  rotulo = "Matriculado"; corTexto = "#16a34a"; corFundo = "rgba(34,197,94,0.15)";
+                } else if (desc.includes("Cadastro")) {
+                  rotulo = "Cadastro"; corTexto = "var(--text-secondary)"; corFundo = "var(--background-tertiary)";
+                }
+
+                return (
+                  <div key={i} style={{ display: "grid", gridTemplateColumns: "4px 1fr auto", gap: 10, alignItems: "center", padding: "10px 8px", borderRadius: 8, background: "var(--background-secondary)" }}>
+                    <div style={{ alignSelf: "stretch", borderRadius: 4, background: corModalidade }} />
+                    <div>
+                      <span style={{ display: "inline-block", fontSize: 11, fontWeight: 700, color: corTexto, background: corFundo, borderRadius: 999, padding: "2px 8px", marginBottom: 4 }}>
+                        {rotulo}
+                      </span>
+                      <p style={{ margin: 0, fontSize: 13, color: "var(--text-primary)" }}>{desc}</p>
+                    </div>
+                    <div style={{ fontSize: 12, color: "var(--text-secondary)", whiteSpace: "nowrap", textAlign: "right" }}>
+                      {new Date(h.data).toLocaleDateString("pt-BR")}
+                      <br />
+                      {new Date(h.data).toLocaleTimeString("pt-BR")}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
 
             <button
               onClick={() => setModalHistoricoAberto(false)}

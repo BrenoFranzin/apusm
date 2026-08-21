@@ -36,7 +36,7 @@ function toAssociado(row: any): Associado {
 
 class AssociadosService {
   async listar(): Promise<Associado[]> {
-    const { data, error } = await supabase.from("associados").select("id, nome, telefone, status, data_cadastro, matriculas, frequencias").order("nome");
+    const { data, error } = await supabase.from("associados").select("id, nome, telefone, status, data_cadastro, matriculas, frequencias, historico").order("nome");
     if (error) { console.error(error); return []; }
     return (data ?? []).map(toAssociado);
   }
@@ -268,7 +268,7 @@ class AssociadosService {
 
     const { data, error } = await supabase
       .from("associados")
-      .select("id, nome, telefone, status, data_cadastro, matriculas, frequencias")
+      .select("id, nome, telefone, status, data_cadastro, matriculas, frequencias, historico")
       .or(`nome.ilike.%${escapado}%,telefone.ilike.%${escapado}%`)
       .order("nome");
     if (error) { console.error(error); return []; }
