@@ -604,7 +604,7 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
 
       {modalHistoricoAberto && (
         <div
-          onClick={() => setModalHistoricoAberto(false)}
+          onClick={(e) => { e.stopPropagation(); setModalHistoricoAberto(false); }}
           style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 4000, padding: 16 }}
         >
           <div
@@ -660,7 +660,7 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
             </div>
 
             <button
-              onClick={() => setModalHistoricoAberto(false)}
+              onClick={(e) => { e.stopPropagation(); setModalHistoricoAberto(false); }}
               style={{ marginTop: 14, width: "100%", fontSize: 13, border: "1px solid var(--border-default)", borderRadius: 8, padding: "8px 12px", background: "transparent", color: "var(--text-secondary)", cursor: "pointer" }}
             >
               Fechar
