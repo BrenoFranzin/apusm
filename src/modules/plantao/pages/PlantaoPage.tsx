@@ -280,22 +280,22 @@ useEffect(() => {
                               }}
                               title={emAula ? "Também está dando aula neste horário. Clique para remover do plantão." : "Clique para remover"}
                               style={{
-                                position: "relative",
-                                display: "inline-block",
-                                width: "fit-content",
-                                background: emAula ? "#F97316" : corInstrutor(e.instrutorId),
-                                color: "#fff",
-                                borderRadius: 999,
-                                padding: emAula ? "2px 16px 2px 8px" : "2px 8px",
-                                fontSize: 11,
-                                whiteSpace: "nowrap",
-                                textAlign: "center",
-                                cursor: "pointer",
-                                border: "1px solid rgba(255,255,255,0.35)",
-                                boxShadow: emAula
-                                ? "0 0 0 2px #fff, 0 0 0 3.5px " + corInstrutor(e.instrutorId)
-                                : "0 0 0 1px rgba(0,0,0,0.2)",
-                              }}
+  position: "relative",
+  display: "inline-block",
+  width: "fit-content",
+  background: corInstrutor(e.instrutorId),
+  color: "#fff",
+  borderRadius: 999,
+  padding: "2px 8px",
+  fontSize: 11,
+  whiteSpace: "nowrap",
+  textAlign: "center",
+  cursor: "pointer",
+  border: emAula ? "2px solid #fff" : "1px solid rgba(255,255,255,0.35)",
+  boxShadow: emAula
+    ? `0 0 0 2px ${corInstrutor(e.instrutorId)}`
+    : "0 0 0 1px rgba(0,0,0,0.2)",
+}}
                             >
                               {nomeInstrutor(e.instrutorId)}                        
                             </span>

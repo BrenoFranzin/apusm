@@ -37,6 +37,7 @@ const COR_LEGENDA = {
   evento: "#c084fc",
 };
 
+
 function calcularQtdSemanas(ano: number, mes: number): number {
   const primeiroDia = new Date(ano, mes, 1);
   const ultimoDia = new Date(ano, mes + 1, 0);
@@ -405,6 +406,10 @@ function CardInstrutor({ inst, linhas }: { inst: any; linhas: LinhaTerceirizado[
 
   const modalidadesUnicas = Array.from(new Set(linhas.map((l) => l.modalidade)));
   const circuloPorModalidade: Record<string, string> = {};
+  function ehModoEscuro() {
+  return document.documentElement.classList.contains("dark");
+}
+
   modalidadesUnicas.forEach((m, i) => { circuloPorModalidade[m] = CIRCULOS_MODALIDADE[i % CIRCULOS_MODALIDADE.length]; });
 
   return (

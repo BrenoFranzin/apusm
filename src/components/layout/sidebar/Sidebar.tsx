@@ -29,17 +29,20 @@ export function Sidebar() {
 
   return (
     <aside
-      style={{
-        width: 260,
-        minHeight: "100vh",
-        background: "linear-gradient(180deg, #0F766E 0%, #0B4F49 100%)",
-        color: "#fff",
-        padding: "24px 16px",
-        boxShadow: "4px 0 20px rgba(0,0,0,0.15)",
-        position: "relative",
-        zIndex: 200,
-      }}
-    >
+  style={{
+    width: 260,
+    height: "100vh",
+    background: "linear-gradient(180deg, #0F766E 0%, #0B4F49 100%)",
+    color: "#fff",
+    padding: "24px 16px",
+    boxShadow: "4px 0 20px rgba(0,0,0,0.15)",
+    position: "sticky",
+    top: 0,
+    alignSelf: "flex-start",
+    overflowY: "auto",
+    zIndex: 200,
+  }}
+>
       <h2
         style={{
           fontSize: 24,

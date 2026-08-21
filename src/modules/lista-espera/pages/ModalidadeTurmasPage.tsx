@@ -190,6 +190,12 @@ async function handleEditarObservacaoFila(entradaId: string, valorAtual: string)
     await recarregarFilas();
   }
 
+  async function handleRemoverDaFila(entradaId: string, nomeAssociado: string) {
+  if (!window.confirm(`Remover ${nomeAssociado.toUpperCase()} da lista de espera?`)) return;
+  await listaEsperaService.sairDaFila(entradaId);
+  await recarregarFilas();
+}
+
   
   function toggleSelecionado(turmaId: string, entradaId: string) {
     setSelecionados((prev) => {
@@ -771,11 +777,12 @@ async function handleEditarObservacaoFila(entradaId: string, valorAtual: string)
     <table style={{ width: "100%", fontSize: 16, borderCollapse: "separate", borderSpacing: 0, borderRadius: 10, overflow: "hidden", border: "1px solid var(--border-default)" }}>
       <thead>
         <tr style={{ textAlign: "left", background: "var(--color-primary)" }}>
-          <th style={{ padding: "8px" }}></th>
-          <th style={{ padding: "8px", color: "#fff", fontWeight: 700, fontSize: 16 }}>#</th>
-          <th style={{ padding: "8px", color: "#fff", fontWeight: 700, fontSize: 16 }}>Nome</th>
-          <th style={{ padding: "8px", color: "#fff", fontWeight: 700, fontSize: 16 }}>Obs.</th>
-        </tr>
+  <th style={{ padding: "8px" }}></th>
+  <th style={{ padding: "8px", color: "#fff", fontWeight: 700, fontSize: 16 }}>#</th>
+  <th style={{ padding: "8px", color: "#fff", fontWeight: 700, fontSize: 16 }}>Nome</th>
+  <th style={{ padding: "8px", color: "#fff", fontWeight: 700, fontSize: 16 }}>Obs.</th>
+  <th style={{ padding: "8px" }}></th>
+</tr>
       </thead>
       <tbody>
         {filaDaTurma.map((entrada) => (
@@ -847,11 +854,29 @@ async function handleEditarObservacaoFila(entradaId: string, valorAtual: string)
                 {entrada.observacao ? "📝" : "+"}
               </button>
             </td>
+            <td style={{ padding: "8px" }}>
+  <button
+    onClick={() => handleRemoverDaFila(entrada.id, entrada.associadoNome)}
+    style={{
+      fontSize: 12,
+      border: "none",
+      borderRadius: 6,
+      padding: "2px 8px",
+      background: "var(--color-danger)",
+      color: "#fff",
+      cursor: "pointer",
+    }}
+    title="Remover da lista de espera"
+  >
+    ✕
+  </button>
+</td>
+
           </tr>
         ))}
         {filaDaTurma.length === 0 && (
           <tr>
-            <td colSpan={4} style={{ padding: "10px 8px", color: "var(--text-secondary)", textAlign: "center" }}>
+            <td colSpan={5} style={{ padding: "10px 8px", color: "var(--text-secondary)", textAlign: "center" }}>
               Ninguém na fila.
             </td>
           </tr>
