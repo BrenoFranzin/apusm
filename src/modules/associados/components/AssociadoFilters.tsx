@@ -2,7 +2,8 @@
 // APUSM SaaS
 // Módulo: Associados
 // Arquivo: AssociadoFilters.tsx
-// Botões de filtro com cor por status
+// Botões de filtro com cor por status (usa variáveis de tema —
+// funciona certo no modo escuro)
 // ======================================================
 
 interface Props {
@@ -10,12 +11,12 @@ interface Props {
   onChange: (valor: string) => void;
 }
 
-const CORES: Record<string, { bg: string; color: string; borderAtivo: string }> = {
-  TODOS:     { bg: "#111827", color: "#fff",    borderAtivo: "#111827" },
-  ATIVO:     { bg: "#dcfce7", color: "#166534", borderAtivo: "#16a34a" },
-  PENDENTE:  { bg: "#fef9c3", color: "#854d0e", borderAtivo: "#ca8a04" },
-  INATIVO:   { bg: "#f3f4f6", color: "#4b5563", borderAtivo: "#9ca3af" },
-  BLOQUEADO: { bg: "#fee2e2", color: "#991b1b", borderAtivo: "#dc2626" },
+const CORES: Record<string, { bg: string; color: string; borda: string }> = {
+  TODOS:     { bg: "var(--text-primary)",        color: "var(--background-primary)", borda: "var(--text-primary)" },
+  ATIVO:     { bg: "var(--color-success-light)", color: "var(--color-success)",       borda: "var(--color-success)" },
+  PENDENTE:  { bg: "var(--color-warning-light)", color: "var(--color-warning)",       borda: "var(--color-warning)" },
+  INATIVO:   { bg: "var(--background-tertiary)", color: "var(--text-secondary)",      borda: "var(--border-strong)" },
+  BLOQUEADO: { bg: "var(--color-danger-light)",  color: "var(--color-danger)",        borda: "var(--color-danger)" },
 };
 
 export default function AssociadoFilters({ valor, onChange }: Props) {
@@ -33,12 +34,15 @@ export default function AssociadoFilters({ valor, onChange }: Props) {
             onClick={() => onChange(filtro)}
             style={{
               padding: "8px 16px",
-              borderRadius: 8,
-              fontSize: 13,
-              fontWeight: 500,
-              border: ativo ? `1.5px solid ${cor.borderAtivo}` : "1px solid #e5e7eb",
-              background: ativo ? cor.bg : "#fff",
-              color: ativo ? cor.color : "#4b5563",
+              borderRadius: 999,
+              fontSize: 12.5,
+              fontWeight: 600,
+              letterSpacing: 0.2,
+              border: ativo ? `1.5px solid ${cor.borda}` : "1px solid var(--border-default)",
+              background: ativo ? cor.bg : "var(--background-primary)",
+              color: ativo ? cor.color : "var(--text-secondary)",
+              cursor: "pointer",
+              transition: "all 0.15s ease",
             }}
           >
             {filtro}
