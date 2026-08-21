@@ -115,6 +115,18 @@ class AssociadosService {
     }, 0);
   }
 
+  async contarMatriculasPorTurmaEmLote(): Promise<Record<string, number>> {
+    const lista = await this.listar();
+    const contagens: Record<string, number> = {};
+    for (const associado of lista) {
+      for (const m of associado.matriculas) {
+        if (m.status === "CANCELADA") continue;
+        contagens[m.turmaId] = (contagens[m.turmaId] ?? 0) + 1;
+      }
+    }
+    return contagens;
+  }
+
   async matricular(
     associadoId: string,
     dadosMatricula: { turmaId: string; turmaNome: string; modalidadeId: string; modalidadeNome: string }
