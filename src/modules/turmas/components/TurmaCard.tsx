@@ -2,7 +2,7 @@
 // APUSM SaaS — Módulo Turmas
 // Arquivo: TurmaCard.tsx
 // ======================================================
-
+import { User, DoorOpen, Trash2 } from "lucide-react";
 import type { Turma } from "../types/turma.types";
 import type { Modalidade } from "@/modules/modalidades/types/modalidade.types";
 import type { Instrutor } from "@/modules/instrutores/types/instrutor.types";
@@ -25,13 +25,14 @@ export function TurmaCard({ turma, modalidade, instrutor, onExcluir }: Props) {
   return (
     <div
       style={{
-        background: "var(--color-danger)",
+        background: "var(--background-primary)",
         border: "1px solid var(--border-default)",
-        borderRadius: 12,
+        borderRadius: "var(--radius-md)",
         padding: 14,
         display: "flex",
         alignItems: "center",
         gap: 14,
+        boxShadow: "var(--shadow-sm)",
       }}
     >
       <div
@@ -40,7 +41,7 @@ export function TurmaCard({ turma, modalidade, instrutor, onExcluir }: Props) {
           textAlign: "center",
           background: cor,
           color: "#fff",
-          borderRadius: 8,
+          borderRadius: "var(--radius-sm)",
           padding: "8px 6px",
           fontWeight: 700,
           fontSize: 14,
@@ -51,11 +52,16 @@ export function TurmaCard({ turma, modalidade, instrutor, onExcluir }: Props) {
       </div>
 
       <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ fontWeight: 500, fontSize: 14, margin: 0, color: "var(--text-primary)" }}>
+        <p style={{ fontWeight: 600, fontSize: 14, margin: 0, color: "var(--text-primary)" }}>
           {modalidade ? `${modalidade.icone} ${modalidade.nome}` : "Modalidade removida"}
         </p>
-        <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: "3px 0 0" }}>
-          ðŸ‘¤ {instrutor?.nome ?? "Sem instrutor"} Â· ðŸšª {turma.sala}
+        <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: "4px 0 0", display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <User size={12} /> {instrutor?.nome ?? "Sem instrutor"}
+          </span>
+          <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <DoorOpen size={12} /> {turma.sala}
+          </span>
         </p>
       </div>
 
@@ -67,17 +73,21 @@ export function TurmaCard({ turma, modalidade, instrutor, onExcluir }: Props) {
             );
             if (confirmar) onExcluir(turma.id);
           }}
+          title="Excluir turma"
           style={{
-            fontSize: 12,
-            color: "#ffffff",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: 32,
+            height: 32,
             border: "none",
-            borderRadius: 6,
-            padding: "5px 10px",
-            background: "var(--color-danger)",
+            borderRadius: "var(--radius-sm)",
+            background: "var(--color-danger-light)",
             flexShrink: 0,
+            cursor: "pointer",
           }}
         >
-          ðŸ—‘ï¸
+          <Trash2 size={15} color="var(--color-danger)" />
         </button>
       )}
     </div>
@@ -85,4 +95,3 @@ export function TurmaCard({ turma, modalidade, instrutor, onExcluir }: Props) {
 }
 
 export default TurmaCard;
-

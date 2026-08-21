@@ -2,7 +2,7 @@
 // APUSM SaaS — Módulo Turmas
 // Arquivo: TurmaForm.tsx
 // ======================================================
-
+import type { CSSProperties } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -27,14 +27,21 @@ interface Props {
   mostrarLimites?: boolean;
 }
 
-const selectStyle: React.CSSProperties = {
+const selectStyle: CSSProperties = {
   width: "100%",
   margin: "4px 0 12px",
-  padding: 8,
+  padding: 9,
   background: "var(--background-secondary)",
   color: "var(--text-primary)",
-  border: "2px solid var(--border-strong)",
-  borderRadius: 6,
+  border: "1.5px solid var(--border-default)",
+  borderRadius: "var(--radius-sm)",
+  fontSize: 14,
+};
+
+const labelStyle: CSSProperties = {
+  fontSize: 12.5,
+  fontWeight: 600,
+  color: "var(--text-secondary)",
 };
 
 export default function TurmaForm({ modalidades, instrutores, salas, onSubmit, mostrarLimites = true }: Props) {
@@ -63,18 +70,20 @@ export default function TurmaForm({ modalidades, instrutores, salas, onSubmit, m
     <form
       onSubmit={handleSubmit(onSubmit)}
       style={{
-        background: "var(--background-secondary)",
-        border: "2px solid var(--color-primary)",
-        borderRadius: 12,
+        background: "var(--background-primary)",
+        border: "1px solid var(--border-default)",
+        borderRadius: "var(--radius-lg)",
         padding: "1.5rem",
         maxWidth: 420,
         color: "var(--text-primary)",
-        boxShadow: "0 12px 40px rgba(0,0,0,0.35)",
+        boxShadow: "var(--shadow-lg)",
       }}
     >
-      <p style={{ fontWeight: 500, fontSize: 14, margin: "0 0 12px", color: "var(--text-primary)" }}>Nova turma</p>
+      <p style={{ fontWeight: 700, fontSize: 15, margin: "0 0 16px", color: "var(--page-heading)" }}>
+        Nova turma
+      </p>
 
-      <label style={{ fontSize: 12, color: "var(--text-secondary)" }}>Modalidade</label>
+      <label style={labelStyle}>Modalidade</label>
       <select {...register("modalidadeId")} style={selectStyle}>
         {modalidades.map((m) => (
           <option key={m.id} value={m.id}>{m.icone} {m.nome}</option>
@@ -87,7 +96,7 @@ export default function TurmaForm({ modalidades, instrutores, salas, onSubmit, m
         </p>
       )}
 
-      <label style={{ fontSize: 12, color: "var(--text-secondary)" }}>Instrutor</label>
+      <label style={labelStyle}>Instrutor</label>
       <select {...register("instrutorId")} style={selectStyle}>
         {instrutores.map((i) => (
           <option key={i.id} value={i.id}>{i.nome}</option>
@@ -95,17 +104,17 @@ export default function TurmaForm({ modalidades, instrutores, salas, onSubmit, m
       </select>
       <p style={{ color: "var(--color-danger)", fontSize: 12, margin: "-8px 0 8px" }}>{errors.instrutorId?.message}</p>
 
-      <label style={{ fontSize: 12, color: "var(--text-secondary)" }}>Dia</label>
+      <label style={labelStyle}>Dia</label>
       <select {...register("dia")} style={selectStyle}>
         {DIAS.map((d) => (
           <option key={d.valor} value={d.valor}>{d.label}</option>
         ))}
       </select>
 
-      <label style={{ fontSize: 12, color: "var(--text-secondary)" }}>Horário</label>
+      <label style={labelStyle}>Horário</label>
       <input type="time" {...register("horario")} style={selectStyle} />
 
-      <label style={{ fontSize: 12, color: "var(--text-secondary)" }}>Sala</label>
+      <label style={labelStyle}>Sala</label>
       <select {...register("sala")} style={selectStyle}>
         <option value="" disabled>Selecione a sala</option>
         {salas.map((s) => (
@@ -113,24 +122,37 @@ export default function TurmaForm({ modalidades, instrutores, salas, onSubmit, m
         ))}
       </select>
 
-
-      <label style={{ fontSize: 12, color: "var(--text-secondary)" }}>Observação (opcional, aparece entre parênteses ao lado da modalidade na folha de presença)</label>
+      <label style={labelStyle}>
+        Observação (opcional, aparece entre parênteses ao lado da modalidade na folha de presença)
+      </label>
       <input type="text" placeholder="Ex: Até 3 anos" {...register("observacao")} style={selectStyle} />
 
       {mostrarLimites && (
-        
         <>
-          <label style={{ fontSize: 12, color: "var(--text-secondary)" }}>Limite de vagas na turma</label>
+          <label style={labelStyle}>Limite de vagas na turma</label>
           <input type="number" min={1} {...register("limiteVagas")} style={selectStyle} />
 
-          <label style={{ fontSize: 12, color: "var(--text-secondary)" }}>Linhas extras para novos alunos na folha de presenca</label>
-          <input type="number" min={0} {...register("limiteNovosAlunos")} style={{ ...selectStyle, margin: "4px 0 14px" }} />
+          <label style={labelStyle}>Linhas extras para novos alunos na folha de presença</label>
+          <input type="number" min={0} {...register("limiteNovosAlunos")} style={{ ...selectStyle, margin: "4px 0 16px" }} />
         </>
       )}
 
       <button
         type="submit"
-        style={{ width: "100%", background: "var(--color-primary)", color: "#fff", padding: 10, borderRadius: 8, border: "none" }}
+        style={{
+          width: "100%",
+          background: "var(--color-primary)",
+          color: "#fff",
+          padding: 11,
+          borderRadius: "var(--radius-md)",
+          border: "none",
+          fontWeight: 600,
+          fontSize: 14,
+          cursor: "pointer",
+          transition: "background 0.15s ease",
+        }}
+        onMouseEnter={(e) => (e.currentTarget.style.background = "var(--color-primary-hover)")}
+        onMouseLeave={(e) => (e.currentTarget.style.background = "var(--color-primary)")}
       >
         Salvar turma
       </button>

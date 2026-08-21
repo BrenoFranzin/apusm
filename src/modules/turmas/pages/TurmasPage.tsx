@@ -6,7 +6,7 @@
 // ======================================================
 
 import { useEffect, useState } from "react";
-
+import { Plus, Trash2 } from "lucide-react";
 import { useTurmas } from "../hooks/useTurmas";
 import TurmaForm from "../components/TurmaForm";
 import { useModalidades } from "@/modules/modalidades/hooks/useModalidades";
@@ -142,11 +142,25 @@ export default function TurmasPage() {
         </div>
 
         <button
-          onClick={() => setMostrarForm((v) => !v)}
-          className="bg-green-900 text-white px-5 py-3 rounded-lg"
-        >
-          {mostrarForm ? "Fechar" : "+ Nova turma"}
-        </button>
+  onClick={() => setMostrarForm((v) => !v)}
+  style={{
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    background: "var(--color-primary)",
+    color: "#fff",
+    border: "none",
+    padding: "11px 20px",
+    borderRadius: "var(--radius-md)",
+    fontSize: 14,
+    fontWeight: 600,
+    cursor: "pointer",
+    boxShadow: "var(--shadow-sm)",
+  }}
+>
+  <Plus size={17} />
+  {mostrarForm ? "Fechar" : "Nova turma"}
+</button>
       </div>
 
       {/* ===== Bloco de Turmas ===== */}
@@ -364,16 +378,17 @@ export default function TurmasPage() {
                       </td>
                       <td style={{ padding: "12px 8px" }}>
                         <button
-                          onClick={() => {
-                            const confirmar = window.confirm(
-                              `Excluir esta turma (${DIA_LABEL[turma.dia]} ${turma.horario})? Essa acao nao pode ser desfeita.`
-                            );
-                            if (confirmar) excluir(turma.id);
-                          }}
-                          style={{ fontSize: 12, fontWeight: 600, border: "none", borderRadius: 6, padding: "6px 12px", background: "var(--color-danger)", color: "#fff", cursor: "pointer" }}
-                        >
-                          Excluir
-                        </button>
+  onClick={() => {
+    const confirmar = window.confirm(
+      `Excluir esta turma (${DIA_LABEL[turma.dia]} ${turma.horario})? Essa ação não pode ser desfeita.`
+    );
+    if (confirmar) excluir(turma.id);
+  }}
+  style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, border: "none", borderRadius: "var(--radius-sm)", padding: "6px 12px", background: "var(--color-danger)", color: "#fff", cursor: "pointer" }}
+>
+  <Trash2 size={13} />
+  Excluir
+</button>
                       </td>
                     </tr>
                   );
