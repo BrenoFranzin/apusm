@@ -75,15 +75,7 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
     if (turmas.length === 0) return;
     buscarComCache("lista_espera", () => listaEsperaService.listarTudo(), aplicarContagens).then(aplicarContagens);
 
-    (async () => {
-      const contagens: Record<string, number> = {};
-      await Promise.all(
-        turmas.map(async (t) => {
-          contagens[t.id] = await associadosServiceContagem.contarMatriculasPorTurma(t.id);
-        })
-      );
-      setMatriculasContagem(contagens);
-    })();
+    associadosServiceContagem.contarMatriculasPorTurmaEmLote().then(setMatriculasContagem);
   }, [turmas]);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);

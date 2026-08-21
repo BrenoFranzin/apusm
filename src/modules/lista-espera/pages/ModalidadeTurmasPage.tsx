@@ -135,7 +135,7 @@ const [todasModalidades, setTodasModalidades] = useState<Modalidade[]>([]);
   );
 
     function instrutorNome(id: string) {
-    return instrutores.find((i) => i.id === id)?.nome ?? "â€”";
+    return instrutores.find((i) => i.id === id)?.nome ?? "—";
   }
 
   function instrutorCor(id: string) {
@@ -184,7 +184,7 @@ async function handleVoltarParaFila() {
 }
 
 async function handleEditarObservacaoFila(entradaId: string, valorAtual: string) {
-    const novo = window.prompt("Observa��o:", valorAtual);
+    const novo = window.prompt("Observação:", valorAtual);
     if (novo === null) return;
     await listaEsperaService.atualizarObservacao(entradaId, novo);
     await recarregarFilas();

@@ -30,6 +30,32 @@ const TABELAS_HISTORICO = [
   { valor: "plantao", label: "Plantão" },
 ] as const;
 
+// Agrupa turmas por modalidade e ordena: modalidade (A-Z) -> horário
+function agruparTurmasPorModalidade<T extends { modalidadeId: string; dia: string; horario: string }>(
+  turmas: T[],
+  modalidades: { id: string; nome: string; cor: string }[]
+): { modalidade: string; cor: string; turmas: T[] }[] {
+  const grupos = new Map<string, { modalidade: string; cor: string; turmas: T[] }>();
+
+  for (const t of turmas) {
+    const mod = modalidades.find((m) => m.id === t.modalidadeId);
+    const nomeModalidade = mod?.nome ?? "Sem modalidade";
+    const corModalidade = mod?.cor ?? "var(--border-default)";
+    if (!grupos.has(t.modalidadeId)) {
+      grupos.set(t.modalidadeId, { modalidade: nomeModalidade, cor: corModalidade, turmas: [] });
+    }
+    grupos.get(t.modalidadeId)!.turmas.push(t);
+  }
+
+  const listaGrupos = Array.from(grupos.values());
+  listaGrupos.sort((a, b) => a.modalidade.localeCompare(b.modalidade, "pt-BR"));
+  for (const grupo of listaGrupos) {
+    grupo.turmas.sort((a, b) => a.horario.localeCompare(b.horario));
+  }
+
+  return listaGrupos;
+}
+
 export default function ConfiguracoesPage() {
   const inputRestaurarRef = useRef<HTMLInputElement>(null);
   const [tabelaHistorico, setTabelaHistorico] = useState<string>("associados");
@@ -337,6 +363,7 @@ export default function ConfiguracoesPage() {
           onConfirmar={handleExportarPresencaMassa}
         />
       )}
+
     </div>
   );
 }
@@ -352,9 +379,9 @@ const ORDEM_DIAS_LOCAL = ["seg", "ter", "qua", "qui", "sex", "sab"];
 
 function agruparPorModalidade(
   turmas: { id: string; dia: string; horario: string; modalidadeId: string }[],
-  modalidades: { id: string; nome: string }[]
+  modalidades: { id: string; nome: string; cor: string }[]
 ) {
-  const map = new Map<string, { modalidade: { id: string; nome: string }; turmas: typeof turmas }>();
+  const map = new Map<string, { modalidade: { id: string; nome: string; cor: string }; turmas: typeof turmas }>();
   for (const mod of modalidades) {
     const ts = turmas
       .filter((t) => t.modalidadeId === mod.id)
@@ -379,7 +406,7 @@ function ModalExportacaoMassa({
   onConfirmar,
 }: {
   turmas: { id: string; dia: string; horario: string; modalidadeId: string }[];
-  modalidades: { id: string; nome: string }[];
+  modalidades: { id: string; nome: string; cor: string }[];
   onFechar: () => void;
   onConfirmar: (idsSelecionados: string[]) => void;
 }) {
@@ -449,15 +476,17 @@ function ModalExportacaoMassa({
             grupos.map(({ modalidade, turmas: ts }) => {
               const ids = ts.map((t) => t.id);
               const todasMarcadas = ids.every((id) => selecionadas.has(id));
+              const corModalidade = modalidade.cor || "#6b7280";
               return (
                 <div key={modalidade.id}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-                    <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "var(--text-muted)", margin: 0 }}>
+                    <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "var(--text-muted)", margin: 0, display: "flex", alignItems: "center", gap: 6 }}>
+                      <span style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: corModalidade, display: "inline-block", flexShrink: 0 }} />
                       {modalidade.nome}
                     </p>
                     <button
                       onClick={() => todasMarcadas ? desmarcarModalidade(ids) : marcarModalidade(ids)}
-                      style={{ fontSize: 12, fontWeight: 600, border: "1.5px solid var(--color-primary)", borderRadius: 6, padding: "5px 12px", background: todasMarcadas ? "var(--background-primary)" : "var(--color-primary)", color: todasMarcadas ? "var(--color-primary)" : "#fff", cursor: "pointer" }}
+                      style={{ fontSize: 12, fontWeight: 600, border: `1.5px solid ${corModalidade}`, borderRadius: 6, padding: "5px 12px", background: todasMarcadas ? "var(--background-primary)" : corModalidade, color: todasMarcadas ? corModalidade : "#fff", cursor: "pointer" }}
                     >
                       {todasMarcadas ? "Desmarcar" : "Marcar todas"}
                     </button>
@@ -491,6 +520,10 @@ function ModalExportacaoMassa({
     </div>
   );
 }
+
+// ==========================
+// MODAL DE EXPORTAR PRESENÇA (individual)
+// ==========================
 
 // ==========================
 // MODAL DE HISTÓRICO

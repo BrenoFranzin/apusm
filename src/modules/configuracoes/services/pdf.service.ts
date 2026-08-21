@@ -346,7 +346,7 @@ class PdfService {
       });
     };
 
-    doc.text("Academia APUSM - Escala de Servi�o (Manh�)", 105, 14, { align: "center" });
+    doc.text("Academia APUSM - Escala de Serviço (Manhã)", 105, 14, { align: "center" });
     gerarTabelaServico(manhaSlots, 20);
 
     doc.addPage();
@@ -458,7 +458,6 @@ class PdfService {
   // ==========================
   // FOLHA DE PRESENÇA (por turma, para imprimir e marcar à mão)
   // ==========================
-
   private desenharFolhaPresenca(
     doc: jsPDF,
     turma: any,
@@ -489,10 +488,7 @@ class PdfService {
     const totalLinhas = linhasMatriculados.length + limiteNovos;
 
     const orientacaoAtual: "portrait" | "landscape" = infantil ? "landscape" : "portrait";
-    const { alturaDisponivel: alturaDisponivelCheck, maxLinhas } = calcularCapacidadePagina(
-      orientacaoAtual,
-      Boolean(modalidade?.descricao)
-    );
+    const { maxLinhas } = calcularCapacidadePagina(orientacaoAtual, Boolean(modalidade?.descricao));
     if (totalLinhas > maxLinhas) {
       throw new Error(
         `A turma "${nomeModalidade.toUpperCase()}" (${NOME_DIA[turma.dia] ?? turma.dia} ${turma.horario}) tem ${totalLinhas} linhas ` +
@@ -501,22 +497,14 @@ class PdfService {
       );
     }
 
-    // "Ajustar à página" em DUAS FASES: a 1ª tabela usa uma estimativa inicial pra
-    // não ficar espremida; depois de desenhada, lemos a posição REAL onde ela terminou
-    // (finalY1, calculada pelo próprio jsPDF, sem chute) e usamos o espaço que
-    // sobrou de verdade pra dimensionar a 2ª tabela — isso elimina qualquer erro de
-    // estimativa de altura de cabeçalho, fonte etc.
     const alturaPagina = doc.internal.pageSize.getHeight();
-    const MARGEM_SEGURANCA_RODAPE = 10; // nunca deixa a tabela encostar na borda da folha
-    const alturaReservadaTopo = 26 + (modalidade?.descricao ? 4 : 0) + 8; // texto topo + OBS + cabeçalho da tabela (estimativa p/ 1ª fase)
-    const alturaReservadaRodape = 6 + MARGEM_SEGURANCA_RODAPE; // barra "NOVOS ALUNOS" + margem de segurança
+    const MARGEM_SEGURANCA_RODAPE = 10;
+    const alturaReservadaTopo = 26 + (modalidade?.descricao ? 4 : 0) + 8;
+    const alturaReservadaRodape = 6 + MARGEM_SEGURANCA_RODAPE;
     const alturaDisponivel = alturaPagina - alturaReservadaTopo - alturaReservadaRodape;
     const alturaLinhaIdeal = alturaDisponivel / totalLinhas;
 
-    // Fórmula pra converter altura de linha em fonte/padding, reaproveitada nas 2 fases.
-    // Fonte tem teto de legibilidade (não quebra texto em colunas estreitas como "Nº");
-    // quem estica pra preencher o espaço é o padding e a altura mínima da linha.
-    const ALTURA_MAXIMA_LINHA_MM = 8; // teto — turmas com poucas pessoas não esticam além disso
+    const ALTURA_MAXIMA_LINHA_MM = 8;
     const calcularEstilo = (alturaLinhaBruta: number) => {
       const alturaLinha = Math.min(alturaLinhaBruta, ALTURA_MAXIMA_LINHA_MM);
       const fs = Math.min(10, Math.max(5.5, alturaLinha * 1.4));
@@ -524,16 +512,20 @@ class PdfService {
       return { fontSize: fs, cellPadding: cp, minCellHeight: alturaLinha };
     };
 
-    let { fontSize, cellPadding, minCellHeight } = calcularEstilo(alturaLinhaIdeal);
+    const { fontSize: fontSizeBase, cellPadding, minCellHeight } = calcularEstilo(alturaLinhaIdeal);
 
-    const MARGEM = 12.7; // 1,27cm — margem estreita padrão
+    const MARGEM = 12.7;
     const larguraPagina = doc.internal.pageSize.getWidth();
     const larguraUtil = larguraPagina - MARGEM * 2;
     const bordaDireita = larguraPagina - MARGEM;
 
+    const tituloModalidade = turma.observacao
+      ? `${nomeModalidade.toUpperCase()} (${turma.observacao.toUpperCase()})`
+      : nomeModalidade.toUpperCase();
+
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
-    doc.text(`MODALIDADE: ${nomeModalidade.toUpperCase()}`, MARGEM, 14);
+    doc.text(`MODALIDADE: ${tituloModalidade}`, MARGEM, 14);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.text(`PROFESSOR(A): ${instrutor?.nome.toUpperCase() ?? "-"}`, MARGEM, 20);
@@ -562,9 +554,24 @@ class PdfService {
       ? ["Nº", colunaAluno, ...datas, "Responsável"]
       : ["Nº", colunaAluno, ...datas];
 
-    const columnStylesPrincipal: any = { 0: { cellWidth: 12 }, 1: { cellWidth: infantil ? 65 : 90, halign: "left" } };
+    const colNumero = 10;
+    let colResponsavel = infantil ? 40 : 0;
+    let colNome = (larguraUtil - colNumero - colResponsavel) / 2;
     if (infantil) {
-      columnStylesPrincipal[cabecalhoPrincipal.length - 1] = { cellWidth: 45, halign: "left" };
+      colNome = colNome * 0.8;
+      colResponsavel = colResponsavel * 1.2;
+    }
+
+    const maiorNome = linhasMatriculados.reduce((a, b) => (b.length > a.length ? b : a), "");
+    const fontSizeNome = maiorNome ? fitFontSize(doc, maiorNome, colNome - 4, fontSizeBase, 5) : fontSizeBase;
+    const fontSize = Math.min(fontSizeNome, fontSizeBase);
+
+    const columnStylesPrincipal: any = {
+      0: { cellWidth: colNumero },
+      1: { cellWidth: colNome, halign: "left", fontSize, overflow: "visible", textColor: [0, 0, 0] },
+    };
+    if (infantil) {
+      columnStylesPrincipal[cabecalhoPrincipal.length - 1] = { cellWidth: colResponsavel, halign: "left" };
     }
 
     autoTable(doc, {
@@ -574,7 +581,7 @@ class PdfService {
           ? [String(i + 1).padStart(2, "0"), nome, ...datas.map(() => ""), ""]
           : [String(i + 1).padStart(2, "0"), nome, ...datas.map(() => "")]
       ),
-      startY: 26 + linhaExtra,
+      startY: 36 + linhaExtra,
       theme: "grid",
       styles: { fontSize, cellPadding, minCellHeight, halign: "center", valign: "middle", lineWidth: 0.3, lineColor: [0, 0, 0], fontStyle: "bold", textColor: [0, 0, 0] },
       headStyles: { fillColor: [20, 83, 45], textColor: [255, 255, 255], fontStyle: "bold", minCellHeight: Math.min(minCellHeight, 9), fontSize: Math.min(fontSize + 2, 11) },
@@ -584,11 +591,9 @@ class PdfService {
 
     const finalY1 = (doc as any).lastAutoTable.finalY as number;
 
-    // FASE 2: recalcula o estilo da 2ª tabela com base no espaço REAL que sobrou,
-    // não numa estimativa — garante que "Novos Alunos" sempre caiba na mesma página.
-    const BUFFER_ARREDONDAMENTO = 3; // mm extra pra absorver bordas/arredondamento do autoTable — sem isso, a última linha estoura por fração de mm
+    const BUFFER_ARREDONDAMENTO = 3;
     const alturaRestanteReal = alturaPagina - finalY1 - 6 - MARGEM_SEGURANCA_RODAPE - BUFFER_ARREDONDAMENTO;
-    const alturaLinhaNovos = Math.max(alturaRestanteReal / limiteNovos, 3); // nunca menor que 3mm (piso de legibilidade)
+    const alturaLinhaNovos = Math.max(alturaRestanteReal / limiteNovos, 3);
     const estiloNovos = calcularEstilo(alturaLinhaNovos);
 
     doc.setFillColor(230, 230, 230);
@@ -601,8 +606,8 @@ class PdfService {
     doc.text("NOVOS ALUNOS", MARGEM + larguraUtil / 2, finalY1 + 4.2, { align: "center" });
 
     const columnStylesNovos: any = infantil
-      ? { 0: { cellWidth: 65, halign: "left" }, [datas.length + 1]: { cellWidth: 45, halign: "left" } }
-      : { 0: { cellWidth: 102, halign: "left" } };
+      ? { 0: { cellWidth: colNumero + colNome, halign: "left" }, [datas.length + 1]: { cellWidth: colResponsavel, halign: "left" } }
+      : { 0: { cellWidth: colNumero + colNome, halign: "left" } };
 
     autoTable(doc, {
       body: Array.from({ length: limiteNovos }, () =>

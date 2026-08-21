@@ -23,8 +23,8 @@ export interface Turma {
   sala: string;
   limiteVagas?: number;
   limiteNovosAlunos?: number;
+  observacao?: string;
 }
-
 export interface CriarTurmaDTO {
   modalidadeId: string;
   instrutorId: string;
@@ -33,6 +33,7 @@ export interface CriarTurmaDTO {
   sala: string;
   limiteVagas?: number;
   limiteNovosAlunos?: number;
+  observacao?: string;
 }
 
 export type AtualizarTurmaDTO = Partial<CriarTurmaDTO>;

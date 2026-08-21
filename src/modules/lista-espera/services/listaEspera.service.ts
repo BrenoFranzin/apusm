@@ -60,29 +60,39 @@ class ListaEsperaService {
     modalidadeId: string;
     modalidadeNome: string;
   }): Promise<EntradaListaEspera> {
-    const { count, error: erroContagem } = await supabase
-      .from("lista_espera")
-      .select("*", { count: "exact", head: true })
-      .eq("turma_id", dados.turmaId);
+    const MAX_TENTATIVAS = 5;
 
-    if (erroContagem) throw new Error(erroContagem.message);
-    const proximaPosicao = (count ?? 0) + 1;
+    for (let tentativa = 0; tentativa < MAX_TENTATIVAS; tentativa++) {
+      const { count, error: erroContagem } = await supabase
+        .from("lista_espera")
+        .select("*", { count: "exact", head: true })
+        .eq("turma_id", dados.turmaId);
 
-    const nova = {
-      id: crypto.randomUUID(),
-      associado_id: dados.associadoId,
-      associado_nome: capitalizarNome(dados.associadoNome),
-      turma_id: dados.turmaId,
-      turma_nome: dados.turmaNome,
-      modalidade_id: dados.modalidadeId,
-      modalidade_nome: dados.modalidadeNome,
-      posicao: proximaPosicao,
-      data_entrada: new Date().toISOString(),
-    };
+      if (erroContagem) throw new Error(erroContagem.message);
+      const proximaPosicao = (count ?? 0) + 1;
 
-    const { error } = await supabase.from("lista_espera").insert(nova);
-    if (error) throw new Error(error.message);
-    return toEntrada(nova);
+      const nova = {
+        id: crypto.randomUUID(),
+        associado_id: dados.associadoId,
+        associado_nome: capitalizarNome(dados.associadoNome),
+        turma_id: dados.turmaId,
+        turma_nome: dados.turmaNome,
+        modalidade_id: dados.modalidadeId,
+        modalidade_nome: dados.modalidadeNome,
+        posicao: proximaPosicao,
+        data_entrada: new Date().toISOString(),
+      };
+
+      const { error } = await supabase.from("lista_espera").insert(nova);
+
+      if (!error) return toEntrada(nova);
+
+      // Código 23505 = violação de constraint única (duas pessoas entraram ao mesmo tempo).
+      // Tenta de novo com a posição recalculada.
+      if (error.code !== "23505") throw new Error(error.message);
+    }
+
+    throw new Error("Não foi possível entrar na fila, tente novamente.");
   }
 
   async sairDaFila(entradaId: string): Promise<void> {

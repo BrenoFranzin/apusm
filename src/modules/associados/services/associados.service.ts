@@ -1,4 +1,4 @@
-// ======================================================
+﻿// ======================================================
 // APUSM SaaS
 // Módulo: Associados
 // Arquivo: associados.service.ts
@@ -115,6 +115,18 @@ class AssociadosService {
     }, 0);
   }
 
+  async contarMatriculasPorTurmaEmLote(): Promise<Record<string, number>> {
+    const lista = await this.listar();
+    const contagens: Record<string, number> = {};
+    for (const associado of lista) {
+      for (const m of associado.matriculas) {
+        if (m.status === "CANCELADA") continue;
+        contagens[m.turmaId] = (contagens[m.turmaId] ?? 0) + 1;
+      }
+    }
+    return contagens;
+  }
+
   async matricular(
     associadoId: string,
     dadosMatricula: { turmaId: string; turmaNome: string; modalidadeId: string; modalidadeNome: string }
@@ -161,6 +173,12 @@ class AssociadosService {
       await supabase.from("associados").update({ historico }).eq("id", associadoId);
 
       return { status: "LISTA_ESPERA", posicaoFila: entrada.posicao };
+    }
+
+    const filasDoAssociado = await listaEsperaService.listarPorAssociado(associadoId);
+    const entradaNestaTurma = filasDoAssociado.find((f) => f.turmaId === dadosMatricula.turmaId);
+    if (entradaNestaTurma) {
+      await listaEsperaService.sairDaFila(entradaNestaTurma.id);
     }
 
     const novaMatricula = {
@@ -242,11 +260,17 @@ class AssociadosService {
     return toAssociado(data);
   }
 
-  async pesquisar(texto: string): Promise<Associado[]> {
+    async pesquisar(texto: string): Promise<Associado[]> {
     const busca = texto.trim();
     if (!busca) return [];
 
-    const { data, error } = await supabase.rpc("buscar_associados", { termo: busca });
+    const escapado = busca.replace(/[%,()]/g, (c) => `\\${c}`);
+
+    const { data, error } = await supabase
+      .from("associados")
+      .select("id, nome, telefone, status, data_cadastro, matriculas, frequencias")
+      .or(`nome.ilike.%${escapado}%,telefone.ilike.%${escapado}%`)
+      .order("nome");
     if (error) { console.error(error); return []; }
     return (data ?? []).map(toAssociado);
   }

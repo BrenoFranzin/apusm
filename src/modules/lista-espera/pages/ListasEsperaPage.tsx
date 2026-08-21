@@ -42,14 +42,16 @@ export default function ListasEsperaPage() {
       setModalidades(mods);
 
       const turmas = await turmasService.listar();
+      const todasFilas = await listaEsperaService.listarTudo();
       const contagens: Record<string, number> = {};
 
-      const todaFila = await listaEsperaService.listarTudo();
-      const modalidadePorTurma = new Map(turmas.map((t) => [t.id, t.modalidadeId]));
+      const modalidadePorTurma: Record<string, string> = {};
+      turmas.forEach((t) => { modalidadePorTurma[t.id] = t.modalidadeId; });
 
-      todaFila.forEach((entrada) => {
-        const modId = modalidadePorTurma.get(entrada.turmaId);
-        if (modId) contagens[modId] = (contagens[modId] ?? 0) + 1;
+      todasFilas.forEach((entrada) => {
+        const modalidadeId = modalidadePorTurma[entrada.turmaId];
+        if (!modalidadeId) return;
+        contagens[modalidadeId] = (contagens[modalidadeId] ?? 0) + 1;
       });
 
       setContagemPorModalidade(contagens);
