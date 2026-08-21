@@ -269,9 +269,13 @@ class AssociadosService {
   }
 
   async pesquisar(texto: string): Promise<Associado[]> {
-    const lista = await this.listar();
-    const busca = texto.toLowerCase();
-    return lista.filter((a) => a.nome.toLowerCase().includes(busca) || a.telefone.includes(busca));
+    const { data, error } = await supabase
+      .from("associados")
+      .select("id, nome, telefone, status, data_cadastro, matriculas, frequencias")
+      .or(`nome.ilike.%${texto}%,telefone.ilike.%${texto}%`)
+      .order("nome");
+    if (error) { console.error(error); return []; }
+    return (data ?? []).map(toAssociado);
   }
 
   async dashboard() {
