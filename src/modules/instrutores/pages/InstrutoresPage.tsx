@@ -4,7 +4,7 @@
 // ======================================================
 
 import { useState } from "react";
-
+import { Plus } from "lucide-react";
 import { useInstrutores } from "../hooks/useInstrutores";
 import { InstrutorCard } from "../components/InstrutorCard";
 import InstrutorForm from "../components/InstrutorForm";
@@ -36,11 +36,17 @@ export default function InstrutoresPage() {
         </div>
 
         <button
-          onClick={iniciarNovo}
-          className="bg-green-900 text-white px-5 py-3 rounded-lg"
-        >
-          {mostrarForm ? "Fechar" : "+ Novo instrutor"}
-        </button>
+  onClick={iniciarNovo}
+  style={{
+    display: "flex", alignItems: "center", gap: 8,
+    background: "var(--color-primary)", color: "#fff", border: "none",
+    padding: "11px 20px", borderRadius: "var(--radius-md)",
+    fontSize: 14, fontWeight: 600, cursor: "pointer", boxShadow: "var(--shadow-sm)",
+  }}
+>
+  <Plus size={17} />
+  {mostrarForm ? "Fechar" : "Novo instrutor"}
+</button>
       </div>
 
       {mostrarForm && (

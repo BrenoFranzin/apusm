@@ -1,4 +1,10 @@
+// ======================================================
+// APUSM SaaS
+// Módulo: Salas
+// Arquivo: SalasPage.tsx
+// ======================================================
 import { useState } from "react";
+import { Plus, DoorOpen, Trash2 } from "lucide-react";
 import { useSalas } from "../hooks/useSalas";
 
 export default function SalasPage() {
@@ -23,41 +29,51 @@ export default function SalasPage() {
         </div>
         <button
           onClick={() => setMostrarForm((v) => !v)}
-          className="bg-green-900 text-white px-5 py-3 rounded-lg"
+          style={{
+            display: "flex", alignItems: "center", gap: 8,
+            background: "var(--color-primary)", color: "#fff", border: "none",
+            padding: "11px 20px", borderRadius: "var(--radius-md)",
+            fontSize: 14, fontWeight: 600, cursor: "pointer", boxShadow: "var(--shadow-sm)",
+          }}
         >
-          {mostrarForm ? "Fechar" : "+ Nova sala"}
+          <Plus size={17} />
+          {mostrarForm ? "Fechar" : "Nova sala"}
         </button>
       </div>
 
       {mostrarForm && (
-        <div style={{ background: "var(--background-primary)", border: "1px solid var(--border-default)", borderRadius: 12, padding: "1rem 1.25rem", maxWidth: 360 }}>
-          <p style={{ fontWeight: 500, fontSize: 14, margin: "0 0 12px", color: "var(--text-primary)" }}>Nova sala</p>
-          <label style={{ fontSize: 12, color: "var(--text-secondary)" }}>Nome</label>
+        <div style={{ background: "var(--background-primary)", border: "1px solid var(--border-default)", borderRadius: "var(--radius-lg)", padding: "1.25rem", maxWidth: 360, boxShadow: "var(--shadow-sm)" }}>
+          <p style={{ fontWeight: 700, fontSize: 14, margin: "0 0 12px", color: "var(--page-heading)" }}>Nova sala</p>
+          <label style={{ fontSize: 12.5, fontWeight: 600, color: "var(--text-secondary)" }}>Nome</label>
           <input
             value={nome}
             onChange={(e) => setNome(e.target.value)}
             placeholder="Ex.: Sala 6"
             onKeyDown={(e) => { if (e.key === "Enter") handleCriar(); }}
-            style={{ width: "100%", margin: "4px 0 12px", padding: 8, background: "var(--background-primary)", color: "var(--text-primary)", border: "1px solid var(--border-default)", borderRadius: 6, boxSizing: "border-box" }}
+            style={{ width: "100%", margin: "4px 0 12px", padding: 9, background: "var(--background-secondary)", color: "var(--text-primary)", border: "1px solid var(--border-default)", borderRadius: "var(--radius-sm)", boxSizing: "border-box", fontSize: 14 }}
           />
           <button
             onClick={handleCriar}
-            style={{ width: "100%", background: "var(--color-primary)", color: "#fff", padding: 10, borderRadius: 8, border: "none", cursor: "pointer" }}
+            style={{ width: "100%", background: "var(--color-primary)", color: "#fff", padding: 11, borderRadius: "var(--radius-md)", border: "none", cursor: "pointer", fontWeight: 600, fontSize: 14 }}
           >
             Salvar sala
           </button>
         </div>
       )}
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 12 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 12 }}>
         {salas.map((sala) => (
-          <div key={sala.id} style={{ background: "var(--background-primary)", border: "1px solid var(--border-default)", borderRadius: 12, padding: 16 }}>
-            <p style={{ fontWeight: 600, fontSize: 15, margin: "0 0 12px", color: "var(--text-primary)" }}>ðŸšª {sala.nome}</p>
+          <div key={sala.id} style={{ background: "var(--background-primary)", border: "1px solid var(--border-default)", borderRadius: "var(--radius-lg)", padding: 16, boxShadow: "var(--shadow-sm)" }}>
+            <p style={{ fontWeight: 700, fontSize: 15, margin: "0 0 12px", color: "var(--text-primary)", display: "flex", alignItems: "center", gap: 8 }}>
+              <DoorOpen size={16} color="var(--color-primary)" />
+              {sala.nome}
+            </p>
             <button
               onClick={() => { if (window.confirm(`Excluir "${sala.nome}"?`)) excluir(sala.id); }}
-              style={{ fontSize: 12, color: "#ffffff", border: "none", borderRadius: 6, padding: "5px 10px", background: "var(--color-danger)", fontWeight: 600, cursor: "pointer" }}
+              style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#ffffff", border: "none", borderRadius: "var(--radius-sm)", padding: "6px 11px", background: "var(--color-danger)", fontWeight: 600, cursor: "pointer" }}
             >
-              ðŸ—‘ï¸ Excluir
+              <Trash2 size={13} />
+              Excluir
             </button>
           </div>
         ))}

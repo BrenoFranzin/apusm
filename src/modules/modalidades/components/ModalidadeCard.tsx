@@ -2,6 +2,7 @@
 // APUSM SaaS — Módulo Modalidades
 // Arquivo: ModalidadeCard.tsx
 // ======================================================
+import { Pencil, Trash2, DoorOpen } from "lucide-react";
 import type { Modalidade } from "../types/modalidade.types";
 import type { Instrutor } from "../../instrutores/types/instrutor.types";
 
@@ -18,15 +19,16 @@ export function ModalidadeCard({ modalidade, instrutores, onEditar, onExcluir }:
       style={{
         background: "var(--background-primary)",
         border: "1px solid var(--border-default)",
-        borderRadius: 12,
+        borderRadius: "var(--radius-lg)",
         padding: 16,
+        boxShadow: "var(--shadow-sm)",
       }}
     >
       <div
         style={{
-          width: 36,
-          height: 36,
-          borderRadius: "50%",
+          width: 38,
+          height: 38,
+          borderRadius: "var(--radius-md)",
           background: modalidade.cor + "22",
           display: "flex",
           alignItems: "center",
@@ -37,12 +39,16 @@ export function ModalidadeCard({ modalidade, instrutores, onEditar, onExcluir }:
       >
         {modalidade.icone}
       </div>
-      <p style={{ fontWeight: 500, fontSize: 14, margin: 0, color: "var(--text-primary)" }}>
+
+      <p style={{ fontWeight: 700, fontSize: 14.5, margin: 0, color: "var(--text-primary)" }}>
         {modalidade.nome}
       </p>
-      <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: "4px 0 8px" }}>
-        🚪 {Array.isArray(modalidade.salas) ? Array.from(new Set(modalidade.salas)).join(", ") : (modalidade as any).sala ?? "-"}
+
+      <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: "5px 0 8px", display: "flex", alignItems: "center", gap: 5 }}>
+        <DoorOpen size={13} />
+        {Array.isArray(modalidade.salas) ? Array.from(new Set(modalidade.salas)).join(", ") : (modalidade as any).sala ?? "-"}
       </p>
+
       {modalidade.descricao && (
         <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: "0 0 8px", fontStyle: "italic" }}>
           ℹ️ {modalidade.descricao}
@@ -54,17 +60,18 @@ export function ModalidadeCard({ modalidade, instrutores, onEditar, onExcluir }:
           fontSize: 11,
           background: modalidade.cor,
           color: "#fff",
-          padding: "3px 8px",
-          borderRadius: 6,
+          padding: "3px 9px",
+          borderRadius: 999,
           fontWeight: 600,
+          display: "inline-block",
         }}
       >
         {modalidade.instrutoresIds
-  .map((id) => instrutores.find((i) => i.id === id)?.nome)
-  .filter(Boolean)
-  .join(", ") || "Sem instrutor"}
-  
+          .map((id) => instrutores.find((i) => i.id === id)?.nome)
+          .filter(Boolean)
+          .join(", ") || "Sem instrutor"}
       </span>
+
       {(onEditar || onExcluir) && (
         <div
           style={{
@@ -73,24 +80,22 @@ export function ModalidadeCard({ modalidade, instrutores, onEditar, onExcluir }:
             borderTop: "1px solid var(--border-default)",
             display: "flex",
             justifyContent: "flex-end",
-            gap: 8,
+            gap: 6,
           }}
         >
           {onEditar && (
             <button
               onClick={() => onEditar(modalidade)}
+              title="Editar"
               style={{
-                fontSize: 12,
-                fontWeight: 600,
-                color: "#ffffff",
-                border: "none",
-                borderRadius: 6,
-                padding: "5px 10px",
-                background: "#2563eb",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                width: 30, height: 30,
+                border: "none", borderRadius: "var(--radius-sm)",
+                background: "var(--color-info-light)",
                 cursor: "pointer",
               }}
             >
-              ✎ Editar
+              <Pencil size={14} color="var(--color-info)" />
             </button>
           )}
           {onExcluir && (
@@ -101,18 +106,16 @@ export function ModalidadeCard({ modalidade, instrutores, onEditar, onExcluir }:
                 );
                 if (confirmar) onExcluir(modalidade.id);
               }}
+              title="Excluir"
               style={{
-                fontSize: 12,
-                fontWeight: 600,
-                color: "#ffffff",
-                border: "none",
-                borderRadius: 6,
-                padding: "5px 10px",
-                background: "var(--color-danger)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                width: 30, height: 30,
+                border: "none", borderRadius: "var(--radius-sm)",
+                background: "var(--color-danger-light)",
                 cursor: "pointer",
               }}
             >
-              🗑️ Excluir
+              <Trash2 size={14} color="var(--color-danger)" />
             </button>
           )}
         </div>

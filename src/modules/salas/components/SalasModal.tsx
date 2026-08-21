@@ -3,8 +3,8 @@
 // Módulo: Salas
 // Arquivo: SalasModal.tsx
 // ======================================================
-
 import { useEffect, useState } from "react";
+import { X, Pencil, Trash2 } from "lucide-react";
 import { salasService } from "../services/salas.service";
 import type { Sala } from "../types/sala.types";
 
@@ -82,14 +82,14 @@ export default function SalasModal({ onFechar }: { onFechar: () => void }) {
         }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-          <h2 style={{ fontWeight: 600, fontSize: 17, margin: 0, color: "var(--text-primary)" }}>
+          <h2 style={{ fontWeight: 700, fontSize: 17, margin: 0, color: "var(--page-heading)" }}>
             Salas
           </h2>
           <button
             onClick={onFechar}
-            style={{ fontSize: 20, lineHeight: 1, color: "var(--text-muted)", background: "none", border: "none" }}
+            style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 28, height: 28, color: "var(--text-muted)", background: "none", border: "none", cursor: "pointer" }}
           >
-            ×
+            <X size={18} />
           </button>
         </div>
 
@@ -100,7 +100,7 @@ export default function SalasModal({ onFechar }: { onFechar: () => void }) {
             placeholder="Nome da sala"
             style={{
               flex: 1,
-              padding: "8px 12px",
+              padding: "9px 12px",
               borderRadius: "var(--radius-md)",
               border: "1px solid var(--border-default)",
               background: "var(--background-primary)",
@@ -111,14 +111,15 @@ export default function SalasModal({ onFechar }: { onFechar: () => void }) {
           <button
             onClick={handleSalvar}
             style={{
-              padding: "8px 14px",
+              padding: "9px 16px",
               borderRadius: "var(--radius-md)",
-              border: "1px solid var(--border-default)",
-              background: "var(--background-primary)",
-              color: "var(--text-primary)",
+              border: "none",
+              background: "var(--color-primary)",
+              color: "#fff",
               fontSize: 13,
-              fontWeight: 500,
+              fontWeight: 600,
               cursor: "pointer",
+              whiteSpace: "nowrap",
             }}
           >
             {editandoId ? "Salvar" : "+ Nova sala"}
@@ -127,7 +128,7 @@ export default function SalasModal({ onFechar }: { onFechar: () => void }) {
             <button
               onClick={handleCancelarEdicao}
               style={{
-                padding: "8px 14px",
+                padding: "9px 14px",
                 borderRadius: "var(--radius-md)",
                 border: "1px solid var(--border-default)",
                 background: "var(--background-primary)",
@@ -144,7 +145,7 @@ export default function SalasModal({ onFechar }: { onFechar: () => void }) {
         {salas.length === 0 ? (
           <p style={{ color: "var(--text-muted)", fontSize: 14 }}>Nenhuma sala cadastrada.</p>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {salas.map((sala) => (
               <div
                 key={sala.id}
@@ -158,21 +159,23 @@ export default function SalasModal({ onFechar }: { onFechar: () => void }) {
                   background: "var(--background-primary)",
                 }}
               >
-                <p style={{ fontWeight: 500, fontSize: 13, margin: 0, color: "var(--text-primary)" }}>
+                <p style={{ fontWeight: 600, fontSize: 13, margin: 0, color: "var(--text-primary)" }}>
                   {sala.nome}
                 </p>
                 <div style={{ display: "flex", gap: 6 }}>
                   <button
                     onClick={() => handleEditar(sala)}
-                    style={{ fontSize: 12, border: "1px solid var(--border-default)", borderRadius: 6, padding: "5px 9px", background: "var(--background-primary)", color: "var(--text-primary)" }}
+                    title="Editar"
+                    style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 28, height: 28, border: "none", borderRadius: "var(--radius-sm)", background: "var(--color-info-light)", cursor: "pointer" }}
                   >
-                    Editar
+                    <Pencil size={13} color="var(--color-info)" />
                   </button>
                   <button
                     onClick={() => handleExcluir(sala.id)}
-                    style={{ fontSize: 12, border: "none", borderRadius: 6, padding: "5px 9px", background: "var(--color-danger)", color: "#ffffff", fontWeight: 600, cursor: "pointer" }}
+                    title="Excluir"
+                    style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 28, height: 28, border: "none", borderRadius: "var(--radius-sm)", background: "var(--color-danger-light)", cursor: "pointer" }}
                   >
-                    Excluir
+                    <Trash2 size={13} color="var(--color-danger)" />
                   </button>
                 </div>
               </div>
@@ -183,5 +186,3 @@ export default function SalasModal({ onFechar }: { onFechar: () => void }) {
     </div>
   );
 }
-
-

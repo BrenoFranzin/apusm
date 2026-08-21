@@ -2,13 +2,10 @@
 // APUSM SaaS — Módulo Instrutores
 // Arquivo: InstrutorCard.tsx
 // ======================================================
-
+import { Pencil, Trash2 } from "lucide-react";
 import type { Instrutor } from "../types/instrutor.types";
 import { useTurmas } from "@/modules/turmas/hooks/useTurmas";
 import { useModalidades } from "@/modules/modalidades/hooks/useModalidades";
-
-
-
 
 interface Props {
   instrutor: Instrutor;
@@ -17,7 +14,6 @@ interface Props {
 }
 
 export function InstrutorCard({ instrutor, onEditar, onExcluir }: Props) {
-
   const { turmas } = useTurmas();
   const { modalidades } = useModalidades();
 
@@ -35,24 +31,25 @@ export function InstrutorCard({ instrutor, onEditar, onExcluir }: Props) {
       style={{
         background: "var(--background-primary)",
         border: "1px solid var(--border-default)",
-        borderRadius: 12,
+        borderRadius: "var(--radius-lg)",
         padding: 16,
         display: "flex",
         alignItems: "center",
         gap: 12,
+        boxShadow: "var(--shadow-sm)",
       }}
     >
       <div
         style={{
-          width: 40,
-          height: 40,
+          width: 42,
+          height: 42,
           borderRadius: "50%",
           background: instrutor.cor,
           color: "#fff",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          fontWeight: 600,
+          fontWeight: 700,
           fontSize: 13,
           flexShrink: 0,
         }}
@@ -62,7 +59,7 @@ export function InstrutorCard({ instrutor, onEditar, onExcluir }: Props) {
 
       <div style={{ flex: 1, minWidth: 0 }}>
         <p style={{
-          fontWeight: 500,
+          fontWeight: 700,
           fontSize: 14,
           margin: 0,
           color: "var(--text-primary)",
@@ -72,12 +69,12 @@ export function InstrutorCard({ instrutor, onEditar, onExcluir }: Props) {
         }}>
           {instrutor.nome}
         </p>
-                <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: "2px 0 0" }}>
+        <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: "3px 0 0" }}>
           {modalidadesNomes.length > 0
-            ? `${modalidadesNomes.join(", ")} - ${turmasDoInstrutor.length} turma(s)`
+            ? `${modalidadesNomes.join(", ")} · ${turmasDoInstrutor.length} turma(s)`
             : "Sem turmas vinculadas"}
           {instrutor.terceirizado ? (
-            <span style={{ fontWeight: 700, color: "#991b1b" }}> - Terceirizado</span>
+            <span style={{ fontWeight: 700, color: "#991b1b" }}> · Terceirizado</span>
           ) : ""}
         </p>
       </div>
@@ -85,20 +82,14 @@ export function InstrutorCard({ instrutor, onEditar, onExcluir }: Props) {
       {onEditar && (
         <button
           onClick={() => onEditar(instrutor)}
+          title="Editar"
           style={{
-            fontSize: 13,
-            fontWeight: 600,
-            color: "#ffffff",
-            border: "none",
-            borderRadius: 6,
-            padding: "7px 14px",
-            background: "#2563eb",
-            marginLeft: 8,
-            whiteSpace: "nowrap",
-            cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            width: 32, height: 32, border: "none", borderRadius: "var(--radius-sm)",
+            background: "var(--color-info-light)", cursor: "pointer", flexShrink: 0,
           }}
         >
-          ✎ Editar
+          <Pencil size={14} color="var(--color-info)" />
         </button>
       )}
 
@@ -110,20 +101,14 @@ export function InstrutorCard({ instrutor, onEditar, onExcluir }: Props) {
             );
             if (confirmar) onExcluir(instrutor.id);
           }}
+          title="Excluir"
           style={{
-            fontSize: 13,
-            fontWeight: 600,
-            color: "#ffffff",
-            border: "none",
-            borderRadius: 6,
-            padding: "7px 14px",
-            background: "var(--color-danger)",
-            marginLeft: 8,
-            whiteSpace: "nowrap",
-            cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            width: 32, height: 32, border: "none", borderRadius: "var(--radius-sm)",
+            background: "var(--color-danger-light)", cursor: "pointer", flexShrink: 0,
           }}
         >
-          🗑️ Excluir
+          <Trash2 size={14} color="var(--color-danger)" />
         </button>
       )}
     </div>

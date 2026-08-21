@@ -4,7 +4,7 @@
 // ======================================================
 
 import { useState } from "react";
-
+import { Plus } from "lucide-react";
 import { useModalidades } from "../hooks/useModalidades";
 import { ModalidadeCard } from "../components/ModalidadeCard";
 import ModalidadeForm from "../components/ModalidadeForm";
@@ -39,11 +39,25 @@ export default function ModalidadesPage() {
         </div>
 
         <button
-          onClick={iniciarNova}
-          className="bg-green-900 text-white px-5 py-3 rounded-lg"
-        >
-          {mostrarForm ? "Fechar" : "+ Nova modalidade"}
-        </button>
+  onClick={iniciarNova}
+  style={{
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    background: "var(--color-primary)",
+    color: "#fff",
+    border: "none",
+    padding: "11px 20px",
+    borderRadius: "var(--radius-md)",
+    fontSize: 14,
+    fontWeight: 600,
+    cursor: "pointer",
+    boxShadow: "var(--shadow-sm)",
+  }}
+>
+  <Plus size={17} />
+  {mostrarForm ? "Fechar" : "Nova modalidade"}
+</button>
       </div>
 
       {mostrarForm && (
