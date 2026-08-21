@@ -1,4 +1,4 @@
-// ======================================================
+﻿// ======================================================
 // APUSM SaaS — Modal grande de Associado
 // Arquivo: AssociadoDetalhesModal.tsx
 // Busca, matricula em lote, historico e posicao na fila
@@ -426,7 +426,7 @@ export default function AssociadoDetalhesModal({ aberto, onFechar }: Props) {
                         </button>
 
                         {estaAberto && (
-                          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 6, padding: "8px 12px 12px", background: "var(--background-tertiary)" }}>
+                          <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 6, padding: "8px 12px 12px", background: "var(--background-tertiary)" }}>
                             {turmasDaModalidade.map((t) => {
                               const marcada = turmasEscolhidas.includes(t.id);
                               return (
