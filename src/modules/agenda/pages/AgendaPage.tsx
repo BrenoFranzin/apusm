@@ -7,6 +7,7 @@ import { useInstrutores } from "@/modules/instrutores/hooks/useInstrutores";
 import { useSalas } from "@/modules/salas/hooks/useSalas";
 import { DiaSemana } from "@/modules/turmas/types/turma.types";
 import TurmaForm from "@/modules/turmas/components/TurmaForm";
+import { Plus } from "lucide-react";
 
 const NOME_DIA: Record<string, string> = {
   seg: "Segunda",
@@ -103,9 +104,9 @@ export default function AgendaPage() {
         </div>
         <button
           onClick={() => setMostrarFormTurma((v) => !v)}
-          style={{ background: "var(--color-primary)", color: "#fff", padding: "10px 18px", borderRadius: 8, border: "none", fontWeight: 600, cursor: "pointer" }}
+          style={{ display: "flex", alignItems: "center", gap: 6, background: "var(--color-primary)", color: "#fff", padding: "10px 18px", borderRadius: 8, border: "none", fontWeight: 600, cursor: "pointer" }}
         >
-          {mostrarFormTurma ? "Fechar" : "+ Nova aula"}
+          {mostrarFormTurma ? "Fechar" : <><Plus size={16} /> Nova aula</>}
         </button>
       </div>
 
