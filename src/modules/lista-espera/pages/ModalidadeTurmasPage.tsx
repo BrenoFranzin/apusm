@@ -5,6 +5,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { ArrowLeft, Printer, CheckCircle2, Hourglass } from "lucide-react";
 import { pdfService } from "@/modules/configuracoes/services/pdf.service";
 import { useTurmas } from "@/modules/turmas/hooks/useTurmas";
 import { useAssociados } from "@/modules/associados/hooks/useAssociados";
