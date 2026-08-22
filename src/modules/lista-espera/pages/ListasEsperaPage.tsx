@@ -5,6 +5,7 @@
 
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { Search } from "lucide-react";
 
 import { modalidadesService } from "@/modules/modalidades/services/modalidades.service";
 import { turmasService } from "@/modules/turmas/services/turmas.service";
@@ -86,9 +87,10 @@ export default function ListasEsperaPage() {
 
       <button
         onClick={() => setModalAssociadoAberto(true)}
-        className="bg-blue-700 text-white px-5 py-3 rounded-lg"
+        className="bg-blue-700 text-white px-5 py-3 rounded-lg flex items-center gap-2"
       >
-        {"\u{1F50D}"} Buscar / inserir associado
+        <Search size={18} />
+        Buscar / inserir associado
       </button>
 
       <AssociadoDetalhesModal
