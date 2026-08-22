@@ -9,6 +9,7 @@ import { useModalidades } from "@/modules/modalidades/hooks/useModalidades";
 import { useInstrutores } from "@/modules/instrutores/hooks/useInstrutores";
 import { presencaSemanalService } from "../services/presencaSemanal.service";
 import type { RegistroPresencaSemanal, StatusSemana, StatusSemanalRegistro } from "../types/presencaSemanal.types";
+import { Check, X, Printer, Users, ChevronLeft, ChevronRight } from "lucide-react";
 
 const MESES = [
   "Janeiro","Fevereiro","Marco","Abril","Maio","Junho",
@@ -126,6 +127,10 @@ function StatusPicker({
         style={{
           flexShrink: 0,
           whiteSpace: "nowrap",
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 4,
           fontSize: isPequeno ? 11 : 12,
           fontWeight: 700,
           padding: isPequeno ? "3px 10px" : "6px 14px",
@@ -136,7 +141,14 @@ function StatusPicker({
           cursor: "pointer",
         }}
       >
-        {cfgAtual ? `${"\u2713"} ${cfgAtual.label}` : "OBS"}
+        {cfgAtual ? (
+          <>
+            <Check size={isPequeno ? 12 : 14} />
+            {cfgAtual.label}
+          </>
+        ) : (
+          "OBS"
+        )}
       </button>
 
       {aberto && (
@@ -286,9 +298,9 @@ function SemanaModal({
       >
         <button
           onClick={onFechar}
-          style={{ position: "absolute", top: 14, right: 18, fontSize: 22, lineHeight: 1, color: "var(--text-muted)", background: "none", border: "none", cursor: "pointer" }}
+          style={{ position: "absolute", top: 14, right: 18, lineHeight: 1, color: "var(--text-muted)", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center" }}
         >
-          {"\u00d7"}
+          <X size={20} />
         </button>
         <div style={{ textAlign: "center", marginBottom: 4 }}>
           <h2 style={{ fontWeight: 700, fontSize: 19, margin: 0, color: "var(--text-primary)" }}>
@@ -396,7 +408,7 @@ function corSituacao(situacao: string): string {
   return "var(--text-primary)";
 }
 
-const CIRCULOS_MODALIDADE = ["\u{1F535}", "\u{1F7E2}", "\u{1F7E3}", "\u{1F7E0}", "\u{1F7E1}", "\u{1F534}"];
+const CORES_MODALIDADE = ["#3b82f6", "#22c55e", "#a855f7", "#f97316", "#eab308", "#ef4444"];
 
 function CardInstrutor({ inst, linhas }: { inst: any; linhas: LinhaTerceirizado[] }) {
   const feitas = linhas.filter((l) => l.situacao === "Feita").length;
@@ -410,7 +422,7 @@ function CardInstrutor({ inst, linhas }: { inst: any; linhas: LinhaTerceirizado[
   return document.documentElement.classList.contains("dark");
 }
 
-  modalidadesUnicas.forEach((m, i) => { circuloPorModalidade[m] = CIRCULOS_MODALIDADE[i % CIRCULOS_MODALIDADE.length]; });
+  modalidadesUnicas.forEach((m, i) => { circuloPorModalidade[m] = CORES_MODALIDADE[i % CORES_MODALIDADE.length]; });
 
   return (
     <details
@@ -424,7 +436,10 @@ function CardInstrutor({ inst, linhas }: { inst: any; linhas: LinhaTerceirizado[
           background: `${inst.cor}14`,
         }}
       >
-        <span style={{ fontWeight: 800, fontSize: 14, color: "var(--text-primary)" }}><span style={{ color: inst.cor }}>{"\u25CF"}</span> {inst.nome}</span>
+        <span style={{ fontWeight: 800, fontSize: 14, color: "var(--text-primary)", display: "inline-flex", alignItems: "center", gap: 6 }}>
+          <span style={{ width: 10, height: 10, borderRadius: "50%", background: inst.cor, display: "inline-block" }} />
+          {inst.nome}
+        </span>
         <span style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
           <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 999, background: "rgba(22,163,74,0.35)", color: "#4ade80" }}>{feitas} feitas</span>
           <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 999, background: "rgba(100,116,139,0.35)", color: "#cbd5e1" }}>{canceladas} canceladas</span>
@@ -446,7 +461,10 @@ function CardInstrutor({ inst, linhas }: { inst: any; linhas: LinhaTerceirizado[
         <tbody>
           {linhas.map((l, idx) => (
             <tr key={idx} style={{ borderTop: "1px solid var(--border-default)" }}>
-              <td style={{ padding: "6px 10px", color: "var(--text-primary)" }}>{circuloPorModalidade[l.modalidade]} {l.modalidade}</td>
+              <td style={{ padding: "6px 10px", color: "var(--text-primary)", display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ width: 10, height: 10, borderRadius: "50%", background: circuloPorModalidade[l.modalidade], flexShrink: 0 }} />
+                {l.modalidade}
+              </td>
               <td style={{ padding: "6px 10px", color: "var(--text-secondary)" }}>{l.turma}</td>
               <td style={{ padding: "6px 10px", color: "var(--text-secondary)" }}>{ORDINAL[l.semana - 1]}</td>
               <td style={{ padding: "6px 10px", fontWeight: 700, color: corSituacao(l.situacao) }}>{l.situacao}</td>
@@ -553,7 +571,7 @@ function TerceirizadosModal({
   return (
     <div onClick={onFechar} style={{ position: "fixed", inset: 0, background: "rgba(15, 23, 42, 0.55)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: "var(--z-modal)" as unknown as number, padding: 16 }}>
       <div onClick={(e) => e.stopPropagation()} className="apusm-card" style={{ width: "100%", maxWidth: 1305, maxHeight: "85vh", overflowY: "auto", padding: "var(--space-6)", position: "relative", borderRadius: 20 }}>
-        <button onClick={onFechar} style={{ position: "absolute", top: 14, right: 18, fontSize: 22, lineHeight: 1, color: "var(--text-muted)", background: "none", border: "none", cursor: "pointer" }}>{"\u00d7"}</button>
+        <button onClick={onFechar} style={{ position: "absolute", top: 14, right: 18, lineHeight: 1, color: "var(--text-muted)", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center" }}><X size={20} /></button>
         <div style={{ textAlign: "center", marginBottom: 4 }}>
           <h2 style={{ fontWeight: 700, fontSize: 19, margin: 0, color: "var(--text-primary)" }}>Aulas dos Terceirizados - {MESES[mes]}/{ano}</h2>
         </div>
@@ -561,8 +579,8 @@ function TerceirizadosModal({
           Feitas, canceladas e nao preenchidas por instrutor terceirizado
         </p>
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 18 }}>
-          <button onClick={exportarPdf} style={{ fontSize: 13, fontWeight: 700, padding: "8px 16px", borderRadius: 8, border: "1px solid var(--color-primary)", background: "var(--color-primary)", color: "#fff", cursor: "pointer" }}>
-            {"\u{1F5A8}"} Exportar PDF (Tesouraria)
+          <button onClick={exportarPdf} style={{ fontSize: 13, fontWeight: 700, padding: "8px 16px", borderRadius: 8, border: "1px solid var(--color-primary)", background: "var(--color-primary)", color: "#fff", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6 }}>
+            <Printer size={16} /> Exportar PDF (Tesouraria)
           </button>
         </div>
 
@@ -665,8 +683,8 @@ export default function RelatorioPresencaSemanalPage() {
         <h1 className="text-2xl font-bold" style={{ color: "var(--page-heading)", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
           Presenca Semanal por Modalidade - {MESES[mes]}/{ano}
           <span style={{ display: "inline-flex", gap: 4, alignItems: "center" }}>
-            <button onClick={() => setAno((a) => a - 1)} style={{ padding: "2px 8px", fontSize: 14, borderRadius: 6, border: "1px solid var(--border-default)", background: "var(--background-primary)", color: "var(--text-primary)", cursor: "pointer" }}>{"\u25C0"}</button>
-            <button onClick={() => setAno((a) => a + 1)} style={{ padding: "2px 8px", fontSize: 14, borderRadius: 6, border: "1px solid var(--border-default)", background: "var(--background-primary)", color: "var(--text-primary)", cursor: "pointer" }}>{"\u25B6"}</button>
+            <button onClick={() => setAno((a) => a - 1)} style={{ padding: "2px 8px", fontSize: 14, borderRadius: 6, border: "1px solid var(--border-default)", background: "var(--background-primary)", color: "var(--text-primary)", cursor: "pointer", display: "inline-flex", alignItems: "center" }}><ChevronLeft size={14} /></button>
+            <button onClick={() => setAno((a) => a + 1)} style={{ padding: "2px 8px", fontSize: 14, borderRadius: 6, border: "1px solid var(--border-default)", background: "var(--background-primary)", color: "var(--text-primary)", cursor: "pointer", display: "inline-flex", alignItems: "center" }}><ChevronRight size={14} /></button>
           </span>
         </h1>
         <p style={{ color: "var(--page-subheading)" }}>Registro manual do total de alunos por turma, semana a semana</p>
@@ -697,9 +715,10 @@ export default function RelatorioPresencaSemanalPage() {
               fontSize: 13, fontWeight: 700, padding: "9px 16px", borderRadius: 8,
               border: `1px solid ${COR_AMARELO_QUEIMADO}`, background: COR_AMARELO_QUEIMADO,
               color: "#ffffff", cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap",
+              display: "inline-flex", alignItems: "center", gap: 6,
             }}
           >
-            {"\u{1F465}"} Aulas dos Terceirizados
+            <Users size={16} /> Aulas dos Terceirizados
           </button>
         </div>
       </div>
