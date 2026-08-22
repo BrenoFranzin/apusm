@@ -8,6 +8,7 @@ import { usePlantao } from "../hooks/usePlantao";
 import { useInstrutores } from "@/modules/instrutores/hooks/useInstrutores";
 import { useTurmas } from "@/modules/turmas/hooks/useTurmas";
 import { DiaSemanaPlantao } from "../types/plantao.types";
+import { CalendarPlus, Check } from "lucide-react";
 
 const NOME_DIA: Record<string, string> = {
   seg: "Segunda", ter: "Terça", qua: "Quarta", qui: "Quinta", sex: "Sexta",
@@ -154,9 +155,10 @@ useEffect(() => {
         </div>
         <button
           onClick={abrirMassa}
-          style={{ background: "var(--color-primary)", color: "#fff", padding: "10px 18px", borderRadius: 8, border: "none", fontWeight: 600 }}
+          style={{ display: "flex", alignItems: "center", gap: 6, background: "var(--color-primary)", color: "#fff", padding: "10px 18px", borderRadius: 8, border: "none", fontWeight: 600 }}
         >
-          🗓️ Inserir em massa
+          <CalendarPlus size={16} />
+          Inserir em massa
         </button>
       </div>
 
@@ -398,7 +400,13 @@ useEffect(() => {
                               fontWeight: 700,
                             }}
                           >
-                            {marcado ? "✓" : ""}
+                            {marcado ? (
+                              <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+                                <Check size={16} />
+                              </span>
+                            ) : (
+                              ""
+                            )}
                           </td>
                         );
                       })}
