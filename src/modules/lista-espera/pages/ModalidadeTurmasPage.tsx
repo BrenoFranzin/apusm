@@ -5,7 +5,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Printer, CheckCircle2, Hourglass } from "lucide-react";
+import { ArrowLeft, Printer, CheckCircle2, Hourglass, X, StickyNote, Plus, Medal } from "lucide-react";
 import { pdfService } from "@/modules/configuracoes/services/pdf.service";
 import { useTurmas } from "@/modules/turmas/hooks/useTurmas";
 import { useAssociados } from "@/modules/associados/hooks/useAssociados";
@@ -255,6 +255,9 @@ async function handleEditarObservacaoFila(entradaId: string, valorAtual: string)
         <button
           onClick={() => navigate("/lista-espera")}
           style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
             border: "1px solid var(--border-default)",
             borderRadius: 8,
             padding: "6px 12px",
@@ -263,7 +266,8 @@ async function handleEditarObservacaoFila(entradaId: string, valorAtual: string)
             fontSize: 14,
           }}
         >
-          ← Voltar
+          <ArrowLeft size={16} />
+          Voltar
         </button>
         <h1
           className="text-2xl font-bold"
@@ -350,7 +354,8 @@ async function handleEditarObservacaoFila(entradaId: string, valorAtual: string)
                 gap: 8,
               }}
             >
-              🖨️ Imprimir folha de presença
+              <Printer size={16} />
+              Imprimir folha de presença
             </button>
 
 
@@ -381,7 +386,8 @@ async function handleEditarObservacaoFila(entradaId: string, valorAtual: string)
         gap: 6,
       }}
     >
-      ✅ Matriculados
+      <CheckCircle2 size={18} color="#22c55e" />
+      Matriculados
       <span
         style={{
           fontSize: 11,
@@ -420,9 +426,9 @@ async function handleEditarObservacaoFila(entradaId: string, valorAtual: string)
                     modalidadeNome: modalidade.nome,
                   })
                 }
-                style={{ fontSize: 12, border: "none", borderRadius: 6, padding: "2px 8px", background: "var(--color-danger)", color: "#fff", cursor: "pointer" }}
+                style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 12, border: "none", borderRadius: 6, padding: "4px 8px", background: "var(--color-danger)", color: "#fff", cursor: "pointer" }}
                 title="Remover da turma"
-              >✕</button>
+              ><X size={13} /></button>
             </td>
             <td style={{ padding: "8px" }}>
               <button
@@ -434,16 +440,19 @@ async function handleEditarObservacaoFila(entradaId: string, valorAtual: string)
                   )
                 }
                 style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                   fontSize: 12,
                   border: "1px solid var(--border-default)",
                   borderRadius: 6,
-                  padding: "2px 8px",
+                  padding: "4px 8px",
                   background: "transparent",
                   cursor: "pointer",
                 }}
                 title={matricula!.observacao || "Adicionar observação"}
               >
-                {matricula!.observacao ? "📝" : "+"}
+                {matricula!.observacao ? <StickyNote size={13} /> : <Plus size={13} />}
               </button>
             </td>
           </tr>
@@ -761,7 +770,8 @@ async function handleEditarObservacaoFila(entradaId: string, valorAtual: string)
         gap: 6,
       }}
     >
-      ⏳ Lista de espera
+      <Hourglass size={18} color="#f59e0b" />
+      Lista de espera
       <span
         style={{
           fontSize: 11,
@@ -795,8 +805,16 @@ async function handleEditarObservacaoFila(entradaId: string, valorAtual: string)
                 onChange={() => toggleSelecionado(turma.id, entrada.id)}
               />
             </td>
-                        <td style={{ padding: "8px", fontSize: 18 }}>
-              {entrada.posicao === 1 ? "🥇" : entrada.posicao === 2 ? "🥈" : entrada.posicao === 3 ? "🥉" : `${entrada.posicao}º`}
+                        <td style={{ padding: "8px", fontSize: 18, display: "flex", alignItems: "center" }}>
+              {entrada.posicao === 1 ? (
+                <Medal size={18} color="#eab308" />
+              ) : entrada.posicao === 2 ? (
+                <Medal size={18} color="#94a3b8" />
+              ) : entrada.posicao === 3 ? (
+                <Medal size={18} color="#b45309" />
+              ) : (
+                `${entrada.posicao}º`
+              )}
             </td>
             <td style={{ padding: "8px" }}>
   {entrada.associadoNome.toUpperCase()}
@@ -843,33 +861,39 @@ async function handleEditarObservacaoFila(entradaId: string, valorAtual: string)
                   handleEditarObservacaoFila(entrada.id, entrada.observacao ?? "")
                 }
                 style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                   fontSize: 12,
                   border: "1px solid var(--border-default)",
                   borderRadius: 6,
-                  padding: "2px 8px",
+                  padding: "4px 8px",
                   background: "transparent",
                   cursor: "pointer",
                 }}
                 title={entrada.observacao || "Adicionar observação"}
               >
-                {entrada.observacao ? "📝" : "+"}
+                {entrada.observacao ? <StickyNote size={13} /> : <Plus size={13} />}
               </button>
             </td>
             <td style={{ padding: "8px" }}>
   <button
     onClick={() => handleRemoverDaFila(entrada.id, entrada.associadoNome)}
     style={{
+      display: "inline-flex",
+      alignItems: "center",
+      justifyContent: "center",
       fontSize: 12,
       border: "none",
       borderRadius: 6,
-      padding: "2px 8px",
+      padding: "4px 8px",
       background: "var(--color-danger)",
       color: "#fff",
       cursor: "pointer",
     }}
     title="Remover da lista de espera"
   >
-    ✕
+    <X size={13} />
   </button>
 </td>
 
